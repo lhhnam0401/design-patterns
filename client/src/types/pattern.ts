@@ -11,6 +11,39 @@ export interface CodeExample {
   label?: string
 }
 
+// ── UML Diagram ───────────────────────────────────────────────
+export type NodeKind = 'class' | 'interface' | 'abstract'
+export type EdgeKind =
+  | 'inherits'       // open triangle arrowhead
+  | 'implements'     // dashed + open triangle
+  | 'composes'       // filled diamond
+  | 'aggregates'     // open diamond
+  | 'associates'     // plain arrow
+  | 'depends'        // dashed arrow
+
+export interface DiagramNode {
+  id: string
+  label: string          // class/interface name
+  kind: NodeKind
+  x: number              // grid column (0-based)
+  y: number              // grid row    (0-based)
+  methods?: string[]     // shown inside box
+  role?: string          // e.g. "Creator", "Product" — shown as small label
+}
+
+export interface DiagramEdge {
+  from: string           // node id
+  to: string             // node id
+  kind: EdgeKind
+  label?: string         // optional label on edge
+}
+
+export interface Diagram {
+  nodes: DiagramNode[]
+  edges: DiagramEdge[]
+}
+
+// ── Pattern ───────────────────────────────────────────────────
 export interface Pattern {
   id: string
   name: LocalizedText
@@ -26,8 +59,9 @@ export interface Pattern {
   vietnamese_example: {
     title: LocalizedText
     description: LocalizedText
-    illustration: string  // emoji/unicode art or ASCII
+    illustration: string  // kept for PatternCard preview
   }
+  diagram: Diagram
   code_examples: CodeExample[]
   structure_notes: LocalizedText
 }

@@ -1,6 +1,6 @@
 import type { Pattern } from '../types/pattern'
 
-export const creationalPatterns: Pattern[] = [
+export const creationalPatterns: Omit<Pattern, 'diagram'>[] = [
   {
     id: 'factory-method',
     slug: 'factory-method',

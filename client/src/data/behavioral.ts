@@ -1,6 +1,6 @@
 import type { Pattern } from '../types/pattern'
 
-export const behavioralPatterns: Pattern[] = [
+export const behavioralPatterns: Omit<Pattern, 'diagram'>[] = [
   {
     id: 'chain-of-responsibility',
     slug: 'chain-of-responsibility',
