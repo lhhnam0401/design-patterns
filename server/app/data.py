@@ -15,28 +15,28 @@ PATTERNS: list[Pattern] = [
         popularity=3,
         also_known_as=[LocalizedText(en="Virtual Constructor", vi="Hàm khởi tạo ảo")],
         intent=LocalizedText(
-            en="Defines an interface for creating an object, but lets subclasses decide which class to instantiate.",
-            vi="Định nghĩa một giao diện để tạo đối tượng, nhưng để các lớp con quyết định lớp nào sẽ được khởi tạo.",
+            en="Factory Method is a creational design pattern that provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created.",
+            vi="Factory Method là một mẫu thiết kế khởi tạo, cung cấp một giao diện để tạo đối tượng ở lớp cha, nhưng cho phép các lớp con thay đổi loại đối tượng sẽ được tạo ra.",
         ),
         problem=LocalizedText(
-            en="You need to create objects but don't know in advance which exact class you'll need.",
-            vi="Bạn cần tạo đối tượng nhưng không biết trước lớp chính xác nào cần dùng.",
+            en="Imagine a logistics app whose first version only handles trucks, so most of the code lives inside the Truck class. Later, sea transport companies ask for ships. Because the code is coupled to Truck, adding Ship means changing the whole codebase, and every new transport type means doing it again. You end up with code full of conditionals that switch behavior depending on the transport class.",
+            vi="Hãy tưởng tượng một ứng dụng logistics mà phiên bản đầu chỉ hỗ trợ xe tải, nên phần lớn mã nằm trong lớp Truck. Sau đó, các công ty vận tải biển muốn thêm tàu thủy. Vì mã đã phụ thuộc chặt vào Truck, thêm Ship đồng nghĩa với việc sửa toàn bộ mã nguồn, và mỗi loại phương tiện mới lại phải làm lại như vậy. Kết quả là mã chứa đầy câu lệnh điều kiện để đổi hành vi theo từng lớp phương tiện.",
         ),
         solution=LocalizedText(
-            en="Replace direct object construction with calls to a factory method. Subclasses can override this method.",
-            vi="Thay thế tạo đối tượng trực tiếp bằng cách gọi phương thức nhà máy. Các lớp con có thể ghi đè phương thức này.",
+            en="Replace direct construction calls (the new operator) with calls to a special factory method. Objects are still created with new, but from inside the factory method; the returned objects are called products. Subclasses can override the factory method to change the class of products it creates. The one limitation: all products must share a common base class or interface (e.g. Truck and Ship both implement Transport with a deliver() method), and the factory method in the base class must declare that interface as its return type. The client code then treats every product as an abstract Transport and does not care how each one implements deliver().",
+            vi="Thay các lệnh tạo đối tượng trực tiếp (toán tử new) bằng lời gọi tới một phương thức nhà máy đặc biệt. Đối tượng vẫn được tạo bằng new, nhưng bên trong phương thức nhà máy; các đối tượng được trả về gọi là sản phẩm (product). Lớp con có thể ghi đè phương thức nhà máy để thay đổi lớp của sản phẩm được tạo. Hạn chế duy nhất: mọi sản phẩm phải có chung một lớp cơ sở hoặc giao diện (ví dụ Truck và Ship cùng triển khai Transport với phương thức deliver()), và phương thức nhà máy ở lớp cơ sở phải khai báo kiểu trả về là giao diện đó. Khi đó, mã client coi mọi sản phẩm là một Transport trừu tượng và không cần biết từng loại triển khai deliver() ra sao.",
         ),
         applicability=LocalizedText(
-            en="Use when you don't know ahead of time what class you need to instantiate, or when subclasses should specify the objects they create.",
-            vi="Sử dụng khi bạn không biết trước lớp nào cần khởi tạo, hoặc khi muốn lớp con chỉ định đối tượng chúng tạo.",
+            en="Use Factory Method when you don't know beforehand the exact types and dependencies of the objects your code should work with: construction code is separated from the code that uses the product, so adding a product type only needs a new creator subclass. Use it when you want users of your library or framework to extend its internal components: they subclass the component and override the factory method (e.g. UIWithRoundButtons overrides createButton() to return RoundButton). Use it when you want to save resources by reusing existing objects such as database connections: a constructor must always return a new object, but a factory method can return an existing instance from a cache or pool.",
+            vi="Dùng Factory Method khi bạn không biết trước chính xác loại và phụ thuộc của các đối tượng mà mã cần làm việc cùng: mã khởi tạo được tách khỏi mã sử dụng sản phẩm, nên thêm loại sản phẩm mới chỉ cần thêm một lớp creator con. Dùng khi muốn người dùng thư viện hoặc framework của bạn mở rộng các thành phần bên trong: họ kế thừa thành phần đó và ghi đè phương thức nhà máy (ví dụ UIWithRoundButtons ghi đè createButton() để trả về RoundButton). Dùng khi muốn tiết kiệm tài nguyên bằng cách tái sử dụng đối tượng có sẵn như kết nối cơ sở dữ liệu: hàm khởi tạo luôn phải trả về đối tượng mới, còn phương thức nhà máy có thể trả về đối tượng có sẵn từ cache hoặc pool.",
         ),
         vietnamese_example=VietnameseExample(
             title=LocalizedText(en="Bánh Chưng & Bánh Tét Workshop", vi="Xưởng Làm Bánh Chưng & Bánh Tét"),
             description=LocalizedText(
-                en="During Tết, workshops in the North make Bánh Chưng (square) and in the South make Bánh Tét (cylindrical). The factory method lets each regional workshop decide what to create.",
-                vi="Trong dịp Tết, xưởng miền Bắc làm Bánh Chưng (vuông) và miền Nam làm Bánh Tét (tròn). Phương thức nhà máy cho mỗi xưởng quyết định loại bánh cần tạo.",
+                en="Before Tết (Vietnamese New Year), every workshop follows the same routine: wrap the cakes, boil them, and place them on the ancestral altar. That routine is the core business logic of the base BanhFactory class, and it works only with the abstract Banh interface (wrap() and boil()). The one step that differs by region is which cake gets made, so it is pulled into the factory method makeBanh(). The Northern workshop (MienBacFactory) overrides it to return a square Bánh Chưng wrapped in lá dong; the Southern workshop (MienNamFactory) returns a cylindrical Bánh Tét wrapped in banana leaves. Adding a new region means adding one creator subclass, without touching the Tết routine.",
+                vi="Trước Tết, xưởng nào cũng làm theo cùng một quy trình: gói bánh, luộc bánh, rồi bày lên bàn thờ tổ tiên. Quy trình đó là logic nghiệp vụ chính của lớp cơ sở BanhFactory, và nó chỉ làm việc với giao diện trừu tượng Banh (wrap() và boil()). Bước duy nhất khác nhau giữa các vùng là làm loại bánh nào, nên bước này được tách ra thành phương thức nhà máy makeBanh(). Xưởng miền Bắc (MienBacFactory) ghi đè để trả về Bánh Chưng vuông gói lá dong; xưởng miền Nam (MienNamFactory) trả về Bánh Tét hình trụ gói lá chuối. Thêm một vùng mới chỉ cần thêm một lớp creator con, không phải sửa quy trình đón Tết.",
             ),
-            illustration="🏮 Xưởng Bánh Tết\n┌─────────────────────┐\n│   BanhFactory       │\n│  + makeBanh()       │\n└─────────┬───────────┘\n          │\n    ┌─────┴──────┐\n    ▼            ▼\n┌───────┐  ┌──────────┐\n│Miền   │  │ Miền     │\n│Bắc 🟫 │  │ Nam 🟤   │\n│Bánh   │  │ Bánh Tét │\n│Chưng  │  │          │\n└───────┘  └──────────┘",
+            illustration="🏮 Xưởng Bánh Tết\n┌─────────────────────┐\n│   BanhFactory       │\n│  + makeBanh(): Banh │\n│  + prepareForTet()  │\n└─────────┬───────────┘\n          │\n    ┌─────┴──────┐\n    ▼            ▼\n┌───────┐  ┌──────────┐\n│Miền   │  │ Miền     │\n│Bắc 🟫 │  │ Nam 🟤   │\n│Bánh   │  │ Bánh Tét │\n│Chưng  │  │          │\n└───────┘  └──────────┘",
         ),
         code_examples=[
             CodeExample(
@@ -44,30 +44,78 @@ PATTERNS: list[Pattern] = [
                 label="Python",
                 code="""from abc import ABC, abstractmethod
 
-class BanhFactory(ABC):
-    @abstractmethod
-    def make_banh(self) -> str:
-        pass
 
+# Product: the interface every cake must follow
+class Banh(ABC):
+    @abstractmethod
+    def wrap(self) -> str: ...
+
+    @abstractmethod
+    def boil(self) -> str: ...
+
+
+# Concrete Products
+class BanhChung(Banh):
+    def wrap(self) -> str:
+        return "Gói Bánh Chưng vuông bằng lá dong"
+
+    def boil(self) -> str:
+        return "Luộc Bánh Chưng 10-12 tiếng"
+
+
+class BanhTet(Banh):
+    def wrap(self) -> str:
+        return "Gói Bánh Tét hình trụ bằng lá chuối"
+
+    def boil(self) -> str:
+        return "Luộc Bánh Tét 6-8 tiếng"
+
+
+# Creator: declares the factory method and holds the core business logic
+class BanhFactory(ABC):
+    # Factory method: the return type is the Product interface
+    @abstractmethod
+    def make_banh(self) -> Banh: ...
+
+    # Creating cakes is not the creator's main job; preparing for Tết is.
+    # This logic only depends on the Banh interface.
     def prepare_for_tet(self) -> str:
         banh = self.make_banh()
-        return f"🎋 Chuẩn bị Tết: {banh} đã sẵn sàng!"
+        return " → ".join([banh.wrap(), banh.boil(), "Bày lên bàn thờ tổ tiên 🎋"])
 
+
+# Concrete Creators override the factory method to change the product type
 class MienBacFactory(BanhFactory):
-    def make_banh(self) -> str:
-        return "🟫 Bánh Chưng (hình vuông, miền Bắc)"
+    def make_banh(self) -> Banh:
+        return BanhChung()
+
 
 class MienNamFactory(BanhFactory):
-    def make_banh(self) -> str:
-        return "🟤 Bánh Tét (hình trụ, miền Nam)"
+    def make_banh(self) -> Banh:
+        return BanhTet()
 
-for factory in [MienBacFactory(), MienNamFactory()]:
-    print(factory.prepare_for_tet())""",
+
+# The application picks a concrete creator from configuration
+def create_factory(region: str) -> BanhFactory:
+    if region == "north":
+        return MienBacFactory()
+    if region == "south":
+        return MienNamFactory()
+    raise ValueError(f"Unknown region: {region}")
+
+
+# Client code works with the creator only through the base class
+for region in ["north", "south"]:
+    print(create_factory(region).prepare_for_tet())
+
+# Output:
+# Gói Bánh Chưng vuông bằng lá dong → Luộc Bánh Chưng 10-12 tiếng → Bày lên bàn thờ tổ tiên 🎋
+# Gói Bánh Tét hình trụ bằng lá chuối → Luộc Bánh Tét 6-8 tiếng → Bày lên bàn thờ tổ tiên 🎋""",
             )
         ],
         structure_notes=LocalizedText(
-            en="Creator declares the factory method returning Product. Concrete Creators override the factory method to return different types of products.",
-            vi="Creator khai báo phương thức nhà máy trả về Product. Concrete Creator ghi đè phương thức nhà máy để trả về các loại sản phẩm khác nhau.",
+            en="Product declares the interface common to all objects the creator and its subclasses can produce. Concrete Products are different implementations of that interface. Creator declares the factory method, whose return type must be the Product interface; it can be abstract to force every subclass to implement it, or return a default product. Despite the name, creating products is not the Creator's main responsibility: it usually holds core business logic that relies on the products, and the factory method decouples that logic from concrete product classes. Concrete Creators override the factory method to return a different product type. The factory method does not have to create a new instance every time; it can return existing objects from a cache or pool.",
+            vi="Product khai báo giao diện chung cho mọi đối tượng mà creator và các lớp con của nó có thể tạo ra. Concrete Product là các triển khai khác nhau của giao diện đó. Creator khai báo phương thức nhà máy với kiểu trả về phải là giao diện Product; phương thức này có thể là trừu tượng để buộc mọi lớp con tự triển khai, hoặc trả về một sản phẩm mặc định. Dù tên gọi như vậy, tạo sản phẩm không phải trách nhiệm chính của Creator: nó thường chứa logic nghiệp vụ cốt lõi dựa trên sản phẩm, và phương thức nhà máy giúp tách logic đó khỏi các lớp sản phẩm cụ thể. Concrete Creator ghi đè phương thức nhà máy để trả về loại sản phẩm khác. Phương thức nhà máy không nhất thiết lúc nào cũng tạo đối tượng mới; nó có thể trả về đối tượng có sẵn từ cache hoặc pool.",
         ),
     ),
 

@@ -8,129 +8,222 @@ export const behavioralPatterns: Omit<Pattern, 'diagram'>[] = [
     category: 'behavioral',
     complexity: 2,
     popularity: 2,
+    also_known_as: [
+      { en: 'CoR', vi: 'CoR' },
+      { en: 'Chain of Command', vi: 'Chuỗi mệnh lệnh' },
+    ],
     intent: {
-      en: 'Avoids coupling the sender of a request to its receiver by giving more than one object a chance to handle it. Chain the receiving objects and pass the request along the chain.',
-      vi: 'Tránh kết hợp chặt chẽ người gửi yêu cầu với người nhận bằng cách cho nhiều đối tượng cơ hội xử lý nó. Nối các đối tượng nhận và chuyển yêu cầu dọc theo chuỗi.',
+      en: 'Chain of Responsibility is a behavioral design pattern that lets you pass requests along a chain of handlers. Upon receiving a request, each handler decides either to process the request or to pass it to the next handler in the chain.',
+      vi: 'Chain of Responsibility là một mẫu thiết kế hành vi, cho phép bạn chuyển yêu cầu dọc theo một chuỗi các handler. Khi nhận được yêu cầu, mỗi handler quyết định hoặc tự xử lý yêu cầu, hoặc chuyển nó cho handler tiếp theo trong chuỗi.',
     },
     problem: {
-      en: 'A request must pass through several handlers, each deciding to either process it or pass it on. The sender should not know which handler will ultimately process the request.',
-      vi: 'Một yêu cầu phải đi qua một số handler, mỗi handler quyết định xử lý hoặc chuyển tiếp nó. Người gửi không nên biết handler nào cuối cùng sẽ xử lý yêu cầu.',
+      en: 'Imagine an online ordering system where only authenticated users may create orders, and users with administrative permissions get full access to all orders. These checks must run sequentially: if authentication fails, there is no reason to run any other check. Over the following months you add more sequential checks: a validation step that sanitizes the request data, a filter that blocks repeated failed requests from the same IP address to stop brute-force password cracking, and a check that returns a cached result for repeated requests with the same data. The code of the checks gets more bloated with every feature, changing one check sometimes affects the others, and reusing the checks to protect other components means duplicating code, because those components need some of the checks but not all of them. The system becomes very hard to understand and expensive to maintain.',
+      vi: 'Hãy tưởng tượng một hệ thống đặt hàng trực tuyến, trong đó chỉ người dùng đã xác thực mới được tạo đơn hàng, còn người dùng có quyền quản trị được truy cập đầy đủ mọi đơn hàng. Các bước kiểm tra này phải chạy tuần tự: nếu xác thực thất bại thì không có lý do gì để chạy các bước kiểm tra khác. Trong vài tháng sau đó, bạn thêm nhiều bước kiểm tra tuần tự nữa: một bước làm sạch dữ liệu trong yêu cầu, một bộ lọc chặn các yêu cầu thất bại lặp lại từ cùng một địa chỉ IP để chống dò mật khẩu kiểu brute force, và một bước trả về kết quả đã cache cho các yêu cầu lặp lại có cùng dữ liệu. Mã kiểm tra ngày càng phình to theo từng tính năng, sửa một bước kiểm tra đôi khi ảnh hưởng tới các bước khác, và muốn dùng lại các bước kiểm tra để bảo vệ những thành phần khác thì phải sao chép mã, vì các thành phần đó chỉ cần một vài bước chứ không cần tất cả. Hệ thống trở nên rất khó hiểu và tốn kém để bảo trì.',
     },
     solution: {
-      en: 'Transform particular behaviors into stand-alone objects called handlers. Each handler has a reference to the next handler. A handler can either process a request or pass it to the next handler.',
-      vi: 'Biến các hành vi cụ thể thành các đối tượng độc lập gọi là handler. Mỗi handler có tham chiếu đến handler tiếp theo. Một handler có thể xử lý yêu cầu hoặc chuyển nó cho handler tiếp theo.',
+      en: 'Turn particular behaviors into stand-alone objects called handlers: each check moves into its own class with a single method that performs it, and the request, along with its data, is passed to that method as an argument. Then link the handlers into a chain. Each handler has a field storing a reference to the next handler; besides processing the request, it passes the request further along, so the request travels until every handler has had a chance to process it. A handler can also decide not to pass the request on, which stops any further processing. In a slightly different and more canonical approach, a handler first decides whether it can process the request, and if it can, it does not pass it on; so either exactly one handler processes the request or none does. This is common for events in stacks of GUI elements: a click on a button propagates through its containers (forms, panels) up to the main window and is processed by the first element capable of handling it, which also shows that a chain can be extracted from an object tree. All handler classes must implement the same interface, and each concrete handler should only care that the next one has the execute method. This way you can compose chains at runtime without coupling your code to concrete handler classes.',
+      vi: 'Biến các hành vi cụ thể thành những đối tượng độc lập gọi là handler: mỗi bước kiểm tra được tách ra một lớp riêng với một phương thức duy nhất thực hiện bước đó, còn yêu cầu cùng dữ liệu của nó được truyền vào phương thức này dưới dạng tham số. Sau đó nối các handler thành một chuỗi. Mỗi handler có một trường lưu tham chiếu tới handler kế tiếp; ngoài việc xử lý yêu cầu, nó còn chuyển yêu cầu đi tiếp, nhờ vậy yêu cầu đi dọc chuỗi cho tới khi mọi handler đều có cơ hội xử lý. Một handler cũng có thể quyết định không chuyển yêu cầu đi nữa, và khi đó việc xử lý dừng lại. Theo một cách làm hơi khác và chuẩn mực hơn, handler xét trước xem mình có xử lý được yêu cầu không; nếu được thì nó không chuyển yêu cầu đi tiếp, nên hoặc chỉ đúng một handler xử lý yêu cầu, hoặc không handler nào cả. Cách này rất phổ biến khi xử lý sự kiện trong chồng các phần tử giao diện: một cú nhấp vào nút được lan truyền qua các phần tử chứa nó (form, panel) lên tới cửa sổ chính, và được xử lý bởi phần tử đầu tiên có khả năng xử lý; ví dụ này cũng cho thấy một chuỗi luôn có thể được tách ra từ một cây đối tượng. Mọi lớp handler phải triển khai cùng một giao diện, và mỗi handler cụ thể chỉ cần biết handler kế tiếp có phương thức thực thi. Nhờ vậy bạn có thể ghép chuỗi lúc chạy mà mã không bị phụ thuộc vào các lớp handler cụ thể.',
     },
     applicability: {
-      en: 'Use when more than one object may handle a request, and the handler isn\'t known a priori. Use when you want to issue a request to several objects without specifying the receiver explicitly.',
-      vi: 'Sử dụng khi nhiều đối tượng có thể xử lý một yêu cầu và handler không được biết trước. Sử dụng khi muốn gửi yêu cầu đến nhiều đối tượng mà không chỉ định rõ người nhận.',
+      en: 'Use Chain of Responsibility when your program is expected to process different kinds of requests in various ways, but the exact types of requests and their sequences are unknown beforehand: you link several handlers into one chain and, when a request arrives, ask each handler whether it can process it, so every handler gets a chance. Use it when it is essential to execute several handlers in a particular order: since you can link the handlers in any order, all requests go through the chain exactly as you planned. Use it when the set of handlers and their order are supposed to change at runtime: if the handler classes provide setters for their reference field, you can insert, remove or reorder handlers dynamically.',
+      vi: 'Dùng Chain of Responsibility khi chương trình phải xử lý nhiều loại yêu cầu theo nhiều cách khác nhau, nhưng chưa biết trước chính xác loại yêu cầu và thứ tự của chúng: bạn nối nhiều handler thành một chuỗi và khi có yêu cầu đến thì "hỏi" từng handler xem nó có xử lý được không, nhờ đó mọi handler đều có cơ hội. Dùng khi bắt buộc phải chạy nhiều handler theo một thứ tự nhất định: vì bạn có thể nối các handler theo bất kỳ thứ tự nào, mọi yêu cầu sẽ đi qua chuỗi đúng như bạn đã định. Dùng khi tập handler và thứ tự của chúng cần thay đổi lúc chạy: nếu các lớp handler có setter cho trường tham chiếu, bạn có thể chèn, gỡ bỏ hoặc sắp xếp lại các handler một cách linh động.',
     },
     vietnamese_example: {
       title: { en: 'Petitioning the Imperial Court', vi: 'Dâng Đơn Lên Triều Đình' },
       description: {
-        en: 'In ancient Vietnam, a citizen\'s petition (đơn thỉnh cầu) would travel up the chain: first to Xã Trưởng (village chief), then Huyện Quan (district magistrate), then Phủ Doãn (provincial governor), and finally to the Emperor. Each official handles what\'s within their authority. A minor land dispute is resolved by the Xã Trưởng; a military matter goes all the way to the Emperor.',
-        vi: 'Trong Việt Nam cổ đại, đơn thỉnh cầu của người dân sẽ đi lên chuỗi: đầu tiên đến Xã Trưởng, sau đó Huyện Quan, rồi Phủ Doãn, và cuối cùng đến Hoàng Đế. Mỗi quan chức xử lý những gì trong thẩm quyền của họ. Tranh chấp đất đai nhỏ do Xã Trưởng giải quyết; vấn đề quân sự đến tận Hoàng Đế.',
+        en: 'In old Vietnam, a citizen\'s petition (Petition, the request object) travels up the ladder of officials. Official is the Handler interface, with setSuperior() and handle(). BaseOfficial is the Base Handler: it stores the superior official in superior and, by default, forwards the petition to him. The Concrete Handlers VillageChief (village chief), DistrictMagistrate (district magistrate), Prefect (prefect) and Emperor (the Emperor) each handle one kind of matter: land disputes, theft, dikes and war. Each one checks the petition and either settles it or calls the base method to pass it up. This is the canonical variant, where at most one official handles a petition. The client builds the chain with setSuperior() and files petitions with filePetition(). A petition nobody handles reaches the end of the chain and comes back unresolved, and a petition filed directly with the district skips the village chief entirely.',
+        vi: 'Thời xưa, lá đơn thỉnh cầu của người dân (Petition, đối tượng yêu cầu) được chuyển dần lên các cấp quan. Official là giao diện Handler, gồm setSuperior() và handle(). BaseOfficial là Base Handler: nó lưu quan cấp trên trong superior và mặc định chuyển đơn lên cho người đó. Các Concrete Handler là VillageChief (xã trưởng), DistrictMagistrate (quan huyện), Prefect (phủ doãn) và Emperor (Hoàng Đế), mỗi người lo một loại việc: tranh chấp ruộng đất, trộm cắp, đê điều và quân sự. Mỗi người xem lá đơn rồi hoặc tự giải quyết, hoặc gọi phương thức của lớp cơ sở để chuyển đơn lên trên. Đây là biến thể chuẩn mực, trong đó mỗi lá đơn được tối đa một vị quan xử lý. Client dựng chuỗi bằng setSuperior() và nộp đơn qua filePetition(). Lá đơn không ai nhận sẽ đi tới cuối chuỗi rồi bị trả về, còn lá đơn nộp thẳng lên huyện thì bỏ qua xã trưởng hoàn toàn.',
       },
-      illustration: '📜 Chuỗi Thỉnh Cầu\n[Đơn] ──▶ Xã Trưởng\n             │ (nhỏ→xử lý)\n             │ (lớn→chuyển)\n             ▼\n          Huyện Quan\n             │\n             ▼\n          Phủ Doãn\n             │\n             ▼\n          Hoàng Đế 👑',
+      illustration: '📜 Chuỗi Thỉnh Cầu\n[Petition] ──▶ VillageChief\n                 │ ruộng đất → xử lý\n                 │ việc khác → chuyển\n                 ▼\n              DistrictMagistrate  (trộm cắp)\n                 │\n                 ▼\n              Prefect    (đê điều)\n                 │\n                 ▼\n              Emperor 👑 (quân sự)\n                 │\n                 ▼\n            ❌ không ai nhận',
     },
     code_examples: [
       {
         language: 'python',
         label: 'Python',
         code: `from abc import ABC, abstractmethod
-from enum import Enum
+from typing import Optional
 
-class CapDo(Enum):
-    XA = 1
-    HUYEN = 2
-    PHU = 3
-    TRIEU_DINH = 4
 
-class DonThinh:
-    def __init__(self, noi_dung: str, cap_yeu_cau: CapDo):
-        self.noi_dung = noi_dung
-        self.cap_yeu_cau = cap_yeu_cau
+# The request: all of its data travels in one object
+class Petition:
+    def __init__(self, kind: str, content: str) -> None:
+        self.kind = kind
+        self.content = content
 
-class QuanChuc(ABC):
-    def __init__(self, ten: str, cap: CapDo):
-        self.ten = ten
-        self.cap = cap
-        self._cap_tren: 'QuanChuc | None' = None
 
-    def set_cap_tren(self, cap_tren: 'QuanChuc') -> 'QuanChuc':
-        self._cap_tren = cap_tren
-        return cap_tren
+# Handler: the interface shared by every official
+class Official(ABC):
+    @abstractmethod
+    def set_superior(self, superior: "Official") -> "Official": ...
 
-    def xu_ly(self, don: DonThinh):
-        if don.cap_yeu_cau.value <= self.cap.value:
-            print(f"✅ {self.ten} xử lý: '{don.noi_dung}'")
-        elif self._cap_tren:
-            print(f"📨 {self.ten} chuyển lên {self._cap_tren.ten}")
-            self._cap_tren.xu_ly(don)
-        else:
-            print(f"❌ Không ai có thể xử lý: '{don.noi_dung}'")
+    @abstractmethod
+    def handle(self, petition: Petition) -> Optional[str]: ...
 
-class XaTruong(QuanChuc):
-    def __init__(self): super().__init__("Xã Trưởng", CapDo.XA)
 
-class HuyenQuan(QuanChuc):
-    def __init__(self): super().__init__("Huyện Quan", CapDo.HUYEN)
+# Base Handler: stores the next link and forwards by default
+class BaseOfficial(Official):
+    def __init__(self) -> None:
+        self._superior: Optional[Official] = None
 
-class PhuDoan(QuanChuc):
-    def __init__(self): super().__init__("Phủ Doãn", CapDo.PHU)
+    def set_superior(self, superior: Official) -> Official:
+        self._superior = superior
+        # Returning the next handler lets the client chain the calls
+        return superior
 
-class HoangDe(QuanChuc):
-    def __init__(self): super().__init__("Hoàng Đế 👑", CapDo.TRIEU_DINH)
+    def handle(self, petition: Petition) -> Optional[str]:
+        if self._superior is not None:
+            return self._superior.handle(petition)
+        return None  # end of the chain: nobody handled it
 
-# Build the chain
-xa = XaTruong()
-huyen = HuyenQuan()
-phu = PhuDoan()
-vua = HoangDe()
-xa.set_cap_tren(huyen).set_cap_tren(phu).set_cap_tren(vua)
 
-# Test different request levels
-xa.xu_ly(DonThinh("Tranh chấp bờ ruộng", CapDo.XA))
-xa.xu_ly(DonThinh("Vụ trộm lớn", CapDo.HUYEN))
-xa.xu_ly(DonThinh("Kế hoạch chống giặc ngoại xâm", CapDo.TRIEU_DINH))`,
+# Concrete Handlers: each one decides to settle the petition
+# or pass it up to the next official
+class VillageChief(BaseOfficial):
+    def handle(self, petition: Petition) -> Optional[str]:
+        if petition.kind == "ruộng đất":
+            return f"Xã Trưởng phân xử: {petition.content}"
+        return super().handle(petition)
+
+
+class DistrictMagistrate(BaseOfficial):
+    def handle(self, petition: Petition) -> Optional[str]:
+        if petition.kind == "trộm cắp":
+            return f"Huyện Quan xét án: {petition.content}"
+        return super().handle(petition)
+
+
+class Prefect(BaseOfficial):
+    def handle(self, petition: Petition) -> Optional[str]:
+        if petition.kind == "đê điều":
+            return f"Phủ Doãn cho đắp đê: {petition.content}"
+        return super().handle(petition)
+
+
+class Emperor(BaseOfficial):
+    def handle(self, petition: Petition) -> Optional[str]:
+        if petition.kind == "quân sự":
+            return f"Hoàng Đế 👑 ra chiếu: {petition.content}"
+        return super().handle(petition)
+
+
+# Client: can send a petition to any official in the chain
+def file_petition(official: Official, petition: Petition) -> None:
+    result = official.handle(petition)
+    print(result if result else f"❌ Không quan nào nhận đơn: {petition.content}")
+
+
+# Client: builds the chain Xã → Huyện → Phủ → Triều đình
+village = VillageChief()
+district = DistrictMagistrate()
+village.set_superior(district).set_superior(Prefect()).set_superior(Emperor())
+
+print("Dân nộp đơn ở xã:")
+file_petition(village, Petition("ruộng đất", "tranh chấp bờ ruộng"))
+file_petition(village, Petition("trộm cắp", "mất trộm trâu"))
+file_petition(village, Petition("đê điều", "đê sông Hồng sắp vỡ"))
+file_petition(village, Petition("quân sự", "giặc tràn qua biên giới"))
+file_petition(village, Petition("thiên văn", "sao chổi xuất hiện"))
+
+# The request can enter at any link, not only the first one
+print("Đơn nộp thẳng lên huyện:")
+file_petition(district, Petition("ruộng đất", "lấn đất làng bên"))
+
+# Output:
+# Dân nộp đơn ở xã:
+# Xã Trưởng phân xử: tranh chấp bờ ruộng
+# Huyện Quan xét án: mất trộm trâu
+# Phủ Doãn cho đắp đê: đê sông Hồng sắp vỡ
+# Hoàng Đế 👑 ra chiếu: giặc tràn qua biên giới
+# ❌ Không quan nào nhận đơn: sao chổi xuất hiện
+# Đơn nộp thẳng lên huyện:
+# ❌ Không quan nào nhận đơn: lấn đất làng bên`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `enum CapDo { XA = 1, HUYEN = 2, PHU = 3, TRIEU_DINH = 4 }
+        code: `// The request: all of its data travels in one object
+interface Petition {
+  kind: string
+  content: string
+}
 
-interface DonThinh { noiDung: string; capYeuCau: CapDo }
+// Handler: the interface shared by every official
+interface Official {
+  setSuperior(superior: Official): Official
+  handle(petition: Petition): string | null
+}
 
-abstract class QuanChuc {
-  protected capTren: QuanChuc | null = null
+// Base Handler: stores the next link and forwards by default
+abstract class BaseOfficial implements Official {
+  private superior: Official | null = null
 
-  constructor(protected ten: string, protected cap: CapDo) {}
+  setSuperior(superior: Official): Official {
+    this.superior = superior
+    // Returning the next handler lets the client chain the calls
+    return superior
+  }
 
-  setCapTren(next: QuanChuc): QuanChuc { this.capTren = next; return next }
-
-  xuLy(don: DonThinh): void {
-    if (don.capYeuCau <= this.cap) {
-      console.log(\`✅ \${this.ten} xử lý: "\${don.noiDung}"\`)
-    } else if (this.capTren) {
-      console.log(\`📨 \${this.ten} → \${this.capTren['ten']}\`)
-      this.capTren.xuLy(don)
-    }
+  handle(petition: Petition): string | null {
+    // End of the chain: nobody handled it
+    return this.superior ? this.superior.handle(petition) : null
   }
 }
 
-class XaTruong extends QuanChuc { constructor() { super('Xã Trưởng', CapDo.XA) } }
-class HuyenQuan extends QuanChuc { constructor() { super('Huyện Quan', CapDo.HUYEN) } }
-class HoangDe extends QuanChuc { constructor() { super('Hoàng Đế 👑', CapDo.TRIEU_DINH) } }
+// Concrete Handlers: each one decides to settle the petition
+// or pass it up to the next official
+class VillageChief extends BaseOfficial {
+  handle(petition: Petition): string | null {
+    if (petition.kind === 'ruộng đất') return \`Xã Trưởng phân xử: \${petition.content}\`
+    return super.handle(petition)
+  }
+}
 
-const xa = new XaTruong(), huyen = new HuyenQuan(), vua = new HoangDe()
-xa.setCapTren(huyen).setCapTren(vua)
+class DistrictMagistrate extends BaseOfficial {
+  handle(petition: Petition): string | null {
+    if (petition.kind === 'trộm cắp') return \`Huyện Quan xét án: \${petition.content}\`
+    return super.handle(petition)
+  }
+}
 
-xa.xuLy({ noiDung: 'Tranh chấp ruộng', capYeuCau: CapDo.XA })
-xa.xuLy({ noiDung: 'Chống giặc ngoại xâm', capYeuCau: CapDo.TRIEU_DINH })`,
+class Prefect extends BaseOfficial {
+  handle(petition: Petition): string | null {
+    if (petition.kind === 'đê điều') return \`Phủ Doãn cho đắp đê: \${petition.content}\`
+    return super.handle(petition)
+  }
+}
+
+class Emperor extends BaseOfficial {
+  handle(petition: Petition): string | null {
+    if (petition.kind === 'quân sự') return \`Hoàng Đế 👑 ra chiếu: \${petition.content}\`
+    return super.handle(petition)
+  }
+}
+
+// Client: can send a petition to any official in the chain
+function filePetition(official: Official, petition: Petition): void {
+  console.log(official.handle(petition) ?? \`❌ Không quan nào nhận đơn: \${petition.content}\`)
+}
+
+// Client: builds the chain Xã → Huyện → Phủ → Triều đình
+const village = new VillageChief()
+const district = new DistrictMagistrate()
+village.setSuperior(district).setSuperior(new Prefect()).setSuperior(new Emperor())
+
+console.log('Dân nộp đơn ở xã:')
+filePetition(village, { kind: 'ruộng đất', content: 'tranh chấp bờ ruộng' })
+filePetition(village, { kind: 'trộm cắp', content: 'mất trộm trâu' })
+filePetition(village, { kind: 'đê điều', content: 'đê sông Hồng sắp vỡ' })
+filePetition(village, { kind: 'quân sự', content: 'giặc tràn qua biên giới' })
+filePetition(village, { kind: 'thiên văn', content: 'sao chổi xuất hiện' })
+
+// The request can enter at any link, not only the first one
+console.log('Đơn nộp thẳng lên huyện:')
+filePetition(district, { kind: 'ruộng đất', content: 'lấn đất làng bên' })`,
       },
     ],
     structure_notes: {
-      en: 'Handler interface declares the handling method. BaseHandler implements default handling: forward to next. ConcreteHandlers handle requests they can, pass others.',
-      vi: 'Giao diện Handler khai báo phương thức xử lý. BaseHandler triển khai xử lý mặc định: chuyển tiếp cho handler tiếp theo. ConcreteHandler xử lý yêu cầu chúng có thể, chuyển tiếp các yêu cầu khác.',
+      en: 'Handler declares the interface common to all concrete handlers. It usually contains just a single method for handling requests, but sometimes also a method for setting the next handler in the chain. Base Handler is an optional class holding boilerplate shared by all handlers: usually a field storing a reference to the next handler, which clients set through the constructor or a setter of the previous handler, plus default handling behavior that passes execution to the next handler after checking that it exists. Concrete Handlers contain the actual code for processing requests: on receiving a request, each one decides whether to process it and whether to pass it along the chain. Handlers are usually self-contained and immutable, accepting all necessary data once through the constructor. Client may compose chains once or dynamically, depending on the application\'s logic, and a request can be sent to any handler in the chain, not only the first one. The diagram shows the link to the next handler as the superior field of BaseOfficial rather than as a separate arrow. Petition is not a role of its own in the structure; it is the request object every handler receives.',
+      vi: 'Handler khai báo giao diện chung cho mọi handler cụ thể. Thường nó chỉ có một phương thức xử lý yêu cầu, nhưng đôi khi có thêm phương thức đặt handler kế tiếp trong chuỗi. Base Handler là lớp tùy chọn chứa phần mã lặp lại dùng chung cho mọi handler: thường là một trường lưu tham chiếu tới handler kế tiếp, được client gán qua hàm khởi tạo hoặc setter của handler đứng trước, cùng hành vi xử lý mặc định là chuyển việc cho handler kế tiếp sau khi kiểm tra nó có tồn tại. Concrete Handler chứa mã xử lý yêu cầu thực sự: khi nhận yêu cầu, mỗi handler quyết định có xử lý nó không và có chuyển nó đi dọc chuỗi không. Handler thường độc lập và bất biến, nhận mọi dữ liệu cần thiết một lần qua hàm khởi tạo. Client có thể ghép chuỗi một lần hoặc ghép linh động tùy logic ứng dụng, và yêu cầu có thể được gửi tới bất kỳ handler nào trong chuỗi, không nhất thiết là handler đầu tiên. Sơ đồ thể hiện liên kết tới handler kế tiếp bằng trường superior của BaseOfficial thay vì vẽ một mũi tên riêng. Petition không phải một vai trò riêng trong cấu trúc; nó là đối tượng yêu cầu mà mọi handler nhận vào.',
     },
   },
 
@@ -141,29 +234,33 @@ xa.xuLy({ noiDung: 'Chống giặc ngoại xâm', capYeuCau: CapDo.TRIEU_DINH })
     category: 'behavioral',
     complexity: 2,
     popularity: 3,
+    also_known_as: [
+      { en: 'Action', vi: 'Hành động' },
+      { en: 'Transaction', vi: 'Giao dịch' },
+    ],
     intent: {
-      en: 'Encapsulates a request as an object, thereby letting you parameterize clients with different requests, queue or log requests, and support undoable operations.',
-      vi: 'Đóng gói một yêu cầu thành đối tượng, từ đó cho phép bạn tham số hóa client với các yêu cầu khác nhau, xếp hàng hoặc ghi log yêu cầu, và hỗ trợ các hoạt động có thể hoàn tác.',
+      en: 'Command is a behavioral design pattern that turns a request into a stand-alone object that contains all information about the request. This transformation lets you pass requests as method arguments, delay or queue a request\'s execution, and support undoable operations.',
+      vi: 'Command là một mẫu thiết kế hành vi, biến một yêu cầu thành một đối tượng độc lập chứa mọi thông tin về yêu cầu đó. Phép biến đổi này cho phép bạn truyền yêu cầu làm tham số của phương thức, trì hoãn hoặc xếp hàng việc thực thi yêu cầu, và hỗ trợ các thao tác có thể hoàn tác.',
     },
     problem: {
-      en: 'You want to decouple the object that invokes an operation from the one that knows how to perform it. You need undo/redo functionality or request queuing.',
-      vi: 'Bạn muốn tách biệt đối tượng gọi hoạt động khỏi đối tượng biết cách thực hiện nó. Bạn cần chức năng undo/redo hoặc xếp hàng yêu cầu.',
+      en: 'Imagine a new text-editor app. You build a neat Button class that is used for the toolbar and for generic buttons in various dialogs. The buttons look alike but must do different things, so the simplest option is a subclass for every place a button is used, holding the code to run on click. Soon you have an enormous number of subclasses that risk breaking whenever you modify the base Button class: the GUI code has become awkwardly dependent on the volatile code of the business logic. Worse, some operations, such as copying and pasting text, must be invoked from several places: a small Copy button on the toolbar, the context menu, or Ctrl+C on the keyboard. Once you add context menus and shortcuts, you must either duplicate the operation\'s code in many classes or make menus dependent on buttons, which is even worse.',
+      vi: 'Hãy tưởng tượng bạn đang viết một ứng dụng soạn thảo văn bản mới. Bạn tạo một lớp Button gọn gàng, dùng cho các nút trên thanh công cụ lẫn các nút thông thường trong nhiều hộp thoại. Các nút trông giống nhau nhưng phải làm những việc khác nhau, nên cách đơn giản nhất là tạo một lớp con cho mỗi chỗ dùng nút, chứa đoạn mã chạy khi nhấp. Chẳng bao lâu bạn có vô số lớp con, và chúng có nguy cơ hỏng mỗi khi bạn sửa lớp Button cơ sở: mã giao diện đã phụ thuộc một cách vụng về vào mã nghiệp vụ hay thay đổi. Tệ hơn nữa, một số thao tác như sao chép và dán văn bản phải được gọi từ nhiều nơi: nút Copy nhỏ trên thanh công cụ, menu ngữ cảnh, hoặc tổ hợp phím Ctrl+C. Khi thêm menu ngữ cảnh và phím tắt, bạn buộc phải hoặc sao chép mã của thao tác vào nhiều lớp, hoặc cho menu phụ thuộc vào các nút, và cách sau còn tệ hơn.',
     },
     solution: {
-      en: 'Turn requests into Command objects with an execute() method. Store commands in a queue or history. Implement undo by reversing the command\'s effects.',
-      vi: 'Biến các yêu cầu thành đối tượng Command với phương thức execute(). Lưu trữ các lệnh trong hàng đợi hoặc lịch sử. Triển khai undo bằng cách đảo ngược hiệu ứng của lệnh.',
+      en: 'Good design separates concerns, usually into layers such as a GUI layer and a business logic layer. When the GUI needs something important done, it calls a method of a business logic object with some arguments, which is described as one object sending another a request. The Command pattern says GUI objects shouldn\'t send these requests directly. Instead, extract all of the request details (the object being called, the name of the method and the list of arguments) into a separate command class with a single method that triggers the request. Commands become links between GUI and business logic objects: the GUI object no longer needs to know which business object will receive the request or how it will be processed; it just triggers the command. Next, make all commands implement the same interface, usually a single execution method that takes no parameters. This lets one sender work with various commands without being coupled to their concrete classes, and you can switch the command linked to a sender to change its behavior at runtime. Since the execution method has no parameters, the command must either be pre-configured with the request data or be able to get it on its own. In the text editor, the base Button class just needs one field referencing a command and executes it on click; menus, shortcuts and dialogs linked to the same operation share the same command, so no code is duplicated. Commands become a convenient middle layer that reduces coupling between the GUI and business logic layers.',
+      vi: 'Thiết kế tốt thường tách biệt các mối quan tâm, thường thành các tầng như tầng giao diện và tầng nghiệp vụ. Khi cần làm việc gì quan trọng, tầng giao diện gọi một phương thức của đối tượng nghiệp vụ kèm vài tham số, và quá trình này được mô tả là một đối tượng gửi yêu cầu cho đối tượng khác. Mẫu Command cho rằng đối tượng giao diện không nên gửi trực tiếp các yêu cầu này. Thay vào đó, hãy tách mọi chi tiết của yêu cầu (đối tượng được gọi, tên phương thức và danh sách tham số) ra một lớp command riêng, có một phương thức duy nhất để kích hoạt yêu cầu. Command trở thành cầu nối giữa đối tượng giao diện và đối tượng nghiệp vụ: đối tượng giao diện không cần biết đối tượng nghiệp vụ nào sẽ nhận yêu cầu hay yêu cầu được xử lý ra sao; nó chỉ việc kích hoạt command. Bước tiếp theo là cho mọi command triển khai cùng một giao diện, thường chỉ có một phương thức thực thi không nhận tham số. Nhờ đó một sender có thể làm việc với nhiều command khác nhau mà không phụ thuộc vào lớp cụ thể của chúng, và bạn có thể đổi command gắn với sender để thay đổi hành vi của nó lúc chạy. Vì phương thức thực thi không có tham số, command phải được cấu hình sẵn dữ liệu của yêu cầu hoặc tự lấy được dữ liệu đó. Trong ứng dụng soạn thảo, lớp Button cơ sở chỉ cần một trường tham chiếu tới command và thực thi nó khi được nhấp; menu, phím tắt và hộp thoại gắn với cùng một thao tác sẽ dùng chung một command, nên không còn mã bị lặp. Command trở thành một tầng trung gian tiện lợi giúp giảm sự phụ thuộc giữa tầng giao diện và tầng nghiệp vụ.',
     },
     applicability: {
-      en: 'Use to parameterize objects with operations, queue operations, implement reversible operations, or implement transaction systems.',
-      vi: 'Sử dụng để tham số hóa đối tượng với các hoạt động, xếp hàng hoạt động, triển khai hoạt động có thể đảo ngược, hoặc triển khai hệ thống giao dịch.',
+      en: 'Use Command when you want to parameterize objects with operations: a command turns a specific method call into a stand-alone object, so you can pass commands as method arguments, store them inside other objects or switch linked commands at runtime, for example to let users configure context menu items that trigger operations. Use it when you want to queue operations, schedule their execution or execute them remotely: like any other object, a command can be serialized to a string that can be written to a file or a database and later restored as the original command, so you can delay and schedule its execution, and in the same way queue, log or send commands over the network. Use it when you want to implement reversible operations: Command is perhaps the most popular way to implement undo/redo. You keep a history, a stack of executed command objects together with backups of the application\'s state. This has two drawbacks. First, saving the application\'s state isn\'t easy because some of it can be private, which the Memento pattern can mitigate. Second, the state backups may consume a lot of RAM, so instead a command can perform the inverse operation rather than restore a past state, although the inverse operation may be hard or even impossible to implement.',
+      vi: 'Dùng Command khi muốn tham số hóa đối tượng bằng các thao tác: command biến một lời gọi phương thức cụ thể thành một đối tượng độc lập, nên bạn có thể truyền command làm tham số của phương thức, lưu nó bên trong đối tượng khác hoặc đổi command được gắn lúc chạy, ví dụ để người dùng tự cấu hình các mục trong menu ngữ cảnh kích hoạt thao tác nào. Dùng khi muốn xếp hàng thao tác, lên lịch thực thi hoặc thực thi từ xa: như mọi đối tượng khác, command có thể được tuần tự hóa thành chuỗi để ghi vào tệp hoặc cơ sở dữ liệu, rồi sau đó khôi phục lại thành command ban đầu, nhờ vậy bạn có thể trì hoãn và lên lịch thực thi, và theo cách tương tự có thể xếp hàng, ghi log hoặc gửi command qua mạng. Dùng khi muốn triển khai các thao tác có thể đảo ngược: Command có lẽ là cách phổ biến nhất để làm undo/redo. Bạn lưu một lịch sử, tức một ngăn xếp gồm các command đã thực thi cùng bản sao lưu trạng thái ứng dụng. Cách này có hai nhược điểm. Thứ nhất, lưu trạng thái ứng dụng không dễ vì một phần trạng thái có thể là riêng tư; mẫu Memento có thể giảm bớt vấn đề này. Thứ hai, các bản sao lưu trạng thái có thể tốn nhiều RAM, nên command có thể thực hiện thao tác ngược thay vì khôi phục trạng thái cũ, dù thao tác ngược có thể khó hoặc thậm chí không thể triển khai.',
     },
     vietnamese_example: {
       title: { en: 'Royal Decree System (Chiếu Chỉ)', vi: 'Hệ Thống Chiếu Chỉ Triều Đình' },
       description: {
-        en: 'In the Vietnamese imperial court, the Emperor issues decrees (Chiếu Chỉ) that can be executed, queued, logged in the royal archives, and — in some cases — revoked (undo). A "Build the Citadel" decree, a "Reduce taxes" decree, and a "Dispatch army" decree are all Command objects. The Royal Secretary (Thư Ký) queues and executes them; the Royal Historian (Sử Quan) logs everything for the history books.',
-        vi: 'Trong triều đình Việt Nam, Hoàng Đế ban chiếu chỉ có thể được thực thi, xếp hàng, ghi vào hồ sơ hoàng gia, và trong một số trường hợp — thu hồi (undo). Chiếu chỉ "Xây Thành", "Giảm Thuế", và "Điều Quân" đều là đối tượng Command. Thư Ký Hoàng Gia xếp hàng và thực thi chúng; Sử Quan ghi lại tất cả.',
+        en: 'At the imperial court, the Emperor\'s decrees (chiếu chỉ) are command objects. Decree is the Command interface, with execute() and undo(). BuildCitadelCommand and CutTaxCommand are Concrete Commands: each stores its receiver, the city City, plus any parameter (how many percent of tax to cut) as fields set in the constructor, and passes the call on to the city\'s buildCitadel(), demolishCitadel(), cutTax() or raiseTax() methods. City is the Receiver that does the real work. RoyalSecretary, the royal secretary, is the Sender: he receives finished decrees, keeps them in a queue until proclamation day, executes them with proclaim() and records each one in a history, so revoke() can revoke the latest decree by calling its undo(). The secretary only knows the Decree interface and never writes a decree himself. The client code plays the Emperor: it creates the city, writes the decrees and hands them to the secretary. Undo here uses the inverse operation (tear the citadel down, raise the tax back) rather than a state backup.',
+        vi: 'Ở triều đình, chiếu chỉ của Hoàng Đế chính là các đối tượng command. Decree là giao diện Command, gồm execute() và undo(). BuildCitadelCommand và CutTaxCommand là các Concrete Command: mỗi chiếu lưu receiver của nó, tức thành phố City, cùng các tham số (giảm thuế bao nhiêu phần trăm) trong các trường được gán qua hàm khởi tạo, rồi chuyển lời gọi tới các phương thức buildCitadel(), demolishCitadel(), cutTax() hoặc raiseTax() của thành phố. City là Receiver làm công việc thực sự. RoyalSecretary, viên thư ký hoàng gia, là Sender: ông nhận các chiếu chỉ đã soạn sẵn, giữ chúng trong hàng chờ đến ngày ban bố, thực thi chúng bằng proclaim() và ghi từng chiếu vào sổ lịch sử, nhờ vậy revoke() có thể thu hồi chiếu gần nhất bằng cách gọi undo() của nó. Thư ký chỉ biết giao diện Decree và không bao giờ tự soạn chiếu. Mã client đóng vai Hoàng Đế: tạo thành phố, soạn chiếu chỉ rồi giao cho thư ký. Ở đây undo dùng thao tác ngược (dỡ thành, tăng thuế trở lại) thay vì sao lưu trạng thái.',
       },
-      illustration: '📜 Hệ Thống Chiếu Chỉ\nHoàng Đế ──tạo──▶ ChieuChi (Command)\n                       │ execute()\n                       │ undo()\n                       ▼\n              ThiHanhVien (Receiver)\n                       │\n              ThuKy (Invoker)\n              stores history[]',
+      illustration: '📜 Hệ Thống Chiếu Chỉ\nHoàng Đế (Client)\n   │ soạn chiếu, giao cho thư ký\n   ▼\nRoyalSecretary (Sender)\n   pendingQueue[] ──proclaim()──▶ history[]\n   │ execute() / undo()\n   ▼\nDecree (Command)\n   BuildCitadelCommand | CutTaxCommand\n   │\n   ▼\nCity (Receiver)\n   buildCitadel() | cutTax()',
     },
     code_examples: [
       {
@@ -172,117 +269,207 @@ xa.xuLy({ noiDung: 'Chống giặc ngoại xâm', capYeuCau: CapDo.TRIEU_DINH })
         code: `from abc import ABC, abstractmethod
 from typing import List
 
-class ThanhPho:
-    """Receiver"""
-    def __init__(self, ten: str):
-        self.ten = ten
-        self.thue_suat = 100
-        self.quan_doi = 0
 
-    def xay_thanh(self):
-        print(f"🏰 Xây thành {self.ten}!")
+# Receiver: the city holds the real business logic
+class City:
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.citadel_count = 0
+        self.tax = 30
 
-    def pha_thanh(self):
-        print(f"💥 Phá thành {self.ten}!")
+    def build_citadel(self) -> None:
+        self.citadel_count += 1
+        print(f"🏰 {self.name}: xây thành, có {self.citadel_count} tòa")
 
-    def giam_thue(self, so: int):
-        self.thue_suat -= so
-        print(f"💰 Giảm thuế {so}%, còn {self.thue_suat}%")
+    def demolish_citadel(self) -> None:
+        self.citadel_count -= 1
+        print(f"💥 {self.name}: dỡ thành, còn {self.citadel_count} tòa")
 
-    def tang_thue(self, so: int):
-        self.thue_suat += so
-        print(f"💰 Tăng thuế {so}%, còn {self.thue_suat}%")
+    def cut_tax(self, percent: int) -> None:
+        self.tax -= percent
+        print(f"💰 {self.name}: giảm thuế {percent}%, còn {self.tax}%")
 
-class ChieuChi(ABC):
+    def raise_tax(self, percent: int) -> None:
+        self.tax += percent
+        print(f"💰 {self.name}: tăng thuế {percent}%, lên {self.tax}%")
+
+
+# Command: the interface every decree follows
+class Decree(ABC):
     @abstractmethod
-    def execute(self): pass
+    def execute(self) -> None: ...
+
     @abstractmethod
-    def undo(self): pass
+    def undo(self) -> None: ...
 
-class XayThanhCommand(ChieuChi):
-    def __init__(self, tp: ThanhPho):
-        self._tp = tp
-    def execute(self): self._tp.xay_thanh()
-    def undo(self): self._tp.pha_thanh()
 
-class GiamThueCommand(ChieuChi):
-    def __init__(self, tp: ThanhPho, so: int):
-        self._tp, self._so = tp, so
-    def execute(self): self._tp.giam_thue(self._so)
-    def undo(self): self._tp.tang_thue(self._so)
+# Concrete Commands: store the receiver and the parameters,
+# then pass the call on to the receiver
+class BuildCitadelCommand(Decree):
+    def __init__(self, city: City) -> None:
+        self._city = city
 
-class ThuKyHoangGia:
-    """Invoker with history"""
-    def __init__(self):
-        self._lich_su: List[ChieuChi] = []
+    def execute(self) -> None:
+        self._city.build_citadel()
 
-    def thuc_thi(self, chieu_chi: ChieuChi):
-        chieu_chi.execute()
-        self._lich_su.append(chieu_chi)
+    def undo(self) -> None:
+        self._city.demolish_citadel()
 
-    def thu_hoi(self):
-        if self._lich_su:
-            chieu_chi = self._lich_su.pop()
-            print("↩️ Thu hồi chiếu chỉ:")
-            chieu_chi.undo()
 
-# Imperial command system
-ha_noi = ThanhPho("Hà Nội")
-thu_ky = ThuKyHoangGia()
+class CutTaxCommand(Decree):
+    def __init__(self, city: City, percent: int) -> None:
+        self._city = city
+        self._percent = percent
 
-thu_ky.thuc_thi(XayThanhCommand(ha_noi))
-thu_ky.thuc_thi(GiamThueCommand(ha_noi, 20))
-thu_ky.thuc_thi(GiamThueCommand(ha_noi, 10))
+    def execute(self) -> None:
+        self._city.cut_tax(self._percent)
 
-print("--- Thu hồi ---")
-thu_ky.thu_hoi()  # undo reduce tax 10%
-thu_ky.thu_hoi()  # undo reduce tax 20%`,
+    def undo(self) -> None:
+        self._city.raise_tax(self._percent)
+
+
+# Sender (Invoker): queues and triggers decrees, keeps a history for undo.
+# It never creates decrees and only knows the Decree interface.
+class RoyalSecretary:
+    def __init__(self) -> None:
+        self._pending_queue: List[Decree] = []
+        self._history: List[Decree] = []
+
+    def receive_decree(self, decree: Decree) -> None:
+        self._pending_queue.append(decree)
+
+    def proclaim(self) -> None:
+        print(f"📜 Ban bố {len(self._pending_queue)} chiếu chỉ")
+        while self._pending_queue:
+            decree = self._pending_queue.pop(0)
+            decree.execute()
+            self._history.append(decree)
+
+    def revoke(self) -> None:
+        if self._history:
+            print("↩️ Thu hồi chiếu chỉ gần nhất")
+            self._history.pop().undo()
+
+
+# Client (the Emperor): creates the receiver and the decrees,
+# then hands the decrees to the sender
+capital = City("Thăng Long")
+secretary = RoyalSecretary()
+secretary.receive_decree(BuildCitadelCommand(capital))
+secretary.receive_decree(CutTaxCommand(capital, 10))
+secretary.receive_decree(CutTaxCommand(capital, 5))
+print("Chiếu chỉ đã soạn, chờ ngày ban bố")  # nothing has run yet
+
+secretary.proclaim()
+secretary.revoke()
+secretary.revoke()
+
+# Output:
+# Chiếu chỉ đã soạn, chờ ngày ban bố
+# 📜 Ban bố 3 chiếu chỉ
+# 🏰 Thăng Long: xây thành, có 1 tòa
+# 💰 Thăng Long: giảm thuế 10%, còn 20%
+# 💰 Thăng Long: giảm thuế 5%, còn 15%
+# ↩️ Thu hồi chiếu chỉ gần nhất
+# 💰 Thăng Long: tăng thuế 5%, lên 20%
+# ↩️ Thu hồi chiếu chỉ gần nhất
+# 💰 Thăng Long: tăng thuế 10%, lên 30%`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `interface ChieuChi {
+        code: `// Receiver: the city holds the real business logic
+class City {
+  citadelCount = 0
+  tax = 30
+
+  constructor(public readonly name: string) {}
+
+  buildCitadel(): void {
+    this.citadelCount += 1
+    console.log(\`🏰 \${this.name}: xây thành, có \${this.citadelCount} tòa\`)
+  }
+
+  demolishCitadel(): void {
+    this.citadelCount -= 1
+    console.log(\`💥 \${this.name}: dỡ thành, còn \${this.citadelCount} tòa\`)
+  }
+
+  cutTax(percent: number): void {
+    this.tax -= percent
+    console.log(\`💰 \${this.name}: giảm thuế \${percent}%, còn \${this.tax}%\`)
+  }
+
+  raiseTax(percent: number): void {
+    this.tax += percent
+    console.log(\`💰 \${this.name}: tăng thuế \${percent}%, lên \${this.tax}%\`)
+  }
+}
+
+// Command: the interface every decree follows
+interface Decree {
   execute(): void
   undo(): void
 }
 
-class ThanhPho {
-  thueSuat = 100
-  constructor(public ten: string) {}
-  xayThanh() { console.log(\`🏰 Xây thành \${this.ten}!\`) }
-  phaThanh() { console.log(\`💥 Phá thành \${this.ten}!\`) }
-  giamThue(so: number) { this.thueSuat -= so; console.log(\`Thuế: \${this.thueSuat}%\`) }
-  tangThue(so: number) { this.thueSuat += so; console.log(\`Thuế: \${this.thueSuat}%\`) }
+// Concrete Commands: store the receiver and the parameters,
+// then pass the call on to the receiver
+class BuildCitadelCommand implements Decree {
+  constructor(private readonly city: City) {}
+  execute(): void { this.city.buildCitadel() }
+  undo(): void { this.city.demolishCitadel() }
 }
 
-class XayThanhCommand implements ChieuChi {
-  constructor(private tp: ThanhPho) {}
-  execute() { this.tp.xayThanh() }
-  undo() { this.tp.phaThanh() }
+class CutTaxCommand implements Decree {
+  constructor(private readonly city: City, private readonly percent: number) {}
+  execute(): void { this.city.cutTax(this.percent) }
+  undo(): void { this.city.raiseTax(this.percent) }
 }
 
-class GiamThueCommand implements ChieuChi {
-  constructor(private tp: ThanhPho, private so: number) {}
-  execute() { this.tp.giamThue(this.so) }
-  undo() { this.tp.tangThue(this.so) }
+// Sender (Invoker): queues and triggers decrees, keeps a history for undo.
+// It never creates decrees and only knows the Decree interface.
+class RoyalSecretary {
+  private pendingQueue: Decree[] = []
+  private history: Decree[] = []
+
+  receiveDecree(decree: Decree): void {
+    this.pendingQueue.push(decree)
+  }
+
+  proclaim(): void {
+    console.log(\`📜 Ban bố \${this.pendingQueue.length} chiếu chỉ\`)
+    let decree: Decree | undefined
+    while ((decree = this.pendingQueue.shift()) !== undefined) {
+      decree.execute()
+      this.history.push(decree)
+    }
+  }
+
+  revoke(): void {
+    const decree = this.history.pop()
+    if (decree === undefined) return
+    console.log('↩️ Thu hồi chiếu chỉ gần nhất')
+    decree.undo()
+  }
 }
 
-class ThuKyHoangGia {
-  private lichSu: ChieuChi[] = []
-  thucThi(cc: ChieuChi) { cc.execute(); this.lichSu.push(cc) }
-  thuHoi() { this.lichSu.pop()?.undo() }
-}
+// Client (the Emperor): creates the receiver and the decrees,
+// then hands the decrees to the sender
+const capital = new City('Thăng Long')
+const secretary = new RoyalSecretary()
+secretary.receiveDecree(new BuildCitadelCommand(capital))
+secretary.receiveDecree(new CutTaxCommand(capital, 10))
+secretary.receiveDecree(new CutTaxCommand(capital, 5))
+console.log('Chiếu chỉ đã soạn, chờ ngày ban bố') // nothing has run yet
 
-const haNoi = new ThanhPho('Hà Nội')
-const thuKy = new ThuKyHoangGia()
-thuKy.thucThi(new XayThanhCommand(haNoi))
-thuKy.thucThi(new GiamThueCommand(haNoi, 20))
-thuKy.thuHoi()`,
+secretary.proclaim()
+secretary.revoke()
+secretary.revoke()`,
       },
     ],
     structure_notes: {
-      en: 'Invoker triggers commands. Command interface has execute()/undo(). ConcreteCommand implements actions on Receiver. Client creates and configures commands.',
-      vi: 'Invoker kích hoạt lệnh. Giao diện Command có execute()/undo(). ConcreteCommand thực hiện hành động trên Receiver. Client tạo và cấu hình các lệnh.',
+      en: 'Sender (also called Invoker) is responsible for initiating requests. It has a field storing a reference to a command object and triggers that command instead of sending the request directly to the receiver. The sender isn\'t responsible for creating the command object; it usually gets a pre-created command from the client via the constructor. Command interface usually declares just a single method for executing the command. Concrete Commands implement various kinds of requests. A concrete command isn\'t supposed to do the work on its own but to pass the call to one of the business logic objects, although these classes can be merged to simplify the code. Parameters needed to call a method on the receiving object can be declared as fields of the concrete command, and the command can be made immutable by allowing those fields to be set only through the constructor. Receiver contains some business logic, and almost any object can act as one: most commands only handle the details of how a request reaches the receiver, while the receiver does the actual work. Client creates and configures concrete command objects, passing all request parameters, including a receiver instance, into the command\'s constructor; the resulting command can then be associated with one or more senders. In this example the Command interface also declares undo() and the sender keeps a queue and a history; these support the queuing and undo uses of the pattern and are not part of its minimal structure.',
+      vi: 'Sender (còn gọi là Invoker) chịu trách nhiệm khởi phát yêu cầu. Nó có một trường lưu tham chiếu tới đối tượng command và kích hoạt command đó thay vì gửi yêu cầu thẳng tới receiver. Sender không chịu trách nhiệm tạo command; thông thường nó nhận một command đã tạo sẵn từ client qua hàm khởi tạo. Giao diện Command thường chỉ khai báo một phương thức duy nhất để thực thi command. Concrete Command triển khai các loại yêu cầu khác nhau. Concrete command không tự làm công việc mà chuyển lời gọi cho một đối tượng nghiệp vụ, dù có thể gộp hai lớp này để mã đơn giản hơn. Các tham số cần để gọi phương thức trên đối tượng nhận có thể được khai báo thành trường của concrete command, và có thể làm command bất biến bằng cách chỉ cho phép gán các trường này qua hàm khởi tạo. Receiver chứa logic nghiệp vụ, và hầu như đối tượng nào cũng có thể làm receiver: phần lớn command chỉ lo chi tiết chuyển yêu cầu tới receiver, còn receiver mới làm công việc thực sự. Client tạo và cấu hình các concrete command, truyền mọi tham số của yêu cầu, kể cả một thể hiện receiver, vào hàm khởi tạo của command; sau đó command có thể được gắn với một hoặc nhiều sender. Trong ví dụ này, giao diện Command còn khai báo undo() và sender giữ một hàng chờ cùng sổ lịch sử; các phần này phục vụ việc xếp hàng và hoàn tác, không thuộc cấu trúc tối thiểu của mẫu.',
     },
   },
 
@@ -294,120 +481,287 @@ thuKy.thuHoi()`,
     complexity: 2,
     popularity: 3,
     intent: {
-      en: 'Provides a way to access the elements of an aggregate object sequentially without exposing its underlying representation.',
-      vi: 'Cung cấp một cách truy cập các phần tử của đối tượng tổng hợp một cách tuần tự mà không tiết lộ biểu diễn cơ bản của nó.',
+      en: 'Iterator is a behavioral design pattern that lets you traverse elements of a collection without exposing its underlying representation (list, stack, tree, etc.).',
+      vi: 'Iterator là một mẫu thiết kế hành vi, cho phép bạn duyệt qua các phần tử của một tập hợp mà không làm lộ cấu trúc biểu diễn bên dưới của nó (danh sách, ngăn xếp, cây, v.v.).',
     },
     problem: {
-      en: 'You need to traverse a complex collection without exposing its internal structure. You may also want multiple traversal algorithms for the same collection.',
-      vi: 'Bạn cần duyệt qua một bộ sưu tập phức tạp mà không tiết lộ cấu trúc nội tại của nó. Bạn cũng có thể muốn nhiều thuật toán duyệt cho cùng một bộ sưu tập.',
+      en: 'Collections are one of the most used data types, yet a collection is just a container for a group of objects. Most collections store their elements in simple lists, but some are built on stacks, trees, graphs and other complex structures. Whatever the structure, the collection must provide a way to go through each element without visiting the same ones over and over. That is easy for a list, but a tree might need depth-first traversal one day, breadth-first the next, and random access the week after. Adding more and more traversal algorithms to the collection gradually blurs its primary responsibility, which is efficient data storage, and some algorithms are tailored to one specific application, so putting them into a generic collection class would be odd. Meanwhile, client code that doesn\'t care how elements are stored still has to couple itself to specific collection classes, because each collection offers its own way of accessing elements.',
+      vi: 'Tập hợp (collection) là một trong những kiểu dữ liệu được dùng nhiều nhất, nhưng suy cho cùng nó chỉ là nơi chứa một nhóm đối tượng. Phần lớn tập hợp lưu phần tử trong danh sách đơn giản, nhưng có những tập hợp được xây dựng trên ngăn xếp, cây, đồ thị và các cấu trúc phức tạp khác. Dù cấu trúc ra sao, tập hợp vẫn phải cung cấp cách đi qua từng phần tử mà không lặp lại những phần tử đã đi qua. Với danh sách thì việc này dễ, nhưng với cây, hôm nay bạn có thể cần duyệt theo chiều sâu, hôm sau cần duyệt theo chiều rộng, tuần sau lại cần truy cập ngẫu nhiên. Thêm ngày càng nhiều thuật toán duyệt vào tập hợp sẽ làm lu mờ trách nhiệm chính của nó là lưu trữ dữ liệu hiệu quả, và có những thuật toán chỉ phục vụ một ứng dụng cụ thể, nên đặt chúng vào một lớp tập hợp dùng chung là không hợp lý. Trong khi đó, mã client vốn không quan tâm phần tử được lưu thế nào vẫn buộc phải phụ thuộc vào từng lớp tập hợp cụ thể, vì mỗi tập hợp lại có cách truy cập phần tử riêng.',
     },
     solution: {
-      en: 'Extract the traversal behavior into a separate iterator object. The iterator tracks the traversal progress and knows how to fetch the next element.',
-      vi: 'Tách hành vi duyệt thành đối tượng iterator riêng biệt. Iterator theo dõi tiến độ duyệt và biết cách lấy phần tử tiếp theo.',
+      en: 'Extract the traversal behavior of a collection into a separate object called an iterator. Besides implementing the algorithm itself, the iterator encapsulates all traversal details, such as the current position and how many elements are left until the end. Because of this, several iterators can go through the same collection at the same time, independently of each other. Iterators usually provide one primary method for fetching elements; the client keeps calling it until it returns nothing, which means every element has been traversed. All iterators implement the same interface, which makes the client compatible with any collection type or traversal algorithm as long as a proper iterator exists. When you need a special way to traverse a collection, you create a new iterator class without changing the collection or the client.',
+      vi: 'Tách hành vi duyệt của tập hợp ra một đối tượng riêng gọi là iterator. Ngoài việc cài đặt thuật toán duyệt, iterator còn đóng gói mọi chi tiết của quá trình duyệt, như vị trí hiện tại và còn bao nhiêu phần tử nữa thì hết. Nhờ vậy, nhiều iterator có thể cùng lúc duyệt một tập hợp mà không ảnh hưởng đến nhau. Iterator thường có một phương thức chính để lấy phần tử; client cứ gọi phương thức này cho đến khi nó không trả về gì nữa, nghĩa là đã duyệt hết mọi phần tử. Mọi iterator đều triển khai cùng một giao diện, nên client có thể làm việc với bất kỳ loại tập hợp hay thuật toán duyệt nào, miễn là có iterator phù hợp. Khi cần một cách duyệt đặc biệt, bạn chỉ cần tạo một lớp iterator mới mà không phải sửa tập hợp hay client.',
     },
     applicability: {
-      en: 'Use when a collection has a complex data structure underneath, but you want to hide its complexity from clients.',
-      vi: 'Sử dụng khi bộ sưu tập có cấu trúc dữ liệu phức tạp bên dưới, nhưng bạn muốn ẩn sự phức tạp đó khỏi client.',
+      en: 'Use Iterator when your collection has a complex data structure under the hood but you want to hide that complexity from clients, for convenience or for security: the iterator gives the client a few simple methods for accessing elements, and it protects the collection from careless or malicious actions the client could perform if it worked with the collection directly. Use it to reduce duplication of traversal code across your app: non-trivial iteration algorithms tend to be bulky, and when placed inside business logic they blur that code\'s responsibility and make it harder to maintain, so moving them into dedicated iterators keeps the application code lean and clean. Use it when your code must be able to traverse different data structures, or when the types of those structures are unknown beforehand: the pattern provides generic interfaces for both collections and iterators, so code written against those interfaces keeps working when you pass it any collection and iterator that implement them.',
+      vi: 'Dùng Iterator khi tập hợp có cấu trúc dữ liệu phức tạp bên dưới nhưng bạn muốn che giấu sự phức tạp đó khỏi client, vì sự tiện lợi hoặc vì an toàn: iterator cho client vài phương thức đơn giản để truy cập phần tử, đồng thời bảo vệ tập hợp khỏi những thao tác bất cẩn hoặc có ý đồ xấu mà client có thể làm nếu được truy cập trực tiếp. Dùng mẫu này để giảm việc lặp lại mã duyệt trong ứng dụng: thuật toán duyệt không đơn giản thường cồng kềnh, và khi nằm lẫn trong logic nghiệp vụ, chúng làm lu mờ trách nhiệm của đoạn mã đó và khiến nó khó bảo trì, nên chuyển chúng vào các iterator riêng giúp mã ứng dụng gọn và sạch hơn. Dùng Iterator khi mã cần duyệt được nhiều cấu trúc dữ liệu khác nhau, hoặc khi chưa biết trước kiểu của các cấu trúc đó: mẫu này cung cấp giao diện chung cho cả tập hợp lẫn iterator, nên mã viết theo các giao diện đó vẫn chạy đúng khi bạn truyền vào bất kỳ tập hợp và iterator nào triển khai chúng.',
     },
     vietnamese_example: {
       title: { en: 'Touring Vietnamese Historical Sites', vi: 'Du Lịch Các Di Tích Lịch Sử Việt Nam' },
       description: {
-        en: 'A tour guide (Iterator) leads tourists through historical Vietnamese sites: Văn Miếu (Temple of Literature), Hồ Gươm (Sword Lake), Lăng Bác (Ho Chi Minh Mausoleum), Hoàng Thành Thăng Long (Imperial Citadel). The tourist doesn\'t need to know the map\'s internal structure — they just call next() to visit the next site. Different iterators can offer different tours: chronological order, geographic order, or VIP priority order.',
-        vi: 'Hướng dẫn viên du lịch (Iterator) dẫn khách tham quan các di tích lịch sử Việt Nam: Văn Miếu, Hồ Gươm, Lăng Bác, Hoàng Thành Thăng Long. Du khách không cần biết cấu trúc nội tại của bản đồ — họ chỉ cần gọi next() để thăm địa điểm tiếp theo.',
+        en: 'Hanoi\'s historical sites form the collection. HanoiTour (the Concrete Collection) stores them grouped by district in a map of lists, a detail no visitor needs to know. It implements SiteCollection and hands out two kinds of TourIterator: ByDistrictIterator walks district by district (Hoàn Kiếm, then Ba Đình, then Đống Đa), and ByEraIterator sorts the sites once, on first use, and walks from the oldest, Hoàng Thành Thăng Long (1010), to the newest, Lăng Bác (1975). The tourist Tourist is the client: its visit() method only calls hasMore() and getNext(), so the same code follows either route. Each iterator keeps its own position, so two iterators can walk the same collection at the same time without disturbing each other. A new route, such as a VIP tour, would be one new iterator class, with no change to HanoiTour or Tourist.',
+        vi: 'Các di tích lịch sử của Hà Nội tạo thành tập hợp. HanoiTour (Concrete Collection) lưu chúng theo từng quận trong một bảng ánh xạ quận sang danh sách di tích, chi tiết mà du khách không cần biết. Lớp này triển khai SiteCollection và cung cấp hai loại TourIterator: ByDistrictIterator đi lần lượt từng quận (Hoàn Kiếm, rồi Ba Đình, rồi Đống Đa), còn ByEraIterator sắp xếp các di tích một lần ở lần dùng đầu tiên rồi đi từ di tích cổ nhất là Hoàng Thành Thăng Long (1010) đến mới nhất là Lăng Bác (1975). Du khách Tourist là client: phương thức visit() chỉ gọi hasMore() và getNext(), nên cùng một đoạn mã đi được cả hai lộ trình. Mỗi iterator tự giữ vị trí của mình, nên hai iterator có thể cùng lúc duyệt một tập hợp mà không ảnh hưởng nhau. Muốn thêm lộ trình mới, chẳng hạn tour VIP, chỉ cần thêm một lớp iterator, không phải sửa HanoiTour hay Tourist.',
       },
-      illustration: '🗺️ Tour Di Tích Hà Nội\n[DiTichCollection]\n   │ tao_huong_dan()\n   ▼\n[HuongDanVien - Iterator]\n   │ has_next()\n   │ next() ──▶ Văn Miếu\n   │ next() ──▶ Hồ Gươm\n   │ next() ──▶ Lăng Bác\n   └─ next() ──▶ Hoàng Thành',
+      illustration: '🗺️ Tour Di Tích Hà Nội\n[HanoiTour] {quận: [di tích]}\n   │ byDistrictIterator()\n   │ byEraIterator()\n   ▼\n[TourIterator]\n   │ hasMore() / getNext()\n   ▼\n[Tourist] visit(iterator)\n\nTheo niên đại:\n 1010 Hoàng Thành ▶ 1049 Chùa Một Cột\n ▶ 1070 Văn Miếu ▶ 1428 Hồ Gươm\n ▶ 1975 Lăng Bác',
     },
     code_examples: [
       {
         language: 'python',
         label: 'Python',
-        code: `from typing import Iterator, List
+        code: `from abc import ABC, abstractmethod
+from typing import Optional
 
-class DiTich:
-    def __init__(self, ten: str, nam_xay: int, mo_ta: str):
-        self.ten = ten
-        self.nam_xay = nam_xay
-        self.mo_ta = mo_ta
 
-    def __str__(self):
-        return f"🏛️ {self.ten} ({self.nam_xay}) - {self.mo_ta}"
+class Site:
+    def __init__(self, name: str, year: int):
+        self.name = name
+        self.year = year
 
-class TourHaNoi:
-    """Iterable collection of historical sites"""
-    def __init__(self):
-        self._dia_diem: List[DiTich] = [
-            DiTich("Văn Miếu - Quốc Tử Giám", 1070, "Trường đại học đầu tiên VN"),
-            DiTich("Hồ Hoàn Kiếm", 1428, "Huyền thoại gươm thần Lê Lợi"),
-            DiTich("Lăng Chủ Tịch Hồ Chí Minh", 1975, "Lăng của Bác Hồ"),
-            DiTich("Hoàng Thành Thăng Long", 1010, "Kinh đô nghìn năm"),
-            DiTich("Chùa Một Cột", 1049, "Chùa hình hoa sen độc đáo"),
-        ]
 
-    def __iter__(self) -> Iterator[DiTich]:
-        return iter(self._dia_diem)
+# Iterator: the operations required to traverse the collection
+class TourIterator(ABC):
+    @abstractmethod
+    def get_next(self) -> Optional[Site]: ...
 
-    def lich_su_iterator(self) -> Iterator[DiTich]:
-        """Iterate in historical order"""
-        return iter(sorted(self._dia_diem, key=lambda d: d.nam_xay))
+    @abstractmethod
+    def has_more(self) -> bool: ...
 
-# Using standard iterator
-tour = TourHaNoi()
 
-print("📅 Tour theo thứ tự mặc định:")
-for dia_diem in tour:
-    print(f"  {dia_diem}")
+# Iterable Collection: methods that return iterators.
+# The return type is the Iterator interface, not a concrete class.
+class SiteCollection(ABC):
+    @abstractmethod
+    def by_district_iterator(self) -> TourIterator: ...
 
-print("\n📅 Tour theo thứ tự lịch sử:")
-for dia_diem in tour.lich_su_iterator():
-    print(f"  {dia_diem}")`,
+    @abstractmethod
+    def by_era_iterator(self) -> TourIterator: ...
+
+
+# Concrete Collection: stores sites grouped by district (a dict of lists)
+class HanoiTour(SiteCollection):
+    def __init__(self) -> None:
+        self._by_district: dict[str, list[Site]] = {}
+
+    def add(self, district: str, site: Site) -> None:
+        self._by_district.setdefault(district, []).append(site)
+
+    def districts(self) -> list[str]:
+        return list(self._by_district)
+
+    def sites_of(self, district: str) -> list[Site]:
+        return self._by_district[district]
+
+    # Each call returns a new iterator linked to this collection
+    def by_district_iterator(self) -> TourIterator:
+        return ByDistrictIterator(self)
+
+    def by_era_iterator(self) -> TourIterator:
+        return ByEraIterator(self)
+
+
+# Concrete Iterator: district by district; tracks its own position
+class ByDistrictIterator(TourIterator):
+    def __init__(self, tour: HanoiTour) -> None:
+        self._tour = tour
+        self._districts = tour.districts()
+        self._district_index = 0
+        self._position = 0
+
+    def has_more(self) -> bool:
+        while self._district_index < len(self._districts):
+            if self._position < len(self._tour.sites_of(self._districts[self._district_index])):
+                return True
+            self._district_index += 1
+            self._position = 0
+        return False
+
+    def get_next(self) -> Optional[Site]:
+        if not self.has_more():
+            return None
+        site = self._tour.sites_of(self._districts[self._district_index])[self._position]
+        self._position += 1
+        return site
+
+
+# Concrete Iterator: oldest to newest; sorts once, on first use
+class ByEraIterator(TourIterator):
+    def __init__(self, tour: HanoiTour) -> None:
+        self._tour = tour
+        self._cache: Optional[list[Site]] = None
+        self._position = 0
+
+    def _sites(self) -> list[Site]:
+        if self._cache is None:
+            all_sites = [s for d in self._tour.districts() for s in self._tour.sites_of(d)]
+            self._cache = sorted(all_sites, key=lambda s: s.year)
+        return self._cache
+
+    def has_more(self) -> bool:
+        return self._position < len(self._sites())
+
+    def get_next(self) -> Optional[Site]:
+        if not self.has_more():
+            return None
+        self._position += 1
+        return self._sites()[self._position - 1]
+
+
+# Client: works only through the Iterator interface
+class Tourist:
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def visit(self, iterator: TourIterator) -> None:
+        route = []
+        while iterator.has_more():
+            site = iterator.get_next()
+            if site:
+                route.append(f"{site.name} ({site.year})")
+        print(f"{self.name}: " + " → ".join(route))
+
+
+tour = HanoiTour()
+tour.add("Hoàn Kiếm", Site("Hồ Hoàn Kiếm", 1428))
+tour.add("Ba Đình", Site("Hoàng Thành Thăng Long", 1010))
+tour.add("Ba Đình", Site("Chùa Một Cột", 1049))
+tour.add("Ba Đình", Site("Lăng Bác", 1975))
+tour.add("Đống Đa", Site("Văn Miếu", 1070))
+
+Tourist("Lan (theo quận)").visit(tour.by_district_iterator())
+Tourist("Minh (theo niên đại)").visit(tour.by_era_iterator())
+
+# Two iterators over the same collection keep separate positions
+a = tour.by_era_iterator()
+b = tour.by_era_iterator()
+a.get_next()
+a.get_next()
+print(f"Iterator a đang ở: {a.get_next().name}; iterator b đang ở: {b.get_next().name}")
+
+# Output:
+# Lan (theo quận): Hồ Hoàn Kiếm (1428) → Hoàng Thành Thăng Long (1010) → Chùa Một Cột (1049) → Lăng Bác (1975) → Văn Miếu (1070)
+# Minh (theo niên đại): Hoàng Thành Thăng Long (1010) → Chùa Một Cột (1049) → Văn Miếu (1070) → Hồ Hoàn Kiếm (1428) → Lăng Bác (1975)
+# Iterator a đang ở: Văn Miếu; iterator b đang ở: Hoàng Thành Thăng Long`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `class DiTich {
-  constructor(
-    public ten: string,
-    public namXay: number,
-    public moTa: string
-  ) {}
-  toString() { return \`🏛️ \${this.ten} (\${this.namXay}) - \${this.moTa}\` }
+        code: `class Site {
+  constructor(public readonly name: string, public readonly year: number) {}
 }
 
-class TourHaNoi implements Iterable<DiTich> {
-  private diaDiem: DiTich[] = [
-    new DiTich('Văn Miếu', 1070, 'Trường đại học đầu tiên VN'),
-    new DiTich('Hồ Hoàn Kiếm', 1428, 'Huyền thoại gươm thần'),
-    new DiTich('Hoàng Thành Thăng Long', 1010, 'Kinh đô nghìn năm'),
-    new DiTich('Chùa Một Cột', 1049, 'Chùa hình hoa sen'),
-  ]
+// Iterator: the operations required to traverse the collection
+interface TourIterator {
+  getNext(): Site | null
+  hasMore(): boolean
+}
 
-  [Symbol.iterator](): Iterator<DiTich> {
-    let index = 0
-    const sites = this.diaDiem
-    return {
-      next(): IteratorResult<DiTich> {
-        if (index < sites.length) {
-          return { value: sites[index++], done: false }
-        }
-        return { value: undefined as any, done: true }
-      }
+// Iterable Collection: methods that return iterators.
+// The return type is the Iterator interface, not a concrete class.
+interface SiteCollection {
+  byDistrictIterator(): TourIterator
+  byEraIterator(): TourIterator
+}
+
+// Concrete Collection: stores sites grouped by district (a map of lists)
+class HanoiTour implements SiteCollection {
+  private byDistrict = new Map<string, Site[]>()
+
+  add(district: string, site: Site): void {
+    const list = this.byDistrict.get(district) ?? []
+    list.push(site)
+    this.byDistrict.set(district, list)
+  }
+
+  districts(): string[] { return [...this.byDistrict.keys()] }
+  sitesOf(district: string): Site[] { return this.byDistrict.get(district) ?? [] }
+
+  // Each call returns a new iterator linked to this collection
+  byDistrictIterator(): TourIterator { return new ByDistrictIterator(this) }
+  byEraIterator(): TourIterator { return new ByEraIterator(this) }
+}
+
+// Concrete Iterator: district by district; tracks its own position
+class ByDistrictIterator implements TourIterator {
+  private districts: string[]
+  private districtIndex = 0
+  private position = 0
+
+  constructor(private tour: HanoiTour) {
+    this.districts = tour.districts()
+  }
+
+  hasMore(): boolean {
+    while (this.districtIndex < this.districts.length) {
+      if (this.position < this.tour.sitesOf(this.districts[this.districtIndex]).length) return true
+      this.districtIndex++
+      this.position = 0
     }
+    return false
   }
 
-  lichSuIterator(): DiTich[] {
-    return [...this.diaDiem].sort((a, b) => a.namXay - b.namXay)
+  getNext(): Site | null {
+    if (!this.hasMore()) return null
+    return this.tour.sitesOf(this.districts[this.districtIndex])[this.position++]
   }
 }
 
-const tour = new TourHaNoi()
-for (const site of tour) {
-  console.log(site.toString())
-}`,
+// Concrete Iterator: oldest to newest; sorts once, on first use
+class ByEraIterator implements TourIterator {
+  private cache: Site[] | null = null
+  private position = 0
+
+  constructor(private tour: HanoiTour) {}
+
+  private sites(): Site[] {
+    if (this.cache === null) {
+      const allSites = this.tour.districts().flatMap(d => this.tour.sitesOf(d))
+      this.cache = allSites.sort((a, b) => a.year - b.year)
+    }
+    return this.cache
+  }
+
+  hasMore(): boolean { return this.position < this.sites().length }
+
+  getNext(): Site | null {
+    return this.hasMore() ? this.sites()[this.position++] : null
+  }
+}
+
+// Client: works only through the Iterator interface
+class Tourist {
+  constructor(private name: string) {}
+
+  visit(iterator: TourIterator): void {
+    const route: string[] = []
+    while (iterator.hasMore()) {
+      const site = iterator.getNext()
+      if (site) route.push(\`\${site.name} (\${site.year})\`)
+    }
+    console.log(\`\${this.name}: \${route.join(' → ')}\`)
+  }
+}
+
+const tour = new HanoiTour()
+tour.add('Hoàn Kiếm', new Site('Hồ Hoàn Kiếm', 1428))
+tour.add('Ba Đình', new Site('Hoàng Thành Thăng Long', 1010))
+tour.add('Ba Đình', new Site('Chùa Một Cột', 1049))
+tour.add('Ba Đình', new Site('Lăng Bác', 1975))
+tour.add('Đống Đa', new Site('Văn Miếu', 1070))
+
+new Tourist('Lan (theo quận)').visit(tour.byDistrictIterator())
+new Tourist('Minh (theo niên đại)').visit(tour.byEraIterator())
+
+// Two iterators over the same collection keep separate positions
+const a = tour.byEraIterator()
+const b = tour.byEraIterator()
+a.getNext()
+a.getNext()
+console.log(\`Iterator a đang ở: \${a.getNext()?.name}; iterator b đang ở: \${b.getNext()?.name}\`)`,
       },
     ],
     structure_notes: {
-      en: 'Iterator interface declares traversal operations. ConcreteIterator implements traversal algorithm. Collection interface declares a factory method for iterators.',
-      vi: 'Giao diện Iterator khai báo các thao tác duyệt. ConcreteIterator triển khai thuật toán duyệt. Giao diện Collection khai báo phương thức factory cho iterator.',
+      en: 'The Iterator interface declares the operations required for traversing a collection: fetching the next element, retrieving the current position, restarting iteration, etc. Concrete Iterators implement specific traversal algorithms and track the traversal progress on their own, which lets several iterators traverse the same collection independently. The Iterable Collection interface declares one or more methods for getting iterators; their return type must be the iterator interface so that concrete collections can return various kinds of iterators. Concrete Collections return a new instance of a particular concrete iterator each time the client requests one; the rest of the collection\'s code lives in the same class but is not essential to the pattern. The Client works with both collections and iterators through their interfaces, so it isn\'t coupled to concrete classes and the same client code works with various collections and iterators. Clients usually get iterators from collections, but a client can create one directly, for example when it defines its own special iterator. Here TourIterator is the Iterator, ByDistrictIterator and ByEraIterator are Concrete Iterators, SiteCollection is the Iterable Collection, HanoiTour is the Concrete Collection and Tourist is the Client. For space, the diagram draws the "creates" arrow only to ByDistrictIterator (HanoiTour creates ByEraIterator the same way) and leaves out the Site element class.',
+      vi: 'Giao diện Iterator khai báo các thao tác cần để duyệt tập hợp: lấy phần tử tiếp theo, lấy vị trí hiện tại, bắt đầu duyệt lại, v.v. Concrete Iterator cài đặt từng thuật toán duyệt cụ thể và tự theo dõi tiến độ duyệt, nhờ đó nhiều iterator có thể duyệt cùng một tập hợp một cách độc lập. Giao diện Iterable Collection khai báo một hoặc nhiều phương thức để lấy iterator; kiểu trả về phải là giao diện iterator để các tập hợp cụ thể có thể trả về nhiều loại iterator khác nhau. Concrete Collection trả về một đối tượng mới của một lớp iterator cụ thể mỗi khi client yêu cầu; phần mã còn lại của tập hợp vẫn nằm trong cùng lớp nhưng không quan trọng đối với mẫu này. Client làm việc với cả tập hợp lẫn iterator qua giao diện của chúng, nên không phụ thuộc vào lớp cụ thể và cùng một đoạn mã client dùng được với nhiều loại tập hợp và iterator. Client thường lấy iterator từ tập hợp, nhưng cũng có thể tự tạo iterator, chẳng hạn khi client định nghĩa iterator đặc biệt của riêng mình. Ở đây TourIterator là Iterator, ByDistrictIterator và ByEraIterator là Concrete Iterator, SiteCollection là Iterable Collection, HanoiTour là Concrete Collection và Tourist là Client. Để tiết kiệm chỗ, sơ đồ chỉ vẽ mũi tên "creates" tới ByDistrictIterator (HanoiTour tạo ByEraIterator theo cách tương tự) và lược bỏ lớp phần tử Site.',
     },
   },
 
@@ -418,109 +772,210 @@ for (const site of tour) {
     category: 'behavioral',
     complexity: 2,
     popularity: 1,
+    also_known_as: [
+      { en: 'Intermediary', vi: 'Người trung gian' },
+      { en: 'Controller', vi: 'Bộ điều khiển' },
+    ],
     intent: {
-      en: 'Defines an object that encapsulates how a set of objects interact. Mediator promotes loose coupling by keeping objects from referring to each other explicitly.',
-      vi: 'Định nghĩa một đối tượng đóng gói cách một tập hợp đối tượng tương tác. Mediator thúc đẩy liên kết lỏng bằng cách ngăn các đối tượng tham chiếu lẫn nhau một cách rõ ràng.',
+      en: 'Mediator is a behavioral design pattern that lets you reduce chaotic dependencies between objects. The pattern restricts direct communications between the objects and forces them to collaborate only via a mediator object.',
+      vi: 'Mediator là một mẫu thiết kế hành vi, giúp giảm bớt các phụ thuộc chằng chịt giữa các đối tượng. Mẫu này hạn chế việc các đối tượng giao tiếp trực tiếp với nhau và buộc chúng chỉ cộng tác thông qua một đối tượng trung gian (mediator).',
     },
     problem: {
-      en: 'Classes become tangled up with dependencies between each other. Changing one class may require changes to many others. Communication becomes difficult to understand.',
-      vi: 'Các lớp trở nên rối rắm với các phụ thuộc lẫn nhau. Thay đổi một lớp có thể yêu cầu thay đổi nhiều lớp khác. Giao tiếp trở nên khó hiểu.',
+      en: 'Say you have a dialog for creating and editing customer profiles, made of form controls such as text fields, checkboxes and buttons. Some elements interact with others: selecting the "I have a dog" checkbox reveals a hidden text field for the dog\'s name, and the submit button has to validate the values of all fields before saving the data. As the application evolves, these relations become chaotic, and a change to one element may affect the others. With this logic implemented directly inside the form elements, their classes become much harder to reuse in other forms of the app: you can\'t use the checkbox class in another form, because it is coupled to the dog\'s text field. You can use either all the classes involved in rendering the profile form, or none at all.',
+      vi: 'Giả sử bạn có một hộp thoại để tạo và sửa hồ sơ khách hàng, gồm nhiều điều khiển như ô nhập văn bản, ô đánh dấu (checkbox) và nút bấm. Một số phần tử tương tác với phần tử khác: đánh dấu ô "Tôi có nuôi chó" sẽ hiện ra một ô nhập ẩn để điền tên con chó, còn nút gửi phải kiểm tra giá trị của mọi ô trước khi lưu dữ liệu. Khi ứng dụng phát triển, các mối quan hệ này trở nên rối rắm, và thay đổi một phần tử có thể ảnh hưởng đến các phần tử khác. Nếu logic này được viết thẳng vào mã của các phần tử biểu mẫu, các lớp đó sẽ rất khó tái sử dụng ở những biểu mẫu khác trong ứng dụng: bạn không thể dùng lớp checkbox ở biểu mẫu khác vì nó đã gắn chặt với ô nhập tên chó. Bạn chỉ có thể dùng tất cả các lớp tham gia hiển thị biểu mẫu hồ sơ, hoặc không dùng lớp nào cả.',
     },
     solution: {
-      en: 'Force components to collaborate only via a mediator object. Instead of calling each other directly, components call the mediator which redirects calls to appropriate components.',
-      vi: 'Buộc các thành phần chỉ cộng tác qua đối tượng mediator. Thay vì gọi trực tiếp nhau, các thành phần gọi mediator, mediator chuyển hướng lệnh gọi đến thành phần thích hợp.',
+      en: 'Cease all direct communication between the components you want to make independent of each other. Instead, the components collaborate indirectly by calling a special mediator object that redirects the calls to the appropriate components. As a result, each component depends on a single mediator class instead of being coupled to dozens of its colleagues. In the profile form, the dialog class itself can act as the mediator; it most likely already knows all of its sub-elements, so it needs no new dependencies. The biggest change happens in the form elements. The submit button no longer validates every field; its single job is to notify the dialog about the click, and the dialog then performs the validation itself or passes the task to the individual elements. You can make the dependency even looser by extracting a common interface for all dialogs that declares the notification method elements use to report events; the button then works with any dialog that implements it. This way the mediator encapsulates a complex web of relations between objects inside a single object, and the fewer dependencies a class has, the easier it is to modify, extend or reuse.',
+      vi: 'Chấm dứt mọi giao tiếp trực tiếp giữa các thành phần mà bạn muốn làm cho độc lập với nhau. Thay vào đó, các thành phần cộng tác gián tiếp bằng cách gọi một đối tượng trung gian đặc biệt, đối tượng này chuyển lời gọi tới đúng thành phần cần xử lý. Kết quả là mỗi thành phần chỉ phụ thuộc vào một lớp mediator thay vì gắn chặt với hàng chục thành phần khác. Trong biểu mẫu hồ sơ, chính lớp hộp thoại có thể đóng vai mediator; nhiều khả năng nó đã biết mọi phần tử con của mình, nên không cần thêm phụ thuộc mới. Thay đổi lớn nhất nằm ở các phần tử biểu mẫu. Nút gửi không còn tự kiểm tra từng ô; việc duy nhất của nó là báo cho hộp thoại biết mình vừa được bấm, rồi hộp thoại tự kiểm tra hoặc giao việc đó cho từng phần tử. Bạn có thể nới lỏng phụ thuộc hơn nữa bằng cách tách ra một giao diện chung cho mọi hộp thoại, khai báo phương thức thông báo mà các phần tử dùng để báo sự kiện; khi đó nút gửi làm việc được với bất kỳ hộp thoại nào triển khai giao diện này. Bằng cách đó, mediator gói cả một mạng quan hệ phức tạp giữa các đối tượng vào một đối tượng duy nhất, và một lớp càng ít phụ thuộc thì càng dễ sửa, mở rộng và tái sử dụng.',
     },
     applicability: {
-      en: 'Use when it\'s hard to change some of the classes because they are tightly coupled to a bunch of other classes, or when you can\'t reuse a component because it depends on others.',
-      vi: 'Sử dụng khi khó thay đổi một số lớp vì chúng liên kết chặt chẽ với nhiều lớp khác, hoặc khi không thể tái sử dụng một thành phần vì nó phụ thuộc vào các thành phần khác.',
+      en: 'Use Mediator when it\'s hard to change some classes because they are tightly coupled to a bunch of other classes: the pattern extracts all the relationships between classes into a separate class, isolating changes to a specific component from the rest of the components. Use it when you can\'t reuse a component in a different program because it depends too much on other components: after applying Mediator, components are unaware of each other and communicate only indirectly through the mediator, so to reuse a component in another app you just provide it with a new mediator class. Use it when you find yourself creating tons of component subclasses just to reuse some basic behavior in various contexts: since all relations between components live in the mediator, you can define entirely new ways for the components to collaborate by introducing new mediator classes, without changing the components themselves.',
+      vi: 'Dùng Mediator khi khó thay đổi một số lớp vì chúng gắn chặt với hàng loạt lớp khác: mẫu này tách mọi quan hệ giữa các lớp vào một lớp riêng, nên thay đổi ở một thành phần không lan sang các thành phần còn lại. Dùng khi không thể tái sử dụng một thành phần ở chương trình khác vì nó phụ thuộc quá nhiều vào các thành phần khác: sau khi áp dụng Mediator, các thành phần không biết đến nhau và chỉ giao tiếp gián tiếp qua mediator, nên muốn dùng lại một thành phần ở ứng dụng khác, bạn chỉ cần cung cấp cho nó một lớp mediator mới. Dùng khi bạn thấy mình phải tạo hàng loạt lớp con của thành phần chỉ để dùng lại một hành vi cơ bản trong nhiều ngữ cảnh: vì mọi quan hệ giữa các thành phần đều nằm trong mediator, bạn có thể định nghĩa những cách cộng tác hoàn toàn mới bằng cách thêm lớp mediator mới, mà không phải sửa chính các thành phần.',
     },
     vietnamese_example: {
       title: { en: 'Village Council (Hội Đồng Làng)', vi: 'Hội Đồng Làng - Điều Phối Xã Hội' },
       description: {
-        en: 'In a Vietnamese village (làng), disputes between farmers (nông dân), craftsmen (thợ thủ công), merchants (thương nhân), and scholars (văn nhân) are mediated by the Village Elder Council (Hội Đồng Làng). Instead of villagers arguing directly with each other, they bring their matters to the council. The council hears all sides and announces decisions. This prevents direct conflicts and keeps village harmony (đoàn kết làng xã).',
-        vi: 'Trong làng Việt Nam, tranh chấp giữa nông dân, thợ thủ công, thương nhân, và văn nhân được hòa giải bởi Hội Đồng Làng. Thay vì dân làng tranh luận trực tiếp, họ đưa vấn đề lên hội đồng. Hội đồng lắng nghe tất cả các bên và thông báo quyết định. Điều này ngăn chặn xung đột trực tiếp và duy trì đoàn kết làng xã.',
+        en: 'In a Vietnamese village (làng), the farmer, the merchant and the potter don\'t knock on each other\'s doors; they bring their news to the Village Council (Hội Đồng Làng). Farmer, Merchant and Potter are the components. They extend Villager, which holds a reference to the Mediator interface, and each does its own work: harvest(), buyRice() and sellAtMarket(), makeJars(). When something important happens, a villager only calls notifyCouncil(), which sends notify(this, event) to the mediator. VillageCouncil is the concrete mediator: it keeps a reference to every villager, recognizes who sent each event and decides who acts next. When the farmer finishes the harvest, the council calls the merchant to buy the rice; once the rice is bought, it asks the potter for storage jars; when the jars are ready, it sends the merchant to the market. No villager knows the others exist, so a Bát Tràng potter can work in any village, or with no council at all, and another village can change the whole chain by providing its own mediator.',
+        vi: 'Trong làng Việt Nam, người nông dân, thương nhân và thợ gốm không tự gõ cửa nhà nhau; họ mang tin tức lên Hội Đồng Làng. Farmer, Merchant và Potter là các thành phần (component). Chúng kế thừa Villager, lớp giữ tham chiếu tới giao diện Mediator, và mỗi người tự lo việc của mình: harvest(), buyRice() và sellAtMarket(), makeJars(). Khi có chuyện quan trọng, dân làng chỉ gọi notifyCouncil(), phương thức này gửi notify(this, event) lên mediator. VillageCouncil là mediator cụ thể: nó giữ tham chiếu tới từng người dân, nhận ra ai gửi sự kiện và quyết định ai làm tiếp. Nông dân gặt xong thì hội đồng mời thương nhân đến thu mua lúa; thương nhân mua xong thì hội đồng nhờ thợ gốm nặn chum đựng lúa; chum xong thì hội đồng cho thương nhân mang hàng ra chợ. Không người dân nào biết đến những người khác, nên một thợ gốm Bát Tràng có thể làm việc ở bất kỳ làng nào, kể cả khi không có hội đồng, và một làng khác có thể thay đổi cả chuỗi phối hợp chỉ bằng cách dùng mediator của riêng mình.',
       },
-      illustration: '🏘️ Hội Đồng Làng\nNongDan    ThoThu\n  │    ╲  ╱   │\n  │     ╲╱    │\n  └──▶ HoiDong ◀──┘\n  ┌──── Làng ────┐\nVanNhan   ThuongNhan\n  └──────▶ ◀────┘',
+      illustration: '🏘️ Hội Đồng Làng\nFarmer  Merchant  Potter\n   │         │           │\n   └──▶ notify(sender) ◀─┘\n             │\n        [VillageCouncil]\n             │\n gặt xong  ▶ thương nhân thu mua\n mua xong  ▶ thợ gốm nặn chum\n chum xong ▶ mang hàng ra chợ',
     },
     code_examples: [
       {
         language: 'python',
         label: 'Python',
         code: `from abc import ABC, abstractmethod
+from typing import Optional
 
-class DanLang(ABC):
-    def __init__(self, ten: str, hoi_dong: 'HoiDong'):
-        self.ten = ten
-        self._hoi_dong = hoi_dong
 
-    def gui_don(self, noi_dung: str):
-        print(f"📨 {self.ten} gửi: '{noi_dung}'")
-        self._hoi_dong.hoa_giai(self, noi_dung)
+# Mediator interface: a single notification method
+class Mediator(ABC):
+    @abstractmethod
+    def notify(self, sender: "Villager", event: str) -> None: ...
 
-    def nhan_thong_bao(self, thong_bao: str):
-        print(f"📢 {self.ten} nhận: {thong_bao}")
 
-class HoiDong:
-    """Mediator - Village Council"""
-    def __init__(self):
-        self._thanh_vien: list[DanLang] = []
+# Base Component: knows the mediator only through its interface
+class Villager:
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.mediator: Optional[Mediator] = None
 
-    def them(self, nguoi: DanLang):
-        self._thanh_vien.append(nguoi)
+    def notify_council(self, event: str) -> None:
+        if self.mediator:
+            self.mediator.notify(self, event)
 
-    def hoa_giai(self, nguoi_gui: DanLang, noi_dung: str):
-        print(f"⚖️ Hội đồng xem xét: '{noi_dung}'")
-        for nguoi in self._thanh_vien:
-            if nguoi is not nguoi_gui:
-                nguoi.nhan_thong_bao(f"HĐ thông báo từ {nguoi_gui.ten}: {noi_dung}")
 
-class NongDan(DanLang): pass
-class ThoThuCong(DanLang): pass
-class ThuongNhan(DanLang): pass
+# Concrete Components: do their own work and never call each other
+class Farmer(Villager):
+    def harvest(self) -> None:
+        print(f"🌾 {self.name}: gặt xong 100 thúng lúa")
+        self.notify_council("harvested")
 
-hoi_dong = HoiDong()
-nguyen = NongDan("Nguyễn Văn A (Nông dân)", hoi_dong)
-tran = ThoThuCong("Trần Thị B (Thợ gốm)", hoi_dong)
-le = ThuongNhan("Lê Văn C (Thương nhân)", hoi_dong)
 
-for nguoi in [nguyen, tran, le]:
-    hoi_dong.them(nguoi)
+class Merchant(Villager):
+    def buy_rice(self) -> None:
+        print(f"💰 {self.name}: thu mua lúa của làng")
+        self.notify_council("rice_bought")
 
-nguyen.gui_don("Xin cấp thêm nước tưới cho ruộng")`,
+    def sell_at_market(self) -> None:
+        print(f"🛒 {self.name}: chở chum lúa ra chợ phiên")
+
+
+class Potter(Villager):
+    def make_jars(self) -> None:
+        print(f"🏺 {self.name}: nặn xong chum đựng lúa")
+        self.notify_council("jars_ready")
+
+
+# Concrete Mediator: holds every component and decides who acts next
+class VillageCouncil(Mediator):
+    def __init__(self, farmer: Farmer, merchant: Merchant, potter: Potter) -> None:
+        self.farmer = farmer
+        self.merchant = merchant
+        self.potter = potter
+        for villager in (farmer, merchant, potter):
+            villager.mediator = self
+
+    def notify(self, sender: Villager, event: str) -> None:
+        if sender is self.farmer and event == "harvested":
+            print("⚖️ Hội đồng: mời thương nhân đến thu mua")
+            self.merchant.buy_rice()
+        elif sender is self.merchant and event == "rice_bought":
+            print("⚖️ Hội đồng: nhờ thợ gốm nặn chum")
+            self.potter.make_jars()
+        elif sender is self.potter and event == "jars_ready":
+            print("⚖️ Hội đồng: cho thương nhân mang hàng ra chợ")
+            self.merchant.sell_at_market()
+
+
+# Client code: links the components to the mediator, then triggers one event
+farmer = Farmer("Nông dân Nguyễn")
+merchant = Merchant("Thương nhân Lê")
+potter = Potter("Thợ gốm Trần")
+VillageCouncil(farmer, merchant, potter)
+
+farmer.harvest()
+
+# A component without a mediator still works on its own
+print("---")
+Potter("Thợ gốm Bát Tràng").make_jars()
+
+# Output:
+# 🌾 Nông dân Nguyễn: gặt xong 100 thúng lúa
+# ⚖️ Hội đồng: mời thương nhân đến thu mua
+# 💰 Thương nhân Lê: thu mua lúa của làng
+# ⚖️ Hội đồng: nhờ thợ gốm nặn chum
+# 🏺 Thợ gốm Trần: nặn xong chum đựng lúa
+# ⚖️ Hội đồng: cho thương nhân mang hàng ra chợ
+# 🛒 Thương nhân Lê: chở chum lúa ra chợ phiên
+# ---
+# 🏺 Thợ gốm Bát Tràng: nặn xong chum đựng lúa`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `class HoiDong {
-  private thanhVien: DanLang[] = []
-  them(nguoi: DanLang) { this.thanhVien.push(nguoi) }
-  hoaGiai(nguoiGui: DanLang, noiDung: string) {
-    console.log(\`⚖️ Hội đồng xem xét: "\${noiDung}"\`)
-    this.thanhVien
-      .filter(n => n !== nguoiGui)
-      .forEach(n => n.nhanThongBao(\`Từ \${nguoiGui.ten}: \${noiDung}\`))
+        code: `// Mediator interface: a single notification method
+interface Mediator {
+  notify(sender: Villager, event: string): void
+}
+
+// Base Component: knows the mediator only through its interface
+class Villager {
+  mediator: Mediator | null = null
+
+  constructor(public readonly name: string) {}
+
+  notifyCouncil(event: string): void {
+    this.mediator?.notify(this, event)
   }
 }
 
-class DanLang {
-  constructor(public ten: string, private hoiDong: HoiDong) {}
-  guiDon(noiDung: string) {
-    console.log(\`📨 \${this.ten}: "\${noiDung}"\`)
-    this.hoiDong.hoaGiai(this, noiDung)
+// Concrete Components: do their own work and never call each other
+class Farmer extends Villager {
+  harvest(): void {
+    console.log(\`🌾 \${this.name}: gặt xong 100 thúng lúa\`)
+    this.notifyCouncil('harvested')
   }
-  nhanThongBao(tb: string) { console.log(\`📢 \${this.ten} nhận: \${tb}\`) }
 }
 
-const hd = new HoiDong()
-const nguyen = new DanLang('Nguyễn (Nông dân)', hd)
-const tran = new DanLang('Trần (Thợ gốm)', hd)
-;[nguyen, tran].forEach(n => hd.them(n))
-nguyen.guiDon('Xin nước tưới ruộng')`,
+class Merchant extends Villager {
+  buyRice(): void {
+    console.log(\`💰 \${this.name}: thu mua lúa của làng\`)
+    this.notifyCouncil('rice_bought')
+  }
+
+  sellAtMarket(): void {
+    console.log(\`🛒 \${this.name}: chở chum lúa ra chợ phiên\`)
+  }
+}
+
+class Potter extends Villager {
+  makeJars(): void {
+    console.log(\`🏺 \${this.name}: nặn xong chum đựng lúa\`)
+    this.notifyCouncil('jars_ready')
+  }
+}
+
+// Concrete Mediator: holds every component and decides who acts next
+class VillageCouncil implements Mediator {
+  constructor(
+    private farmer: Farmer,
+    private merchant: Merchant,
+    private potter: Potter,
+  ) {
+    for (const villager of [farmer, merchant, potter]) villager.mediator = this
+  }
+
+  notify(sender: Villager, event: string): void {
+    if (sender === this.farmer && event === 'harvested') {
+      console.log('⚖️ Hội đồng: mời thương nhân đến thu mua')
+      this.merchant.buyRice()
+    } else if (sender === this.merchant && event === 'rice_bought') {
+      console.log('⚖️ Hội đồng: nhờ thợ gốm nặn chum')
+      this.potter.makeJars()
+    } else if (sender === this.potter && event === 'jars_ready') {
+      console.log('⚖️ Hội đồng: cho thương nhân mang hàng ra chợ')
+      this.merchant.sellAtMarket()
+    }
+  }
+}
+
+// Client code: links the components to the mediator, then triggers one event
+const farmer = new Farmer('Nông dân Nguyễn')
+const merchant = new Merchant('Thương nhân Lê')
+const potter = new Potter('Thợ gốm Trần')
+new VillageCouncil(farmer, merchant, potter)
+
+farmer.harvest()
+
+// A component without a mediator still works on its own
+console.log('---')
+new Potter('Thợ gốm Bát Tràng').makeJars()`,
       },
     ],
     structure_notes: {
-      en: 'Mediator interface declares communication methods. ConcreteMediaator coordinates components. Components hold a reference to the mediator and communicate through it.',
-      vi: 'Giao diện Mediator khai báo các phương thức giao tiếp. ConcreteMediator điều phối các thành phần. Các thành phần giữ tham chiếu đến mediator và giao tiếp qua nó.',
+      en: 'Components are classes that contain some business logic. Each component holds a reference to a mediator, declared with the type of the mediator interface, so it doesn\'t know the mediator\'s actual class and can be reused in other programs by linking it to a different mediator. The Mediator interface declares methods of communication with components, usually just a single notification method. Components may pass any context as its arguments, including themselves, but only in a way that doesn\'t couple the receiving component to the sender\'s class. Concrete Mediators encapsulate the relations between components; they often keep references to all the components they manage and sometimes even manage their lifecycle. Components must not be aware of other components: when something important happens to a component, it only notifies the mediator, which can identify the sender and decide which component to trigger in return. From a component\'s point of view everything is a black box: the sender doesn\'t know who will handle its request, and the receiver doesn\'t know who sent it. Here Villager is the base component that holds the Mediator reference, Farmer, Merchant and Potter are the concrete components, Mediator is the interface and VillageCouncil is the concrete mediator. VillageCouncil holds a reference to each of the three concrete components; the diagram draws that as a single "manages" arrow to Villager. The page\'s structure has no separate client class, so the client code at the end of each example only links the components to VillageCouncil and triggers the first event.',
+      vi: 'Component là các lớp chứa logic nghiệp vụ. Mỗi component giữ một tham chiếu tới mediator, được khai báo bằng kiểu của giao diện mediator, nên nó không biết lớp thật của mediator và có thể được dùng lại ở chương trình khác bằng cách nối với một mediator khác. Giao diện Mediator khai báo các phương thức giao tiếp với component, thường chỉ gồm một phương thức thông báo. Component có thể truyền bất kỳ ngữ cảnh nào làm đối số, kể cả chính nó, nhưng chỉ theo cách không khiến component nhận bị phụ thuộc vào lớp của bên gửi. Concrete Mediator gói các quan hệ giữa các component; nó thường giữ tham chiếu tới mọi component mà nó quản lý và đôi khi còn quản lý cả vòng đời của chúng. Component không được biết đến các component khác: khi có chuyện quan trọng xảy ra với một component, nó chỉ báo cho mediator, mediator nhận ra bên gửi và quyết định cần kích hoạt component nào tiếp theo. Từ góc nhìn của component, mọi thứ là một hộp đen: bên gửi không biết ai sẽ xử lý yêu cầu, còn bên nhận không biết ai đã gửi. Ở đây Villager là component cơ sở giữ tham chiếu Mediator, Farmer, Merchant và Potter là các component cụ thể, Mediator là giao diện và VillageCouncil là mediator cụ thể. VillageCouncil giữ tham chiếu tới cả ba component cụ thể; sơ đồ thể hiện điều đó bằng một mũi tên "manages" duy nhất tới Villager. Cấu trúc trên trang gốc không có lớp client riêng, nên phần mã client ở cuối mỗi ví dụ chỉ nối các component với VillageCouncil và kích hoạt sự kiện đầu tiên.',
     },
   },
 
@@ -531,139 +986,216 @@ nguyen.guiDon('Xin nước tưới ruộng')`,
     category: 'behavioral',
     complexity: 2,
     popularity: 1,
+    also_known_as: [{ en: 'Snapshot', vi: 'Ảnh chụp trạng thái' }],
     intent: {
-      en: 'Without violating encapsulation, captures and externalizes an object\'s internal state so that the object can be restored to this state later.',
-      vi: 'Mà không vi phạm đóng gói, nắm bắt và ngoại hóa trạng thái nội tại của đối tượng để đối tượng có thể được khôi phục về trạng thái này sau.',
+      en: 'Memento is a behavioral design pattern that lets you save and restore the previous state of an object without revealing the details of its implementation.',
+      vi: 'Memento là một mẫu thiết kế hành vi, cho phép bạn lưu và khôi phục trạng thái trước đó của một đối tượng mà không làm lộ chi tiết cài đặt của nó.',
     },
     problem: {
-      en: 'You need to implement snapshots of an object\'s state, but making all fields public violates encapsulation. You need undo functionality without exposing internal state.',
-      vi: 'Bạn cần triển khai ảnh chụp trạng thái của đối tượng, nhưng việc công khai tất cả các trường vi phạm đóng gói. Bạn cần chức năng undo mà không tiết lộ trạng thái nội tại.',
+      en: 'Imagine a text editor that can also format text and insert inline images, and you want users to be able to undo any operation. The direct approach: before each operation, record the state of all objects in some storage, and on undo fetch the latest snapshot from the history and restore every object from it. But how do you produce a snapshot? You would go over all the fields of an object and copy their values, which only works if the object has relaxed access restrictions; most real objects hide their significant data in private fields. Even if objects kept their state public, any later refactoring that adds or removes fields would also require changing the classes that copy that state. The snapshot itself is a problem too. It must hold at least the text, the cursor coordinates and the scroll position, so it ends up as a container class with almost no methods and lots of fields mirroring the editor\'s state. To let other objects read and write it, its fields would have to be public, exposing all of the editor\'s state, private or not, and making other classes depend on every small change to the snapshot class. It looks like a dead end: either expose all internal details of classes, making them fragile, or restrict access to their state, making snapshots impossible.',
+      vi: 'Hãy tưởng tượng một trình soạn thảo văn bản có thể định dạng chữ và chèn ảnh, và bạn muốn người dùng hoàn tác (undo) được mọi thao tác. Cách làm trực tiếp: trước mỗi thao tác, ghi lại trạng thái của mọi đối tượng vào một nơi lưu trữ, rồi khi hoàn tác thì lấy ảnh chụp gần nhất trong lịch sử ra để khôi phục từng đối tượng. Nhưng làm sao để tạo ảnh chụp? Bạn sẽ phải đi qua mọi trường của đối tượng và sao chép giá trị của chúng, việc này chỉ làm được nếu đối tượng nới lỏng quyền truy cập; phần lớn đối tượng thực tế giấu dữ liệu quan trọng trong các trường private. Kể cả khi đối tượng để trạng thái ở dạng public, mỗi lần tái cấu trúc thêm hay bớt trường về sau cũng buộc phải sửa các lớp chịu trách nhiệm sao chép trạng thái đó. Bản thân ảnh chụp cũng là vấn đề. Nó phải chứa ít nhất nội dung văn bản, tọa độ con trỏ và vị trí cuộn, nên cuối cùng sẽ thành một lớp chứa gần như không có phương thức nhưng có rất nhiều trường sao y trạng thái của trình soạn thảo. Để các đối tượng khác đọc và ghi được, các trường đó phải là public, làm lộ toàn bộ trạng thái của trình soạn thảo dù private hay không, và khiến các lớp khác phụ thuộc vào mọi thay đổi nhỏ của lớp ảnh chụp. Có vẻ như đã vào ngõ cụt: hoặc làm lộ mọi chi tiết bên trong của các lớp khiến chúng dễ vỡ, hoặc hạn chế quyền truy cập trạng thái khiến không thể tạo ảnh chụp.',
     },
     solution: {
-      en: 'Delegate creating state snapshots to the owner (Originator). Store copies of the state in a Memento object. Only the originator can access memento\'s content.',
-      vi: 'Ủy quyền tạo ảnh chụp trạng thái cho chủ sở hữu (Originator). Lưu trữ bản sao trạng thái trong đối tượng Memento. Chỉ có originator mới có thể truy cập nội dung memento.',
+      en: 'These problems come from broken encapsulation: some objects try to do more than they should and invade the private space of other objects to collect data. Memento delegates creating state snapshots to the actual owner of that state, the originator object. Instead of other objects copying the editor\'s state from the "outside", the editor class makes the snapshot itself, since it has full access to its own state. The copy is stored in a special object called a memento, whose contents are not accessible to any object except the one that produced it. Other objects talk to mementos through a limited interface that may expose metadata (creation time, the name of the performed operation, etc.) but not the originator\'s state stored in the snapshot. This restrictive policy lets you keep mementos inside other objects, usually called caretakers. The caretaker works with a memento only through the limited interface, so it can\'t tamper with the stored state, while the originator has access to all of the memento\'s fields and can restore its previous state at will. In the editor example, a separate history class acts as the caretaker: its stack of mementos grows each time the editor is about to execute an operation, and it could even be shown in the UI as the history of performed operations. On undo, the history takes the most recent memento from the stack and passes it back to the editor, which restores its own state from the memento\'s values.',
+      vi: 'Các vấn đề trên đều bắt nguồn từ việc phá vỡ tính đóng gói: một số đối tượng cố làm nhiều hơn phận sự của mình và xâm phạm vùng riêng tư của đối tượng khác để lấy dữ liệu. Memento giao việc tạo ảnh chụp trạng thái cho chính chủ sở hữu của trạng thái đó, tức đối tượng originator. Thay vì để các đối tượng khác sao chép trạng thái của trình soạn thảo "từ bên ngoài", chính lớp trình soạn thảo tự tạo ảnh chụp, vì nó có toàn quyền truy cập trạng thái của mình. Bản sao được lưu trong một đối tượng đặc biệt gọi là memento, và nội dung của memento không đối tượng nào truy cập được, trừ đối tượng đã tạo ra nó. Các đối tượng khác làm việc với memento qua một giao diện hạn chế, giao diện này có thể cho xem siêu dữ liệu (thời điểm tạo, tên thao tác đã thực hiện, v.v.) nhưng không cho xem trạng thái của originator nằm trong ảnh chụp. Chính sách chặt chẽ này cho phép cất memento bên trong các đối tượng khác, thường gọi là caretaker. Caretaker chỉ làm việc với memento qua giao diện hạn chế nên không thể can thiệp vào trạng thái đã lưu, còn originator truy cập được mọi trường của memento và có thể khôi phục trạng thái cũ bất cứ lúc nào. Trong ví dụ trình soạn thảo, một lớp lịch sử riêng đóng vai caretaker: ngăn xếp memento của nó lớn dần mỗi khi trình soạn thảo sắp thực hiện một thao tác, và thậm chí có thể hiển thị trên giao diện như lịch sử các thao tác đã làm. Khi hoàn tác, lớp lịch sử lấy memento mới nhất khỏi ngăn xếp và trả lại cho trình soạn thảo, trình soạn thảo tự khôi phục trạng thái của mình từ các giá trị trong memento.',
     },
     applicability: {
-      en: 'Use when you want to produce snapshots of an object\'s state to be able to restore a previous state, or when direct access to the object\'s state would violate encapsulation.',
-      vi: 'Sử dụng khi bạn muốn tạo ảnh chụp trạng thái của đối tượng để có thể khôi phục trạng thái trước đó, hoặc khi truy cập trực tiếp vào trạng thái đối tượng sẽ vi phạm đóng gói.',
+      en: 'Use Memento when you want to produce snapshots of an object\'s state to be able to restore a previous state of the object: the pattern lets you make full copies of an object\'s state, including private fields, and store them separately from the object. Most people remember it for "undo", but it is also indispensable for transactions, when you need to roll back an operation on error. Use it when direct access to the object\'s fields, getters or setters would violate its encapsulation: Memento makes the object itself responsible for creating a snapshot of its state, and no other object can read the snapshot, which keeps the original object\'s state data safe and secure.',
+      vi: 'Dùng Memento khi bạn muốn tạo ảnh chụp trạng thái của một đối tượng để có thể khôi phục trạng thái trước đó: mẫu này cho phép sao chép toàn bộ trạng thái của đối tượng, kể cả các trường private, và lưu tách riêng khỏi đối tượng. Phần lớn mọi người nhớ đến mẫu này qua chức năng "hoàn tác", nhưng nó cũng không thể thiếu khi làm việc với giao dịch (transaction), lúc bạn cần quay lui một thao tác khi có lỗi. Dùng khi việc truy cập trực tiếp vào các trường, getter hoặc setter của đối tượng sẽ phá vỡ tính đóng gói của nó: Memento giao cho chính đối tượng trách nhiệm tạo ảnh chụp trạng thái của mình, và không đối tượng nào khác đọc được ảnh chụp đó, nhờ vậy dữ liệu trạng thái của đối tượng gốc được giữ an toàn.',
     },
     vietnamese_example: {
       title: { en: 'Royal Historian (Sử Quan)', vi: 'Sử Quan - Ghi Chép Lịch Sử' },
       description: {
-        en: 'The Royal Historian (Sử Quan) of the Vietnamese imperial court records the state of the kingdom at each major event: territorial boundaries, population, treasury. If the Emperor makes a disastrous decision, advisors can consult the Đại Việt Sử Ký (historical records) to restore policies to a previous prosperous state. The historian records the snapshots (Memento); the Emperor can restore from any recorded state.',
-        vi: 'Sử Quan của triều đình Việt Nam ghi lại trạng thái vương quốc tại mỗi sự kiện lớn: biên giới lãnh thổ, dân số, ngân khố. Nếu Hoàng Đế đưa ra quyết định thảm khốc, các cố vấn có thể tham khảo Đại Việt Sử Ký để khôi phục chính sách về trạng thái thịnh vượng trước đó.',
+        en: 'The Royal Historian (Sử Quan) keeps the kingdom\'s chronicle, the Đại Việt Sử Ký. HungKing is the originator: the population and the treasury are private, and only the king can write them into a record (saveChronicle()) or read them back (restore()). Each record is a ChronicleRecord, an immutable concrete memento that receives the event name, population and treasury once, through its constructor. Historian is the caretaker. Before every major policy it calls record() with the reason, which asks the king for a record and pushes it onto its history; it can list that history through the Chronicle interface, which exposes only the event name (getName()). When a failed war drains the kingdom, undoLast() pops the latest record and hands it back to the king, who restores his own state from it. The historian decides when to record and when to roll back, but never reads or changes the numbers inside a record.',
+        vi: 'Sử Quan của triều đình ghi chép biên niên của vương quốc, tức Đại Việt Sử Ký. HungKing là originator: dân số và ngân khố là dữ liệu private, chỉ nhà vua mới ghi được chúng vào một bản ghi (saveChronicle()) hoặc đọc lại từ bản ghi (restore()). Mỗi bản ghi là một ChronicleRecord, memento cụ thể bất biến, chỉ nhận tên sự kiện, dân số và ngân khố đúng một lần qua hàm khởi tạo. Historian là caretaker. Trước mỗi chính sách lớn, sử quan gọi record() kèm lý do; phương thức này xin nhà vua một bản ghi rồi đưa vào ngăn xếp lịch sử. Sử quan có thể liệt kê lịch sử qua giao diện Chronicle, giao diện này chỉ cho xem tên sự kiện (getName()). Khi một cuộc chiến thất bại làm vương quốc kiệt quệ, undoLast() lấy bản ghi mới nhất ra và trả lại cho nhà vua để vua tự khôi phục trạng thái của mình. Sử quan quyết định lúc nào ghi chép và lúc nào quay lại, nhưng không bao giờ đọc hay sửa các con số bên trong bản ghi.',
       },
-      illustration: '📚 Đại Việt Sử Ký\nVuaHung (Originator)\n  │ save() ──▶ SuKy (Memento)\n  │              {dan_so, kho}\n  │ restore() ◀─ SuKy\n  │\nSuQuan (Caretaker)\n  stores history[]',
+      illustration: '📚 Đại Việt Sử Ký\nHungKing (Originator)\n  │ saveChronicle() ──▶ ChronicleRecord (Memento)\n  │               {population, treasury}\n  │ restore() ◀── ChronicleRecord\n  │\nHistorian (Caretaker)\n  history: Chronicle[]  (chỉ thấy getName())\n  record() / undoLast()',
     },
     code_examples: [
       {
         language: 'python',
         label: 'Python',
-        code: `from dataclasses import dataclass
-from typing import List
+        code: `from abc import ABC, abstractmethod
 
-@dataclass
-class SuKy:
-    """Memento - Historical record"""
-    dan_so: int
-    kho_bau: int
-    lanh_tho: str
-    nien_hieu: str
 
-    def mo_ta(self):
-        return f"[{self.nien_hieu}] Dân: {self.dan_so:,}, Kho: {self.kho_bau:,}đ, Lãnh thổ: {self.lanh_tho}"
+def format_number(n: int) -> str:
+    return f"{n:,}".replace(",", ".")
 
-class VuaHung:
-    """Originator - The Emperor"""
-    def __init__(self, nien_hieu: str):
-        self.nien_hieu = nien_hieu
-        self._dan_so = 1_000_000
-        self._kho_bau = 5_000_000
-        self._lanh_tho = "Văn Lang"
 
-    def ban_chinh_sach(self, chinh_sach: str, thay_doi: dict):
-        print(f"📜 {self.nien_hieu}: {chinh_sach}")
-        self._dan_so += thay_doi.get('dan_so', 0)
-        self._kho_bau += thay_doi.get('kho_bau', 0)
+# Memento interface: the caretaker sees only metadata, never the state
+class Chronicle(ABC):
+    @abstractmethod
+    def get_name(self) -> str: ...
 
-    def luu_su_ky(self) -> SuKy:
-        return SuKy(self._dan_so, self._kho_bau, self._lanh_tho, self.nien_hieu)
 
-    def khoi_phuc(self, su_ky: SuKy):
-        print(f"↩️ Khôi phục về: {su_ky.mo_ta()}")
-        self._dan_so = su_ky.dan_so
-        self._kho_bau = su_ky.kho_bau
-        self._lanh_tho = su_ky.lanh_tho
+# Concrete Memento: an immutable snapshot, filled once via the constructor
+class ChronicleRecord(Chronicle):
+    def __init__(self, event: str, population: int, treasury: int) -> None:
+        self._event = event
+        self._population = population
+        self._treasury = treasury
 
-    def hien_trang(self):
-        print(f"📊 Hiện trạng: Dân {self._dan_so:,}, Kho {self._kho_bau:,}đ")
+    def get_name(self) -> str:
+        return self._event
 
-class SuQuan:
-    """Caretaker - Royal Historian"""
-    def __init__(self):
-        self._dai_viet_su_ky: List[SuKy] = []
+    # Meant for the originator only
+    def get_state(self) -> tuple[int, int]:
+        return self._population, self._treasury
 
-    def ghi_chep(self, vua: VuaHung):
-        su_ky = vua.luu_su_ky()
-        self._dai_viet_su_ky.append(su_ky)
-        print(f"📝 Sử quan ghi: {su_ky.mo_ta()}")
 
-    def tra_cuu(self, index: int) -> SuKy:
-        return self._dai_viet_su_ky[index]
+# Originator: owns the private state, creates and restores snapshots
+class HungKing:
+    def __init__(self) -> None:
+        self._population = 1_000_000
+        self._treasury = 5_000_000
 
-# History of the kingdom
-vua = VuaHung("Hùng Vương thứ Sáu")
-su_quan = SuQuan()
-su_quan.ghi_chep(vua)  # Save initial state
+    def enact_policy(self, name: str, population: int, treasury: int) -> None:
+        self._population += population
+        self._treasury += treasury
+        print(f"📜 {name}: {self.status()}")
 
-vua.ban_chinh_sach("Mở rộng canh tác", {"dan_so": 200_000, "kho_bau": 1_000_000})
-su_quan.ghi_chep(vua)
+    def status(self) -> str:
+        return f"dân {format_number(self._population)}, kho {format_number(self._treasury)} quan"
 
-vua.ban_chinh_sach("Chiến tranh thất bại 😢", {"dan_so": -500_000, "kho_bau": -3_000_000})
-vua.hien_trang()
+    def save_chronicle(self, event: str) -> Chronicle:
+        return ChronicleRecord(event, self._population, self._treasury)
 
-# Restore to better time
-vua.khoi_phuc(su_quan.tra_cuu(1))
-vua.hien_trang()`,
+    def restore(self, chronicle: Chronicle) -> None:
+        # The originator works with the concrete memento class directly
+        if not isinstance(chronicle, ChronicleRecord):
+            raise TypeError("Bản ghi không phải của nhà vua")
+        self._population, self._treasury = chronicle.get_state()
+        print(f'↩️ Khôi phục "{chronicle.get_name()}": {self.status()}')
+
+
+# Caretaker: decides when to save and when to restore; keeps a stack
+class Historian:
+    def __init__(self, king: HungKing) -> None:
+        self._king = king
+        self._history: list[Chronicle] = []
+
+    def record(self, event: str) -> None:
+        self._history.append(self._king.save_chronicle(event))
+
+    def undo_last(self) -> None:
+        if self._history:
+            self._king.restore(self._history.pop())
+
+    def show_history(self) -> None:
+        print("📚 Sử ký: " + " | ".join(c.get_name() for c in self._history))
+
+
+king = HungKing()
+historian = Historian(king)
+print(f"👑 Hùng Vương thứ Sáu lên ngôi: {king.status()}")
+
+historian.record("Trước khi mở rộng canh tác")
+king.enact_policy("Mở rộng canh tác", 200_000, 1_000_000)
+
+historian.record("Trước cuộc chiến")
+king.enact_policy("Chiến tranh thất bại", -500_000, -3_000_000)
+
+historian.show_history()
+historian.undo_last()
+historian.show_history()
+
+# Output:
+# 👑 Hùng Vương thứ Sáu lên ngôi: dân 1.000.000, kho 5.000.000 quan
+# 📜 Mở rộng canh tác: dân 1.200.000, kho 6.000.000 quan
+# 📜 Chiến tranh thất bại: dân 700.000, kho 3.000.000 quan
+# 📚 Sử ký: Trước khi mở rộng canh tác | Trước cuộc chiến
+# ↩️ Khôi phục "Trước cuộc chiến": dân 1.200.000, kho 6.000.000 quan
+# 📚 Sử ký: Trước khi mở rộng canh tác`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `class SuKy {
-  constructor(
-    public readonly danSo: number,
-    public readonly khoBau: number,
-    public readonly nienHieu: string
-  ) {}
-  moTa() { return \`[\${this.nienHieu}] Dân: \${this.danSo.toLocaleString()}, Kho: \${this.khoBau.toLocaleString()}đ\` }
+        code: `const formatNumber = (n: number): string => n.toLocaleString('vi-VN')
+
+// Memento interface: the caretaker sees only metadata, never the state
+interface Chronicle {
+  getName(): string
 }
 
-class VuaHung {
-  private danSo = 1_000_000
-  private khoBau = 5_000_000
-  constructor(private nienHieu: string) {}
+// Concrete Memento: an immutable snapshot, filled once via the constructor
+class ChronicleRecord implements Chronicle {
+  constructor(
+    private readonly event: string,
+    private readonly population: number,
+    private readonly treasury: number,
+  ) {}
 
-  banChinhSach(cs: string, ddSo: number, ddKho: number) {
-    console.log(\`📜 \${cs}\`)
-    this.danSo += ddSo; this.khoBau += ddKho
+  getName(): string { return this.event }
+
+  // Meant for the originator only
+  getState(): [number, number] { return [this.population, this.treasury] }
+}
+
+// Originator: owns the private state, creates and restores snapshots
+class HungKing {
+  private population = 1_000_000
+  private treasury = 5_000_000
+
+  enactPolicy(name: string, population: number, treasury: number): void {
+    this.population += population
+    this.treasury += treasury
+    console.log(\`📜 \${name}: \${this.status()}\`)
   }
 
-  luuSuKy(): SuKy { return new SuKy(this.danSo, this.khoBau, this.nienHieu) }
-  khoiPhuc(sk: SuKy) { this.danSo = sk.danSo; this.khoBau = sk.khoBau; console.log(\`↩️ \${sk.moTa()}\`) }
-  hienTrang() { console.log(\`Dân: \${this.danSo.toLocaleString()}, Kho: \${this.khoBau.toLocaleString()}\`) }
+  status(): string {
+    return \`dân \${formatNumber(this.population)}, kho \${formatNumber(this.treasury)} quan\`
+  }
+
+  saveChronicle(event: string): Chronicle {
+    return new ChronicleRecord(event, this.population, this.treasury)
+  }
+
+  restore(chronicle: Chronicle): void {
+    // The originator works with the concrete memento class directly
+    if (!(chronicle instanceof ChronicleRecord)) throw new Error('Bản ghi không phải của nhà vua')
+    ;[this.population, this.treasury] = chronicle.getState()
+    console.log(\`↩️ Khôi phục "\${chronicle.getName()}": \${this.status()}\`)
+  }
 }
 
-const vua = new VuaHung('Hùng Vương VI')
-const history: SuKy[] = []
-history.push(vua.luuSuKy())
-vua.banChinhSach('Chiến tranh', -500_000, -3_000_000)
-vua.hienTrang()
-vua.khoiPhuc(history[0]) // restore`,
+// Caretaker: decides when to save and when to restore; keeps a stack
+class Historian {
+  private history: Chronicle[] = []
+
+  constructor(private king: HungKing) {}
+
+  record(event: string): void {
+    this.history.push(this.king.saveChronicle(event))
+  }
+
+  undoLast(): void {
+    const chronicle = this.history.pop()
+    if (chronicle) this.king.restore(chronicle)
+  }
+
+  showHistory(): void {
+    console.log('📚 Sử ký: ' + this.history.map(c => c.getName()).join(' | '))
+  }
+}
+
+const king = new HungKing()
+const historian = new Historian(king)
+console.log(\`👑 Hùng Vương thứ Sáu lên ngôi: \${king.status()}\`)
+
+historian.record('Trước khi mở rộng canh tác')
+king.enactPolicy('Mở rộng canh tác', 200_000, 1_000_000)
+
+historian.record('Trước cuộc chiến')
+king.enactPolicy('Chiến tranh thất bại', -500_000, -3_000_000)
+
+historian.showHistory()
+historian.undoLast()
+historian.showHistory()`,
       },
     ],
     structure_notes: {
-      en: 'Originator creates mementos and uses them to restore state. Memento is a value object with no methods. Caretaker stores and retrieves mementos without inspecting them.',
-      vi: 'Originator tạo memento và sử dụng chúng để khôi phục trạng thái. Memento là value object không có phương thức. Caretaker lưu trữ và truy xuất memento mà không kiểm tra chúng.',
+      en: 'The Originator produces snapshots of its own state and restores its state from snapshots when needed. The Memento is a value object that acts as a snapshot of the originator\'s state; it is common practice to make it immutable and pass it the data only once, through the constructor. The Caretaker knows when and why to capture the originator\'s state, and when the state should be restored. It can track the originator\'s history as a stack of mementos; when the originator has to travel back in history, the caretaker fetches the topmost memento and passes it to the originator\'s restoration method. The page shows three implementations. In the classic one, based on nested classes (C++, C#, Java), the memento is nested inside the originator, so the originator can access its private fields while the caretaker can only store it. Languages without nested classes can use an intermediate interface: caretakers work with a memento only through an interface that declares metadata methods, while originators use the concrete memento class directly; the downside is that every member of the memento class must be public. The variant with even stricter encapsulation links each memento to the originator that created it and moves the restoration method into the memento, so the caretaker no longer depends on the originator and several originator and memento types can coexist. These examples and the diagram use the intermediate interface: Chronicle is the metadata interface (getName()), ChronicleRecord is the concrete memento, HungKing is the originator and Historian is the caretaker. As the page warns, Python and JavaScript can\'t guarantee that the state inside a memento stays untouched; underscore fields in Python and private readonly fields in TypeScript are a convention and a compile-time check, not hard protection.',
+      vi: 'Originator tạo ảnh chụp trạng thái của chính nó và khôi phục trạng thái từ ảnh chụp khi cần. Memento là một value object đóng vai ảnh chụp trạng thái của originator; thông thường memento được làm bất biến và chỉ nhận dữ liệu một lần qua hàm khởi tạo. Caretaker biết khi nào và vì sao cần chụp trạng thái của originator, cũng như khi nào cần khôi phục. Nó có thể theo dõi lịch sử của originator bằng một ngăn xếp memento; khi originator cần quay ngược thời gian, caretaker lấy memento trên cùng và truyền cho phương thức khôi phục của originator. Trang gốc trình bày ba cách cài đặt. Cách kinh điển dựa trên lớp lồng nhau (C++, C#, Java): memento nằm bên trong originator, nên originator truy cập được các trường private của nó còn caretaker chỉ cất giữ được. Ngôn ngữ không có lớp lồng nhau có thể dùng một giao diện trung gian: caretaker chỉ làm việc với memento qua một giao diện khai báo các phương thức siêu dữ liệu, còn originator dùng trực tiếp lớp memento cụ thể; nhược điểm là mọi thành viên của lớp memento phải để public. Cách đóng gói chặt chẽ hơn nữa gắn mỗi memento với originator đã tạo ra nó và chuyển phương thức khôi phục vào memento, nhờ đó caretaker không còn phụ thuộc vào originator và có thể có nhiều loại originator và memento cùng lúc. Các ví dụ và sơ đồ ở đây dùng cách giao diện trung gian: Chronicle là giao diện siêu dữ liệu (getName()), ChronicleRecord là memento cụ thể, HungKing là originator và Historian là caretaker. Như trang gốc lưu ý, Python và JavaScript không thể đảm bảo trạng thái bên trong memento không bị đụng tới; trường có dấu gạch dưới trong Python và trường private readonly trong TypeScript chỉ là quy ước và kiểm tra lúc biên dịch, không phải lớp bảo vệ thật sự.',
     },
   },
 
@@ -679,28 +1211,28 @@ vua.khoiPhuc(history[0]) // restore`,
       { en: 'Listener', vi: 'Trình lắng nghe' },
     ],
     intent: {
-      en: 'Defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.',
-      vi: 'Định nghĩa mối quan hệ một-nhiều giữa các đối tượng để khi một đối tượng thay đổi trạng thái, tất cả các đối tượng phụ thuộc được thông báo và cập nhật tự động.',
+      en: 'Observer is a behavioral design pattern that lets you define a subscription mechanism to notify multiple objects about any events that happen to the object they\'re observing.',
+      vi: 'Observer là một mẫu thiết kế hành vi, cho phép bạn định nghĩa một cơ chế đăng ký để thông báo cho nhiều đối tượng về bất kỳ sự kiện nào xảy ra với đối tượng mà chúng đang quan sát.',
     },
     problem: {
-      en: 'You need to notify multiple objects about state changes in another object, without making assumptions about who those objects are.',
-      vi: 'Bạn cần thông báo cho nhiều đối tượng về thay đổi trạng thái trong một đối tượng khác, mà không cần giả định những đối tượng đó là gì.',
+      en: 'Imagine two types of objects: a Customer and a Store. The customer is very interested in a particular product, say a new iPhone model, that should arrive at the store very soon. The customer could visit the store every day to check whether it is available, but while the product is still on its way, most of those trips are pointless. Alternatively, the store could email all customers each time a new product arrives. That would save some customers the trips, but it would upset the others who aren\'t interested in new products and see the emails as spam. It is a conflict: either the customer wastes time checking availability, or the store wastes resources notifying the wrong customers.',
+      vi: 'Hãy tưởng tượng có hai loại đối tượng: Khách hàng (Customer) và Cửa hàng (Store). Khách hàng rất quan tâm đến một sản phẩm cụ thể, chẳng hạn một mẫu iPhone mới, sắp được bày bán ở cửa hàng. Khách hàng có thể ghé cửa hàng mỗi ngày để xem đã có hàng chưa, nhưng khi hàng còn đang trên đường về, phần lớn những chuyến đi đó là vô ích. Ngược lại, cửa hàng có thể gửi email cho tất cả khách hàng mỗi khi có sản phẩm mới. Cách này giúp một số khách khỏi phải đi lại, nhưng lại làm phiền những khách không quan tâm đến sản phẩm mới, vì với họ đó là thư rác. Hai cách đều có vấn đề: hoặc khách hàng mất thời gian đi kiểm tra, hoặc cửa hàng tốn công sức thông báo cho nhầm người.',
     },
     solution: {
-      en: 'Add a subscription mechanism to the publisher class so individual objects can subscribe/unsubscribe from events. When an event occurs, the publisher notifies all subscribers.',
-      vi: 'Thêm cơ chế đăng ký vào lớp publisher để các đối tượng riêng lẻ có thể đăng ký/hủy đăng ký các sự kiện. Khi sự kiện xảy ra, publisher thông báo cho tất cả subscribers.',
+      en: 'The object that has some interesting state is often called the subject, but since it also notifies other objects about changes to its state, it is called the publisher. All objects that want to track those changes are called subscribers. The pattern adds a subscription mechanism to the publisher class so individual objects can subscribe to or unsubscribe from the stream of events coming from it. In practice this mechanism is just an array field that stores references to subscriber objects, plus a few public methods that add subscribers to and remove them from that list. Whenever an important event happens, the publisher goes over its subscribers and calls a specific notification method on each one. Real apps may have dozens of subscriber classes interested in the same publisher, and some may not even be known when the publisher is written, so the publisher must not be coupled to them. That is why all subscribers implement the same interface and the publisher talks to them only through it. The interface declares the notification method along with parameters the publisher can use to pass contextual data. If the app has several types of publishers, you can go further and make them all follow a common publisher interface that describes the subscription methods, so subscribers can observe any publisher without coupling to its concrete class.',
+      vi: 'Đối tượng có trạng thái đáng quan tâm thường được gọi là subject, nhưng vì nó còn thông báo cho các đối tượng khác về thay đổi trạng thái của mình, ta gọi nó là publisher (bên phát). Mọi đối tượng muốn theo dõi các thay đổi đó được gọi là subscriber (người đăng ký). Mẫu này thêm vào lớp publisher một cơ chế đăng ký, để từng đối tượng có thể đăng ký hoặc hủy đăng ký nhận luồng sự kiện từ publisher. Thực tế, cơ chế này chỉ gồm một trường mảng lưu tham chiếu đến các đối tượng subscriber, cùng vài phương thức công khai để thêm subscriber vào hoặc xóa khỏi danh sách đó. Mỗi khi có sự kiện quan trọng, publisher duyệt qua danh sách subscriber và gọi một phương thức thông báo cụ thể trên từng đối tượng. Ứng dụng thực tế có thể có hàng chục lớp subscriber cùng quan tâm đến một publisher, và có những lớp còn chưa tồn tại khi publisher được viết, nên publisher không được phụ thuộc vào chúng. Vì vậy mọi subscriber phải triển khai cùng một giao diện, và publisher chỉ giao tiếp với chúng qua giao diện đó. Giao diện này khai báo phương thức thông báo cùng các tham số để publisher truyền kèm dữ liệu ngữ cảnh. Nếu ứng dụng có nhiều loại publisher, bạn có thể cho tất cả cùng tuân theo một giao diện publisher chung mô tả các phương thức đăng ký, để subscriber quan sát được bất kỳ publisher nào mà không phụ thuộc vào lớp cụ thể của nó.',
     },
     applicability: {
-      en: 'Use when changes to one object require changing others, and you don\'t know how many objects need to change. Use for implementing distributed event handling systems.',
-      vi: 'Sử dụng khi thay đổi một đối tượng cần thay đổi các đối tượng khác và bạn không biết bao nhiêu đối tượng cần thay đổi. Sử dụng để triển khai hệ thống xử lý sự kiện phân tán.',
+      en: 'Use the Observer pattern when changes to the state of one object may require changing other objects, and the actual set of objects is unknown beforehand or changes dynamically. You often meet this with graphical user interface classes: you create custom button classes and want clients to hook their own code to the buttons so it fires whenever a user presses one. Since any object that implements the subscriber interface can subscribe to a publisher\'s events, you add the subscription mechanism to the buttons and clients hook up their code through custom subscriber classes. Use the pattern when some objects in your app must observe others, but only for a limited time or in specific cases: the subscription list is dynamic, so subscribers can join or leave it whenever they need to.',
+      vi: 'Dùng Observer khi thay đổi trạng thái của một đối tượng có thể đòi hỏi thay đổi các đối tượng khác, và tập các đối tượng đó không biết trước hoặc thay đổi lúc chạy. Bạn hay gặp vấn đề này với các lớp giao diện đồ họa: bạn tạo các lớp nút bấm riêng và muốn client gắn mã của họ vào nút để mã đó chạy mỗi khi người dùng bấm. Vì bất kỳ đối tượng nào triển khai giao diện subscriber cũng có thể đăng ký nhận sự kiện từ publisher, bạn chỉ cần thêm cơ chế đăng ký vào các nút, và client gắn mã của họ qua các lớp subscriber riêng. Dùng mẫu này khi một số đối tượng trong ứng dụng phải quan sát đối tượng khác, nhưng chỉ trong một khoảng thời gian hoặc trong những trường hợp nhất định: danh sách đăng ký là động, nên subscriber có thể tham gia hoặc rời đi bất cứ lúc nào.',
     },
     vietnamese_example: {
       title: { en: 'Trống Đồng (Bronze Drum) Signals', vi: 'Tiếng Trống Đồng - Tín Hiệu Làng' },
       description: {
-        en: 'The legendary Trống Đồng (Bronze Drum) of the Đông Sơn culture was used to send signals across villages. When the drum (Subject/Publisher) beats with different rhythms, all villages subscribed to the signal respond: farmers drop plows, soldiers assemble, craftsmen stop work, traders close stalls. Each observer reacts differently to the same drum beat. This is pure Observer pattern: one publisher, many subscribers reacting to events.',
-        vi: 'Trống Đồng huyền thoại của văn hóa Đông Sơn được dùng để gửi tín hiệu qua các làng. Khi trống (Subject/Publisher) đánh với các nhịp khác nhau, tất cả các làng đã đăng ký tín hiệu đều phản ứng: nông dân bỏ cày, chiến sĩ tập hợp, thợ thủ công dừng việc, thương nhân đóng hàng. Mỗi observer phản ứng khác nhau với cùng một tiếng trống.',
+        en: 'The Đông Sơn bronze drum (Trống Đồng) was used to send signals across villages. In the code, BronzeDrum is the Publisher: it keeps a list of Listener objects, lets villagers join with subscribe() and leave with unsubscribe(), and when it is struck with strike() it stores the new signal in signal and calls notifyListeners(), which calls react() on everyone in the list. Listener is the Subscriber interface. Farmer (farmer), Soldier (soldier) and Trader (trader) are Concrete Subscribers that react differently to the same beat: on an invasion alarm the farmer runs back to the village, the soldier takes up arms and the trader closes his stall. The drum passes itself to react(), so each subscriber reads the signal it needs. The client creates the drum and the villagers separately and registers them; later the trader unsubscribes when he leaves to trade far away, so he no longer reacts to the festival drum. Adding a new kind of villager means adding one subscriber class, without touching BronzeDrum.',
+        vi: 'Trống Đồng thời Đông Sơn được dùng để truyền tín hiệu giữa các làng. Trong mã, BronzeDrum là Publisher: nó giữ danh sách các đối tượng Listener, cho dân làng tham gia bằng subscribe() và rời đi bằng unsubscribe(); khi được đánh bằng strike(), nó lưu tín hiệu mới vào signal rồi gọi notifyListeners(), phương thức này gọi react() trên từng người trong danh sách. Listener là giao diện Subscriber. Farmer (nông dân), Soldier (chiến sĩ) và Trader (thương nhân) là các Concrete Subscriber, mỗi người phản ứng khác nhau với cùng một hồi trống: khi trống báo giặc, nông dân bỏ cày chạy vào làng, chiến sĩ cầm vũ khí, thương nhân đóng hàng. Trống truyền chính nó vào react(), nên mỗi subscriber tự đọc tín hiệu mình cần. Client tạo trống và dân làng riêng rẽ rồi đăng ký họ; sau đó thương nhân hủy đăng ký vì đi buôn xa, nên không còn phản ứng với tiếng trống lễ hội. Muốn thêm một kiểu dân làng mới chỉ cần thêm một lớp subscriber, không phải sửa BronzeDrum.',
       },
-      illustration: '🥁 Trống Đồng Publisher\n  đăng ký(nongDan)\n  đăng ký(chienSi)\n  đăng ký(thuNhan)\n       │\n       │ danh_trong("giặc đến!")\n       │\n    ┌──┼──┐\n    ▼  ▼  ▼\n  🌾 ⚔️ 🏪\n (each reacts differently)',
+      illustration: '🥁 BronzeDrum (Publisher)\n  subscribe(farmer)\n  subscribe(soldier)\n  subscribe(trader)\n       │\n       │ strike("giặc đến!")\n       │   → notifyListeners()\n    ┌──┼──┐\n    ▼  ▼  ▼\n  🌾  ⚔️  🏪   react(drum)\n\n  unsubscribe(trader)\n  strike("lễ hội") → 🌾 ⚔️',
     },
     code_examples: [
       {
@@ -709,104 +1241,182 @@ vua.khoiPhuc(history[0]) // restore`,
         code: `from abc import ABC, abstractmethod
 from typing import List
 
-class NguoiNghe(ABC):
-    """Observer interface"""
+
+# Subscriber interface: declares the notification method
+class Listener(ABC):
     @abstractmethod
-    def phan_ung(self, tin_hieu: str): pass
+    def react(self, drum: "BronzeDrum") -> None: ...
 
-class TrongDong:
-    """Subject/Publisher - Bronze Drum"""
-    def __init__(self):
-        self._nguoi_nghe: List[NguoiNghe] = []
 
-    def dang_ky(self, nguoi: NguoiNghe):
-        self._nguoi_nghe.append(nguoi)
+# Publisher: owns the subscription list and issues events
+class BronzeDrum:
+    def __init__(self) -> None:
+        self._listeners: List[Listener] = []
+        self.signal = ""  # state that subscribers care about
 
-    def huy_dang_ky(self, nguoi: NguoiNghe):
-        self._nguoi_nghe.remove(nguoi)
+    def subscribe(self, listener: Listener) -> None:  # subscribe
+        self._listeners.append(listener)
 
-    def danh_trong(self, tin_hieu: str):
-        print(f"🥁 Trống Đồng: '{tin_hieu}'")
-        for nguoi in self._nguoi_nghe:
-            nguoi.phan_ung(tin_hieu)
+    def unsubscribe(self, listener: Listener) -> None:  # unsubscribe
+        self._listeners.remove(listener)
 
-class NongDan(NguoiNghe):
-    def __init__(self, ten: str): self.ten = ten
-    def phan_ung(self, tin_hieu: str):
-        if "giặc" in tin_hieu:
-            print(f"🌾 {self.ten}: Bỏ cày xuống, chạy vào làng!")
-        elif "lễ hội" in tin_hieu:
-            print(f"🌾 {self.ten}: Mặc áo đẹp đi xem hội!")
+    # notifySubscribers: passes itself so subscribers can read its state
+    def notify_listeners(self) -> None:
+        for listener in self._listeners:
+            listener.react(self)
 
-class ChienSi(NguoiNghe):
-    def __init__(self, ten: str): self.ten = ten
-    def phan_ung(self, tin_hieu: str):
-        if "giặc" in tin_hieu:
-            print(f"⚔️ {self.ten}: Cầm vũ khí, tập hợp đội hình!")
-        elif "lễ hội" in tin_hieu:
-            print(f"⚔️ {self.ten}: Canh gác lễ hội!")
+    # Main business logic: change state, then notify
+    def strike(self, signal: str) -> None:
+        self.signal = signal
+        print(f"🥁 Trống Đồng: {signal}")
+        self.notify_listeners()
 
-class ThuNhan(NguoiNghe):
-    def __init__(self, ten: str): self.ten = ten
-    def phan_ung(self, tin_hieu: str):
-        if "giặc" in tin_hieu:
-            print(f"🏪 {self.ten}: Đóng hàng, cất tiền!")
-        elif "lễ hội" in tin_hieu:
-            print(f"🏪 {self.ten}: Mở hàng bán đồ lễ hội!")
 
-# Set up the drum and observers
-trong_dong = TrongDong()
-trong_dong.dang_ky(NongDan("Nguyễn A"))
-trong_dong.dang_ky(ChienSi("Trần B"))
-trong_dong.dang_ky(ThuNhan("Lê C"))
+# Concrete Subscribers: each reacts to the same event in its own way
+class Farmer(Listener):
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def react(self, drum: BronzeDrum) -> None:
+        if "giặc" in drum.signal:
+            print(f"  🌾 {self.name}: Bỏ cày, chạy vào làng!")
+        else:
+            print(f"  🌾 {self.name}: Mặc áo đẹp đi xem hội!")
+
+
+class Soldier(Listener):
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def react(self, drum: BronzeDrum) -> None:
+        if "giặc" in drum.signal:
+            print(f"  ⚔️ {self.name}: Cầm vũ khí, tập hợp đội hình!")
+        else:
+            print(f"  ⚔️ {self.name}: Canh gác lễ hội!")
+
+
+class Trader(Listener):
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def react(self, drum: BronzeDrum) -> None:
+        if "giặc" in drum.signal:
+            print(f"  🏪 {self.name}: Đóng hàng, cất tiền!")
+        else:
+            print(f"  🏪 {self.name}: Mở hàng bán đồ lễ hội!")
+
+
+# Client: creates the publisher and subscribers separately, then registers them
+bronze_drum = BronzeDrum()
+trader = Trader("Lê C")
+bronze_drum.subscribe(Farmer("Nguyễn A"))
+bronze_drum.subscribe(Soldier("Trần B"))
+bronze_drum.subscribe(trader)
 
 print("=== Tiếng trống báo giặc ===")
-trong_dong.danh_trong("giặc đến!")
+bronze_drum.strike("giặc đến!")
 
-print("\n=== Tiếng trống báo lễ hội ===")
-trong_dong.danh_trong("lễ hội Đền Hùng!")`,
+# Subscribers can leave the list at runtime
+print("=== Lê C đi buôn xa, hủy đăng ký ===")
+bronze_drum.unsubscribe(trader)
+
+print("=== Tiếng trống báo lễ hội ===")
+bronze_drum.strike("lễ hội Đền Hùng!")
+
+# Output:
+# === Tiếng trống báo giặc ===
+# 🥁 Trống Đồng: giặc đến!
+#   🌾 Nguyễn A: Bỏ cày, chạy vào làng!
+#   ⚔️ Trần B: Cầm vũ khí, tập hợp đội hình!
+#   🏪 Lê C: Đóng hàng, cất tiền!
+# === Lê C đi buôn xa, hủy đăng ký ===
+# === Tiếng trống báo lễ hội ===
+# 🥁 Trống Đồng: lễ hội Đền Hùng!
+#   🌾 Nguyễn A: Mặc áo đẹp đi xem hội!
+#   ⚔️ Trần B: Canh gác lễ hội!`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `interface NguoiNghe {
-  phanUng(tinHieu: string): void
+        code: `// Subscriber interface: declares the notification method
+interface Listener {
+  react(drum: BronzeDrum): void
 }
 
-class TrongDong {
-  private nguoiNghe: NguoiNghe[] = []
-  dangKy(n: NguoiNghe) { this.nguoiNghe.push(n) }
-  huyDangKy(n: NguoiNghe) { this.nguoiNghe = this.nguoiNghe.filter(x => x !== n) }
+// Publisher: owns the subscription list and issues events
+class BronzeDrum {
+  private listeners: Listener[] = []
+  signal = '' // state that subscribers care about
 
-  danhTrong(tinHieu: string) {
-    console.log(\`🥁 Trống Đồng: "\${tinHieu}"\`)
-    this.nguoiNghe.forEach(n => n.phanUng(tinHieu))
+  // subscribe
+  subscribe(listener: Listener): void {
+    this.listeners.push(listener)
+  }
+
+  // unsubscribe
+  unsubscribe(listener: Listener): void {
+    this.listeners = this.listeners.filter(x => x !== listener)
+  }
+
+  // notifySubscribers: passes itself so subscribers can read its state
+  notifyListeners(): void {
+    for (const listener of this.listeners) listener.react(this)
+  }
+
+  // Main business logic: change state, then notify
+  strike(signal: string): void {
+    this.signal = signal
+    console.log(\`🥁 Trống Đồng: \${signal}\`)
+    this.notifyListeners()
   }
 }
 
-class NongDan implements NguoiNghe {
-  constructor(private ten: string) {}
-  phanUng(th: string) {
-    console.log(\`🌾 \${this.ten}: \${th.includes('giặc') ? 'Chạy vào làng!' : 'Đi xem hội!'}\`)
+// Concrete Subscribers: each reacts to the same event in its own way
+class Farmer implements Listener {
+  constructor(private name: string) {}
+  react(drum: BronzeDrum): void {
+    const action = drum.signal.includes('giặc') ? 'Bỏ cày, chạy vào làng!' : 'Mặc áo đẹp đi xem hội!'
+    console.log(\`  🌾 \${this.name}: \${action}\`)
   }
 }
 
-class ChienSi implements NguoiNghe {
-  constructor(private ten: string) {}
-  phanUng(th: string) {
-    console.log(\`⚔️ \${this.ten}: \${th.includes('giặc') ? 'Tập hợp đội hình!' : 'Canh gác!'}\`)
+class Soldier implements Listener {
+  constructor(private name: string) {}
+  react(drum: BronzeDrum): void {
+    const action = drum.signal.includes('giặc') ? 'Cầm vũ khí, tập hợp đội hình!' : 'Canh gác lễ hội!'
+    console.log(\`  ⚔️ \${this.name}: \${action}\`)
   }
 }
 
-const trong = new TrongDong()
-trong.dangKy(new NongDan('Nguyễn A'))
-trong.dangKy(new ChienSi('Trần B'))
-trong.danhTrong('giặc đến!')`,
+class Trader implements Listener {
+  constructor(private name: string) {}
+  react(drum: BronzeDrum): void {
+    const action = drum.signal.includes('giặc') ? 'Đóng hàng, cất tiền!' : 'Mở hàng bán đồ lễ hội!'
+    console.log(\`  🏪 \${this.name}: \${action}\`)
+  }
+}
+
+// Client: creates the publisher and subscribers separately, then registers them
+const bronzeDrum = new BronzeDrum()
+const trader = new Trader('Lê C')
+bronzeDrum.subscribe(new Farmer('Nguyễn A'))
+bronzeDrum.subscribe(new Soldier('Trần B'))
+bronzeDrum.subscribe(trader)
+
+console.log('=== Tiếng trống báo giặc ===')
+bronzeDrum.strike('giặc đến!')
+
+// Subscribers can leave the list at runtime
+console.log('=== Lê C đi buôn xa, hủy đăng ký ===')
+bronzeDrum.unsubscribe(trader)
+
+console.log('=== Tiếng trống báo lễ hội ===')
+bronzeDrum.strike('lễ hội Đền Hùng!')`,
       },
     ],
     structure_notes: {
-      en: 'Publisher maintains a list of subscribers. When an event occurs, the publisher goes over the list and calls the notification method in each subscriber object.',
-      vi: 'Publisher duy trì danh sách subscribers. Khi sự kiện xảy ra, publisher duyệt qua danh sách và gọi phương thức thông báo trong mỗi đối tượng subscriber.',
+      en: 'The Publisher issues events of interest to other objects; these events occur when the publisher changes its state or executes some behavior. It contains a subscription infrastructure that lets new subscribers join and current subscribers leave the list. When a new event happens, the publisher goes over the subscription list and calls the notification method declared in the Subscriber interface on each subscriber. The Subscriber interface declares the notification interface; in most cases it is a single update method whose parameters let the publisher pass event details along with the update. Concrete Subscribers perform actions in response to notifications issued by the publisher, and all of them implement the same interface so the publisher isn\'t coupled to concrete classes. Subscribers usually need some contextual information to handle an update, so publishers often pass context data as arguments of the notification method; the publisher can pass itself, letting a subscriber fetch any data it needs directly (here BronzeDrum passes itself to react()). The Client creates publisher and subscriber objects separately and then registers subscribers for publisher updates. The diagram omits the optional common publisher interface, since there is only one publisher type.',
+      vi: 'Publisher phát ra các sự kiện mà đối tượng khác quan tâm; các sự kiện này xảy ra khi publisher thay đổi trạng thái hoặc thực hiện một hành vi nào đó. Publisher chứa hạ tầng đăng ký, cho phép subscriber mới tham gia và subscriber hiện tại rời khỏi danh sách. Khi có sự kiện mới, publisher duyệt danh sách đăng ký và gọi phương thức thông báo được khai báo trong giao diện Subscriber trên từng subscriber. Giao diện Subscriber khai báo giao diện thông báo; thường chỉ gồm một phương thức update, với các tham số để publisher truyền kèm chi tiết sự kiện. Concrete Subscriber thực hiện hành động để đáp lại thông báo từ publisher, và tất cả đều triển khai cùng một giao diện để publisher không phụ thuộc vào lớp cụ thể. Subscriber thường cần thông tin ngữ cảnh để xử lý đúng, nên publisher hay truyền dữ liệu ngữ cảnh làm đối số của phương thức thông báo; publisher cũng có thể truyền chính nó, để subscriber tự lấy dữ liệu cần thiết (ở đây BronzeDrum truyền chính nó vào react()). Client tạo publisher và subscriber riêng rẽ, rồi đăng ký các subscriber nhận cập nhật từ publisher. Sơ đồ không vẽ giao diện publisher chung (tùy chọn), vì chỉ có một loại publisher.',
     },
   },
 
@@ -818,132 +1428,239 @@ trong.danhTrong('giặc đến!')`,
     complexity: 1,
     popularity: 2,
     intent: {
-      en: 'Allows an object to alter its behavior when its internal state changes. The object will appear to change its class.',
-      vi: 'Cho phép một đối tượng thay đổi hành vi của nó khi trạng thái nội tại thay đổi. Đối tượng sẽ xuất hiện như thể thay đổi lớp của nó.',
+      en: 'State is a behavioral design pattern that lets an object alter its behavior when its internal state changes. It appears as if the object changed its class.',
+      vi: 'State là một mẫu thiết kế hành vi, cho phép một đối tượng thay đổi hành vi khi trạng thái bên trong của nó thay đổi. Trông như thể đối tượng đã đổi sang một lớp khác.',
     },
     problem: {
-      en: 'An object\'s behavior depends on its state, and it must change behavior at runtime based on that state. State-dependent code is scattered across many conditional statements.',
-      vi: 'Hành vi của đối tượng phụ thuộc vào trạng thái của nó và nó phải thay đổi hành vi lúc chạy dựa trên trạng thái đó. Mã phụ thuộc vào trạng thái bị phân tán qua nhiều câu lệnh điều kiện.',
+      en: 'The State pattern is closely related to the finite-state machine: at any moment a program can be in one of a finite number of states, it behaves differently in each, and it can switch between them instantly, but only along a finite, predetermined set of transitions. Apply this to a Document class that can be Draft, Moderation or Published. Its publish() method works differently in each state: in Draft it moves the document to moderation; in Moderation it makes the document public, but only if the current user is an administrator; in Published it does nothing. Such state machines are usually built with lots of if or switch statements that pick the behavior based on field values. The weakness shows once you add more states and state-dependent behaviors: most methods fill up with monstrous conditionals, and any change to the transition logic may require changing the conditionals in every method. Since it is hard to predict all states and transitions at design time, a lean state machine with a few conditionals tends to grow into a bloated mess as the project evolves.',
+      vi: 'Mẫu State gắn liền với khái niệm máy trạng thái hữu hạn: tại mỗi thời điểm, chương trình ở một trong số hữu hạn trạng thái, hành xử khác nhau ở mỗi trạng thái, và có thể chuyển trạng thái ngay lập tức, nhưng chỉ theo một tập quy tắc chuyển (transition) hữu hạn và định trước. Áp dụng điều này cho lớp Document có thể ở một trong ba trạng thái: Draft (bản nháp), Moderation (chờ duyệt) và Published (đã xuất bản). Phương thức publish() hoạt động khác nhau ở mỗi trạng thái: ở Draft, nó chuyển tài liệu sang chờ duyệt; ở Moderation, nó công khai tài liệu, nhưng chỉ khi người dùng hiện tại là quản trị viên; ở Published, nó không làm gì cả. Máy trạng thái kiểu này thường được viết bằng rất nhiều câu lệnh if hoặc switch để chọn hành vi theo giá trị các trường. Điểm yếu lộ ra khi bạn thêm ngày càng nhiều trạng thái và hành vi phụ thuộc trạng thái: hầu hết phương thức chứa những khối điều kiện khổng lồ, và mỗi thay đổi về logic chuyển trạng thái có thể buộc bạn sửa điều kiện trong mọi phương thức. Vì khó lường trước mọi trạng thái và cách chuyển ngay từ lúc thiết kế, một máy trạng thái gọn gàng với vài câu điều kiện dần phình thành một mớ hỗn độn khi dự án phát triển.',
     },
     solution: {
-      en: 'Create state objects for each state. The Context delegates state-dependent behavior to the current State object. State objects can transition to each other.',
-      vi: 'Tạo đối tượng trạng thái cho mỗi trạng thái. Context ủy quyền hành vi phụ thuộc vào trạng thái cho đối tượng State hiện tại. Các đối tượng State có thể chuyển đổi lẫn nhau.',
+      en: 'Create a new class for every possible state of an object and extract all state-specific behaviors into these classes. Instead of implementing all behaviors itself, the original object, called the context, stores a reference to one of the state objects that represents its current state and delegates all state-related work to it. To transition the context to another state, replace the active state object with another object that represents the new state. This only works if all state classes follow the same interface and the context works with them through that interface. The structure looks similar to Strategy, with one key difference: in State, the particular states may know about each other and initiate transitions from one state to another, whereas strategies almost never know about each other.',
+      vi: 'Tạo một lớp mới cho mỗi trạng thái có thể có của đối tượng và chuyển toàn bộ hành vi riêng của từng trạng thái vào các lớp đó. Thay vì tự triển khai mọi hành vi, đối tượng gốc, gọi là context, lưu một tham chiếu đến một trong các đối tượng trạng thái, đại diện cho trạng thái hiện tại, và ủy quyền mọi công việc liên quan đến trạng thái cho đối tượng đó. Để chuyển context sang trạng thái khác, chỉ cần thay đối tượng trạng thái đang hoạt động bằng một đối tượng đại diện cho trạng thái mới. Điều này chỉ làm được khi mọi lớp trạng thái tuân theo cùng một giao diện và context làm việc với chúng qua giao diện đó. Cấu trúc này trông giống mẫu Strategy, nhưng có một khác biệt quan trọng: trong State, các trạng thái cụ thể có thể biết về nhau và tự khởi động việc chuyển từ trạng thái này sang trạng thái khác, còn các strategy gần như không bao giờ biết về nhau.',
     },
     applicability: {
-      en: 'Use when an object\'s behavior depends on its state and it must change behavior at runtime, or when operations have large conditional statements that depend on the object\'s state.',
-      vi: 'Sử dụng khi hành vi đối tượng phụ thuộc vào trạng thái và phải thay đổi lúc chạy, hoặc khi các thao tác có câu lệnh điều kiện lớn phụ thuộc vào trạng thái đối tượng.',
+      en: 'Use the State pattern when you have an object that behaves differently depending on its current state, the number of states is enormous, and the state-specific code changes frequently: extracting all state-specific code into distinct classes lets you add new states or change existing ones independently of each other, which reduces maintenance cost. Use it when a class is polluted with massive conditionals that alter its behavior according to the current values of its fields: the branches become methods of the corresponding state classes, and you can also clean temporary fields and helper methods involved in state-specific code out of the main class. Use it when there is a lot of duplicate code across similar states and transitions of a condition-based state machine: you can compose hierarchies of state classes and reduce duplication by extracting common code into abstract base classes.',
+      vi: 'Dùng State khi bạn có một đối tượng hành xử khác nhau tùy theo trạng thái hiện tại, số trạng thái rất lớn và mã riêng của từng trạng thái thay đổi thường xuyên: tách toàn bộ mã đó vào các lớp riêng giúp bạn thêm trạng thái mới hoặc sửa trạng thái cũ một cách độc lập, nhờ đó giảm chi phí bảo trì. Dùng khi một lớp bị lấp đầy bởi các khối điều kiện khổng lồ thay đổi hành vi theo giá trị hiện tại của các trường: mỗi nhánh điều kiện trở thành phương thức của lớp trạng thái tương ứng, đồng thời bạn có thể dọn khỏi lớp chính các trường tạm và phương thức phụ trợ chỉ phục vụ mã theo trạng thái. Dùng khi có nhiều mã lặp lại giữa các trạng thái và cách chuyển tương tự nhau trong một máy trạng thái dựa trên điều kiện: bạn có thể xây dựng hệ thống phân cấp lớp trạng thái và giảm trùng lặp bằng cách đưa mã chung vào các lớp cơ sở trừu tượng.',
     },
     vietnamese_example: {
       title: { en: 'Rice Paddy Water Levels (Đồng Lúa)', vi: 'Ruộng Lúa - Các Giai Đoạn Sinh Trưởng' },
       description: {
-        en: 'A Vietnamese rice paddy (đồng lúa) goes through distinct states: Cày bừa (plowing), Cấy lúa (transplanting seedlings), Đang Lớn (growing), Trổ Bông (flowering), Thu Hoạch (harvesting). The farmer\'s actions (water, fertilize, harvest) behave differently based on current state. Watering during "growing" helps; watering during "harvest" ruins the crop. The State pattern models each stage as an object.',
-        vi: 'Ruộng lúa Việt Nam trải qua các giai đoạn khác nhau: Cày Bừa, Cấy Lúa, Đang Lớn, Trổ Bông, Thu Hoạch. Hành động của người nông dân (tưới nước, bón phân, gặt) hoạt động khác nhau tùy theo trạng thái hiện tại. Tưới nước khi "đang lớn" có ích; tưới khi "thu hoạch" làm hỏng mùa màng.',
+        en: 'A Vietnamese rice paddy goes through distinct stages: Cày Bừa (plowing), Cấy Lúa (transplanting), Đang Lớn (growing), Trổ Bông (flowering) and Thu Hoạch (harvesting). In the code, RicePaddy is the Context: the farmer always calls the same three methods, water(), fertilize() and harvest(), and the paddy delegates each call to its current stage object. RiceStage is the State: it declares those three methods and holds a backreference paddy to the paddy, set by the context\'s setter changeStage(). Plowing, Transplanting, Growing, Flowering and Harvesting are Concrete States. The same action means different things in each: harvesting during Cày Bừa is refused, fertilizing while the rice flowers is refused, and watering at harvest time is a mistake because the field must be dry. The states also drive the transitions themselves through the backreference: fertilize() in Plowing moves the paddy to Transplanting, harvest() in Flowering moves it to Harvesting, and finishing the harvest starts a new season with Plowing. RicePaddy contains no conditionals about the stage.',
+        vi: 'Ruộng lúa Việt Nam trải qua các giai đoạn rõ rệt: Cày Bừa, Cấy Lúa, Đang Lớn, Trổ Bông và Thu Hoạch. Trong mã, RicePaddy là Context: người nông dân luôn gọi cùng ba phương thức water(), fertilize() và harvest(), còn ruộng ủy quyền mỗi lời gọi cho đối tượng giai đoạn hiện tại. RiceStage là State: nó khai báo ba phương thức đó và giữ tham chiếu ngược paddy tới thửa ruộng, được gán qua setter changeStage() của context. Plowing, Transplanting, Growing, Flowering và Harvesting là các Concrete State. Cùng một hành động mang ý nghĩa khác nhau ở mỗi giai đoạn: gặt lúa lúc đang cày bừa bị từ chối, bón phân khi lúa trổ bông bị từ chối, còn tưới nước lúc thu hoạch là sai vì ruộng cần khô. Chính các trạng thái tự thực hiện việc chuyển giai đoạn qua tham chiếu ngược: fertilize() ở Plowing chuyển ruộng sang Transplanting, harvest() ở Flowering chuyển sang Harvesting, và gặt xong thì bắt đầu vụ mới với Plowing. RicePaddy không chứa câu điều kiện nào về giai đoạn.',
       },
-      illustration: '🌾 Vòng Đời Lúa\nCàyBừa ──▶ CấyLúa\n                │\n                ▼\n            ĐangLớn\n                │\n                ▼\n           TrổBông\n                │\n                ▼\n           ThuHoạch',
+      illustration: '🌾 Vòng Đời Lúa (RicePaddy → RiceStage)\nPlowing ──fertilize()──▶ Transplanting\n  ▲                     │\n  │                  water()\n  │                     ▼\nharvest()              Growing\n  │                     │\n  │                fertilize()\n  │                     ▼\nHarvesting ◀──harvest()── Flowering',
     },
     code_examples: [
       {
         language: 'python',
         label: 'Python',
-        code: `from abc import ABC, abstractmethod
+        code: `from __future__ import annotations
+from abc import ABC, abstractmethod
 
-class GiaiDoanLua(ABC):
-    """State interface"""
+
+# State: declares the state-specific methods and keeps a backreference to the context
+class RiceStage(ABC):
+    paddy: RicePaddy
+
     @abstractmethod
-    def tuoi_nuoc(self, ruong: 'RuongLua'): pass
+    def water(self) -> None: ...
+
     @abstractmethod
-    def bon_phan(self, ruong: 'RuongLua'): pass
+    def fertilize(self) -> None: ...
+
     @abstractmethod
-    def gat_lua(self, ruong: 'RuongLua'): pass
+    def harvest(self) -> None: ...
 
-class RuongLua:
-    def __init__(self):
-        self._giai_doan: GiaiDoanLua = CayBua()
 
-    def doi_giai_doan(self, gd: GiaiDoanLua):
-        print(f"  → Chuyển sang: {type(gd).__name__}")
-        self._giai_doan = gd
+# Context: stores the current state and delegates all state-specific work to it
+class RicePaddy:
+    def __init__(self, stage: RiceStage) -> None:
+        self.change_stage(stage)
 
-    def tuoi_nuoc(self): self._giai_doan.tuoi_nuoc(self)
-    def bon_phan(self): self._giai_doan.bon_phan(self)
-    def gat_lua(self): self._giai_doan.gat_lua(self)
+    # Setter used by the client or by states to switch the active state
+    def change_stage(self, stage: RiceStage) -> None:
+        print(f"  → Chuyển sang: {type(stage).__name__}")
+        self._stage = stage
+        stage.paddy = self
 
-class CayBua(GiaiDoanLua):
-    def tuoi_nuoc(self, r): print("🚜 Đang cày, chưa cần tưới")
-    def bon_phan(self, r): print("🌱 Bón phân nền trước khi cấy"); r.doi_giai_doan(CayLua())
-    def gat_lua(self, r): print("❌ Chưa có lúa để gặt!")
+    def water(self) -> None:
+        self._stage.water()
 
-class CayLua(GiaiDoanLua):
-    def tuoi_nuoc(self, r): print("💧 Giữ mực nước 5cm, tốt cho cây con"); r.doi_giai_doan(DangLon())
-    def bon_phan(self, r): print("🌿 Bón đạm khi cấy xong")
-    def gat_lua(self, r): print("❌ Lúa còn non!")
+    def fertilize(self) -> None:
+        self._stage.fertilize()
 
-class DangLon(GiaiDoanLua):
-    def tuoi_nuoc(self, r): print("💧 Tưới đều đặn, lúa đang lớn nhanh!")
-    def bon_phan(self, r): print("🌿 Bón thúc lần 2"); r.doi_giai_doan(TroBong())
-    def gat_lua(self, r): print("❌ Chưa đến vụ!")
+    def harvest(self) -> None:
+        self._stage.harvest()
 
-class TroBong(GiaiDoanLua):
-    def tuoi_nuoc(self, r): print("💧 Tưới nhẹ, lúa đang trổ bông vàng!")
-    def bon_phan(self, r): print("⚠️ Không bón phân khi lúa trổ bông!")
-    def gat_lua(self, r): print("🌾 Bắt đầu gặt!"); r.doi_giai_doan(ThuHoach())
 
-class ThuHoach(GiaiDoanLua):
-    def tuoi_nuoc(self, r): print("⚠️ Không tưới nước! Cần ruộng khô để gặt")
-    def bon_phan(self, r): print("❌ Đang thu hoạch, không bón phân!")
-    def gat_lua(self, r): print("🎉 Thu hoạch vụ mùa bội thu!")
+# Concrete States: each stage handles the same actions differently
+# and may trigger the transition to the next stage
+class Plowing(RiceStage):
+    def water(self) -> None: print("🚜 Đang cày bừa, chưa cần tưới")
+    def fertilize(self) -> None:
+        print("🌱 Bón lót xong, bắt đầu cấy mạ")
+        self.paddy.change_stage(Transplanting())
+    def harvest(self) -> None: print("❌ Chưa có lúa để gặt!")
 
-ruong = RuongLua()
-ruong.bon_phan()   # cày bừa → bón nền → cấy lúa
-ruong.tuoi_nuoc()  # cấy lúa → tưới → đang lớn
-ruong.bon_phan()   # đang lớn → bón thúc → trổ bông
-ruong.gat_lua()    # trổ bông → gặt → thu hoạch
-ruong.gat_lua()    # thu hoạch!`,
+
+class Transplanting(RiceStage):
+    def water(self) -> None:
+        print("💧 Giữ nước 5cm, mạ bén rễ")
+        self.paddy.change_stage(Growing())
+    def fertilize(self) -> None: print("🌿 Mạ còn yếu, chỉ bón nhẹ")
+    def harvest(self) -> None: print("❌ Lúa còn non!")
+
+
+class Growing(RiceStage):
+    def water(self) -> None: print("💧 Tưới đều, lúa đẻ nhánh")
+    def fertilize(self) -> None:
+        print("🌿 Bón thúc đòng")
+        self.paddy.change_stage(Flowering())
+    def harvest(self) -> None: print("❌ Chưa đến vụ!")
+
+
+class Flowering(RiceStage):
+    def water(self) -> None: print("💧 Giữ nước nông cho lúa trổ bông")
+    def fertilize(self) -> None: print("⚠️ Không bón phân khi lúa trổ bông!")
+    def harvest(self) -> None:
+        print("🌾 Lúa chín vàng, bắt đầu gặt!")
+        self.paddy.change_stage(Harvesting())
+
+
+class Harvesting(RiceStage):
+    def water(self) -> None: print("⚠️ Không tưới, ruộng cần khô để gặt!")
+    def fertilize(self) -> None: print("❌ Đang thu hoạch, không bón phân!")
+    def harvest(self) -> None:
+        print("🎉 Gặt xong, vụ mùa bội thu! Sang vụ mới")
+        self.paddy.change_stage(Plowing())
+
+
+# Client: sets the initial state, then only talks to the context
+paddy = RicePaddy(Plowing())
+paddy.harvest()    # refused while plowing
+paddy.fertilize()  # Plowing → Transplanting
+paddy.water()      # Transplanting → Growing
+paddy.fertilize()  # Growing → Flowering
+paddy.fertilize()  # same call, refused while flowering
+paddy.harvest()    # Flowering → Harvesting
+paddy.water()      # wrong action at harvest time
+paddy.harvest()    # Harvesting → Plowing (new season)
+
+# Output:
+#   → Chuyển sang: Plowing
+# ❌ Chưa có lúa để gặt!
+# 🌱 Bón lót xong, bắt đầu cấy mạ
+#   → Chuyển sang: Transplanting
+# 💧 Giữ nước 5cm, mạ bén rễ
+#   → Chuyển sang: Growing
+# 🌿 Bón thúc đòng
+#   → Chuyển sang: Flowering
+# ⚠️ Không bón phân khi lúa trổ bông!
+# 🌾 Lúa chín vàng, bắt đầu gặt!
+#   → Chuyển sang: Harvesting
+# ⚠️ Không tưới, ruộng cần khô để gặt!
+# 🎉 Gặt xong, vụ mùa bội thu! Sang vụ mới
+#   → Chuyển sang: Plowing`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `interface GiaiDoanLua {
-  tuoiNuoc(ruong: RuongLua): void
-  bonPhan(ruong: RuongLua): void
-  gatLua(ruong: RuongLua): void
+        code: `// State: declares the state-specific methods and keeps a backreference to the context
+abstract class RiceStage {
+  protected paddy!: RicePaddy
+
+  setPaddy(paddy: RicePaddy): void {
+    this.paddy = paddy
+  }
+
+  abstract water(): void
+  abstract fertilize(): void
+  abstract harvest(): void
 }
 
-class RuongLua {
-  private giaiDoan: GiaiDoanLua = new CayBua()
-  doiGiaiDoan(gd: GiaiDoanLua) { this.giaiDoan = gd }
-  tuoiNuoc() { this.giaiDoan.tuoiNuoc(this) }
-  bonPhan() { this.giaiDoan.bonPhan(this) }
-  gatLua() { this.giaiDoan.gatLua(this) }
+// Context: stores the current state and delegates all state-specific work to it
+class RicePaddy {
+  private stage!: RiceStage
+
+  constructor(stage: RiceStage) {
+    this.changeStage(stage)
+  }
+
+  // Setter used by the client or by states to switch the active state
+  changeStage(stage: RiceStage): void {
+    console.log(\`  → Chuyển sang: \${stage.constructor.name}\`)
+    this.stage = stage
+    stage.setPaddy(this)
+  }
+
+  water(): void { this.stage.water() }
+  fertilize(): void { this.stage.fertilize() }
+  harvest(): void { this.stage.harvest() }
 }
 
-class CayBua implements GiaiDoanLua {
-  tuoiNuoc(r: RuongLua) { console.log('🚜 Đang cày') }
-  bonPhan(r: RuongLua) { console.log('🌱 Bón nền'); r.doiGiaiDoan(new DangLon()) }
-  gatLua(r: RuongLua) { console.log('❌ Chưa có lúa!') }
+// Concrete States: each stage handles the same actions differently
+// and may trigger the transition to the next stage
+class Plowing extends RiceStage {
+  water(): void { console.log('🚜 Đang cày bừa, chưa cần tưới') }
+  fertilize(): void {
+    console.log('🌱 Bón lót xong, bắt đầu cấy mạ')
+    this.paddy.changeStage(new Transplanting())
+  }
+  harvest(): void { console.log('❌ Chưa có lúa để gặt!') }
 }
 
-class DangLon implements GiaiDoanLua {
-  tuoiNuoc(r: RuongLua) { console.log('💧 Tưới đều, lúa lớn nhanh!') }
-  bonPhan(r: RuongLua) { console.log('🌿 Bón thúc'); r.doiGiaiDoan(new ThuHoach()) }
-  gatLua(r: RuongLua) { console.log('❌ Chưa đến vụ!') }
+class Transplanting extends RiceStage {
+  water(): void {
+    console.log('💧 Giữ nước 5cm, mạ bén rễ')
+    this.paddy.changeStage(new Growing())
+  }
+  fertilize(): void { console.log('🌿 Mạ còn yếu, chỉ bón nhẹ') }
+  harvest(): void { console.log('❌ Lúa còn non!') }
 }
 
-class ThuHoach implements GiaiDoanLua {
-  tuoiNuoc(r: RuongLua) { console.log('⚠️ Không tưới khi gặt!') }
-  bonPhan(r: RuongLua) { console.log('❌ Đang thu hoạch!') }
-  gatLua(r: RuongLua) { console.log('🎉 Thu hoạch bội thu!') }
+class Growing extends RiceStage {
+  water(): void { console.log('💧 Tưới đều, lúa đẻ nhánh') }
+  fertilize(): void {
+    console.log('🌿 Bón thúc đòng')
+    this.paddy.changeStage(new Flowering())
+  }
+  harvest(): void { console.log('❌ Chưa đến vụ!') }
 }
 
-const ruong = new RuongLua()
-ruong.bonPhan()
-ruong.tuoiNuoc()
-ruong.gatLua()`,
+class Flowering extends RiceStage {
+  water(): void { console.log('💧 Giữ nước nông cho lúa trổ bông') }
+  fertilize(): void { console.log('⚠️ Không bón phân khi lúa trổ bông!') }
+  harvest(): void {
+    console.log('🌾 Lúa chín vàng, bắt đầu gặt!')
+    this.paddy.changeStage(new Harvesting())
+  }
+}
+
+class Harvesting extends RiceStage {
+  water(): void { console.log('⚠️ Không tưới, ruộng cần khô để gặt!') }
+  fertilize(): void { console.log('❌ Đang thu hoạch, không bón phân!') }
+  harvest(): void {
+    console.log('🎉 Gặt xong, vụ mùa bội thu! Sang vụ mới')
+    this.paddy.changeStage(new Plowing())
+  }
+}
+
+// Client: sets the initial state, then only talks to the context
+const paddy = new RicePaddy(new Plowing())
+paddy.harvest()    // refused while plowing
+paddy.fertilize()  // Plowing → Transplanting
+paddy.water()      // Transplanting → Growing
+paddy.fertilize()  // Growing → Flowering
+paddy.fertilize()  // same call, refused while flowering
+paddy.harvest()    // Flowering → Harvesting
+paddy.water()      // wrong action at harvest time
+paddy.harvest()    // Harvesting → Plowing (new season)`,
       },
     ],
     structure_notes: {
-      en: 'Context stores a reference to one of the concrete State objects and delegates state-specific work to it. States can transition the context to another state.',
-      vi: 'Context lưu tham chiếu đến một đối tượng State cụ thể và ủy quyền công việc theo trạng thái cho nó. Các State có thể chuyển đổi context sang trạng thái khác.',
+      en: 'The Context stores a reference to one of the concrete state objects and delegates all state-specific work to it. It communicates with the state object through the State interface and exposes a setter for passing it a new state object (changeStage() here). The State interface declares the state-specific methods; they should make sense for all concrete states, so no state ends up with useless methods that are never called. Concrete States provide their own implementations of the state-specific methods; to avoid duplicating similar code across states, you may add intermediate abstract classes that encapsulate common behavior. State objects may store a backreference to the context, through which they can fetch any required info from the context and initiate state transitions; here RiceStage is an abstract class so it can hold that paddy field. Both the context and the concrete states can set the next state and perform the actual transition by replacing the state object linked to the context. The diagram draws only one backreference edge (from Plowing) and omits the per-state transition arrows to keep it readable; in the code every concrete state uses paddy to switch to the next stage.',
+      vi: 'Context lưu tham chiếu đến một trong các đối tượng trạng thái cụ thể và ủy quyền toàn bộ công việc theo trạng thái cho nó. Context giao tiếp với đối tượng trạng thái qua giao diện State và cung cấp một setter để truyền vào đối tượng trạng thái mới (ở đây là changeStage()). Giao diện State khai báo các phương thức theo trạng thái; các phương thức này phải có ý nghĩa với mọi trạng thái cụ thể, để không trạng thái nào phải mang những phương thức vô dụng không bao giờ được gọi. Concrete State tự triển khai các phương thức theo trạng thái; để tránh lặp mã giống nhau giữa các trạng thái, bạn có thể thêm các lớp trừu tượng trung gian chứa hành vi chung. Đối tượng trạng thái có thể giữ tham chiếu ngược đến context, qua đó lấy thông tin cần thiết từ context và khởi động việc chuyển trạng thái; ở đây RiceStage là lớp trừu tượng để có thể giữ trường paddy đó. Cả context lẫn các trạng thái cụ thể đều có thể đặt trạng thái tiếp theo và thực hiện việc chuyển bằng cách thay đối tượng trạng thái gắn với context. Sơ đồ chỉ vẽ một cạnh tham chiếu ngược (từ Plowing) và lược bỏ các mũi tên chuyển trạng thái giữa từng giai đoạn cho dễ đọc; trong mã, mọi trạng thái cụ thể đều dùng paddy để chuyển sang giai đoạn kế tiếp.',
     },
   },
 
@@ -955,28 +1672,28 @@ ruong.gatLua()`,
     complexity: 1,
     popularity: 3,
     intent: {
-      en: 'Defines a family of algorithms, encapsulates each one, and makes them interchangeable. Strategy lets the algorithm vary independently from clients that use it.',
-      vi: 'Định nghĩa một họ thuật toán, đóng gói từng cái và làm cho chúng có thể hoán đổi cho nhau. Strategy cho phép thuật toán biến thiên độc lập với client sử dụng nó.',
+      en: 'Strategy is a behavioral design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.',
+      vi: 'Strategy là một mẫu thiết kế hành vi, cho phép bạn định nghĩa một họ thuật toán, đặt mỗi thuật toán vào một lớp riêng và làm cho các đối tượng của chúng có thể thay thế cho nhau.',
     },
     problem: {
-      en: 'You have multiple ways to perform an operation, and you want to switch between them at runtime without many conditional statements.',
-      vi: 'Bạn có nhiều cách thực hiện một thao tác và muốn chuyển đổi giữa chúng lúc chạy mà không có nhiều câu lệnh điều kiện.',
+      en: 'You build a navigation app for casual travelers, centered on a map, and its most requested feature is automatic route planning: enter an address and see the fastest route. The first version only builds routes over roads, which pleases drivers. Then you add walking routes, then public transport, and later you plan routes for cyclists and routes through all of a city\'s tourist attractions. The app is a business success, but every new routing algorithm doubles the size of the navigator\'s main class until it becomes too hard to maintain. Any change to one algorithm, even a small bug fix or a tweak to the street score, touches the whole class and risks breaking code that already works. Teamwork suffers too: new teammates spend too much time resolving merge conflicts, because every feature requires changing the same huge class.',
+      vi: 'Bạn xây dựng một ứng dụng chỉ đường cho khách du lịch, lấy bản đồ làm trung tâm, và tính năng được yêu cầu nhiều nhất là tự động lập lộ trình: nhập địa chỉ là thấy đường đi nhanh nhất. Phiên bản đầu chỉ lập lộ trình đường bộ cho ô tô, làm người lái xe rất hài lòng. Sau đó bạn thêm lộ trình đi bộ, rồi phương tiện công cộng, và dự định thêm lộ trình cho người đi xe đạp và lộ trình qua mọi điểm tham quan trong thành phố. Về kinh doanh, ứng dụng thành công, nhưng mỗi thuật toán lập lộ trình mới lại làm lớp chính của trình chỉ đường to gấp đôi, đến mức không thể bảo trì nổi. Bất kỳ thay đổi nào ở một thuật toán, dù chỉ là sửa một lỗi nhỏ hay chỉnh điểm đánh giá đường phố, đều ảnh hưởng cả lớp và dễ làm hỏng mã đang chạy tốt. Làm việc nhóm cũng kém hiệu quả: đồng đội mới phải tốn nhiều thời gian giải quyết xung đột khi gộp mã, vì tính năng nào cũng phải sửa cùng một lớp khổng lồ.',
     },
     solution: {
-      en: 'Extract all algorithms into separate classes called strategies. The Context stores a strategy and delegates the work to it. Client passes the desired strategy to the context.',
-      vi: 'Trích xuất tất cả thuật toán vào các lớp riêng biệt gọi là strategy. Context lưu trữ một strategy và ủy quyền công việc cho nó. Client truyền strategy mong muốn cho context.',
+      en: 'Take a class that does something specific in a lot of different ways and extract all of these algorithms into separate classes called strategies. The original class, called the context, has a field that stores a reference to one of the strategies and delegates the work to that object instead of executing it itself. The context isn\'t responsible for selecting an appropriate algorithm; the client passes the desired strategy to it. The context knows little about strategies: it works with all of them through the same generic interface, which exposes a single method for triggering the encapsulated algorithm. This makes the context independent of concrete strategies, so you can add new algorithms or modify existing ones without changing the context or other strategies. In the navigation app, each routing algorithm becomes its own class with a single buildRoute method that takes an origin and destination and returns the route\'s checkpoints. Each class may build a different route from the same arguments, but the navigator doesn\'t care, since its main job is to render the checkpoints. It has a method for switching the active routing strategy, so its clients, such as buttons in the user interface, can replace the current routing behavior with another one.',
+      vi: 'Lấy một lớp làm một việc cụ thể theo nhiều cách khác nhau và tách tất cả các thuật toán đó ra thành các lớp riêng gọi là strategy (chiến lược). Lớp gốc, gọi là context, có một trường lưu tham chiếu đến một trong các strategy và ủy quyền công việc cho đối tượng đó thay vì tự thực hiện. Context không chịu trách nhiệm chọn thuật toán phù hợp; client mới là bên truyền strategy mong muốn vào context. Context biết rất ít về các strategy: nó làm việc với tất cả qua cùng một giao diện chung, giao diện này chỉ có một phương thức để kích hoạt thuật toán được đóng gói bên trong. Nhờ vậy context độc lập với các strategy cụ thể, và bạn có thể thêm thuật toán mới hoặc sửa thuật toán cũ mà không phải thay đổi context hay các strategy khác. Trong ứng dụng chỉ đường, mỗi thuật toán lập lộ trình trở thành một lớp riêng với một phương thức buildRoute duy nhất, nhận điểm đi và điểm đến rồi trả về danh sách các điểm mốc của lộ trình. Với cùng tham số, mỗi lớp có thể vạch ra một lộ trình khác nhau, nhưng trình chỉ đường không quan tâm, vì việc chính của nó là vẽ các điểm mốc lên bản đồ. Nó có một phương thức để đổi strategy lập lộ trình đang dùng, nên các client của nó, như các nút trên giao diện, có thể thay hành vi lập lộ trình hiện tại bằng một hành vi khác.',
     },
     applicability: {
-      en: 'Use when you want to swap algorithms inside an object at runtime, or when you have many similar classes differing only in the way they execute some behavior.',
-      vi: 'Sử dụng khi muốn hoán đổi thuật toán bên trong đối tượng lúc chạy, hoặc khi có nhiều lớp tương tự chỉ khác nhau ở cách thực hiện một số hành vi.',
+      en: 'Use the Strategy pattern when you want to use different variants of an algorithm within an object and be able to switch from one algorithm to another during runtime: it lets you indirectly alter the object\'s behavior at runtime by associating it with different sub-objects that perform specific sub-tasks in different ways. Use it when you have a lot of similar classes that only differ in the way they execute some behavior: you extract the varying behavior into a separate class hierarchy and combine the original classes into one, reducing duplicate code. Use it to isolate the business logic of a class from the implementation details of algorithms that may not be as important in the context of that logic: the code, internal data and dependencies of the algorithms are isolated from the rest of the code, and clients get a simple interface to execute the algorithms and switch them at runtime. Use it when your class has a massive conditional statement that switches between different variants of the same algorithm: you get rid of the conditional by extracting all algorithms into separate classes that implement the same interface, and the original object delegates execution to one of them.',
+      vi: 'Dùng Strategy khi bạn muốn dùng các biến thể khác nhau của một thuật toán bên trong một đối tượng và có thể chuyển từ thuật toán này sang thuật toán khác lúc chạy: mẫu này cho phép gián tiếp thay đổi hành vi của đối tượng lúc chạy bằng cách gắn nó với các đối tượng con khác nhau, mỗi đối tượng làm một phần việc cụ thể theo cách riêng. Dùng khi có nhiều lớp tương tự nhau, chỉ khác ở cách thực hiện một hành vi nào đó: bạn tách phần hành vi thay đổi ra một hệ thống lớp riêng và gộp các lớp ban đầu thành một, nhờ đó giảm mã trùng lặp. Dùng để tách logic nghiệp vụ của một lớp khỏi chi tiết triển khai của các thuật toán không quan trọng lắm đối với logic đó: mã, dữ liệu nội bộ và các phụ thuộc của từng thuật toán được cô lập khỏi phần mã còn lại, còn client có một giao diện đơn giản để chạy thuật toán và đổi chúng lúc chạy. Dùng khi lớp của bạn có một câu lệnh điều kiện khổng lồ để chọn giữa các biến thể của cùng một thuật toán: bạn bỏ được câu điều kiện đó bằng cách tách mọi thuật toán thành các lớp riêng cùng triển khai một giao diện, và đối tượng gốc ủy quyền việc thực thi cho một trong số chúng.',
     },
     vietnamese_example: {
       title: { en: 'Martial Arts Schools (Võ Phái)', vi: 'Các Võ Phái Việt Nam' },
       description: {
-        en: 'Vietnamese martial arts (Võ cổ truyền) has many different schools (võ phái): Bình Định Võ with powerful strikes, Võ Tây Sơn with fast multiple attacks, Thiếu Lâm with defensive blocks. A warrior (Context) can choose which style (Strategy) to use in different situations — powerful strikes against an armored opponent, fast attacks against multiple opponents. The warrior\'s "fight" method delegates to whichever strategy is selected.',
-        vi: 'Võ cổ truyền Việt Nam có nhiều võ phái khác nhau: Võ Bình Định với đòn mạnh, Võ Tây Sơn với tấn công nhanh, Thiếu Lâm với phòng thủ. Một võ sĩ (Context) có thể chọn phong cách nào (Strategy) để sử dụng trong các tình huống khác nhau. Phương thức "chiến đấu" của võ sĩ ủy quyền cho bất kỳ strategy nào được chọn.',
+        en: 'Vietnamese traditional martial arts (Võ cổ truyền) has many schools, each a different way of doing the same thing: fighting an opponent. In the code, MartialSchool is the Strategy interface with a single method attack(opponent). BinhDinhSchool (powerful strikes), TaySonSchool (fast combinations) and ThieuLamSchool (defend, then counter) are Concrete Strategies. Warrior, the warrior, is the Context: it stores one MartialSchool, and its fight() method simply calls attack() on whatever style is linked, without knowing which one it is. The warrior does not choose the style; the client does. The client function chooseSchool() knows the differences between the styles and picks one for each situation (Bình Định against heavy armor, Tây Sơn when surrounded, Thiếu Lâm against a stronger opponent), then hands it to the warrior through the setter changeSchool() at runtime. Adding a new school means adding one class that implements MartialSchool, without touching Warrior.',
+        vi: 'Võ cổ truyền Việt Nam có nhiều võ phái, mỗi võ phái là một cách khác nhau để làm cùng một việc: đánh bại đối thủ. Trong mã, MartialSchool là giao diện Strategy với một phương thức duy nhất attack(opponent). BinhDinhSchool (đòn mạnh), TaySonSchool (liên hoàn nhanh) và ThieuLamSchool (phòng thủ rồi phản đòn) là các Concrete Strategy. Warrior, người võ sĩ, là Context: nó giữ một MartialSchool, và phương thức fight() chỉ việc gọi attack() trên võ phái đang được gắn, mà không cần biết đó là võ phái nào. Võ sĩ không tự chọn võ phái; client mới là bên chọn. Hàm client chooseSchool() hiểu sự khác nhau giữa các võ phái và chọn một võ phái cho từng tình huống (Bình Định khi đối thủ mặc giáp dày, Tây Sơn khi bị bao vây, Thiếu Lâm khi đối thủ mạnh hơn), rồi trao cho võ sĩ qua setter changeSchool() lúc chạy. Thêm một võ phái mới chỉ cần thêm một lớp triển khai MartialSchool, không phải sửa Warrior.',
       },
-      illustration: '⚔️ Võ Phái Strategy\nVoSi (Context)\n  - vo_phong: VoPhai\n  + chien_dau()\n       │ delegates to\n  ┌────┼────┐\n  ▼    ▼    ▼\nBình Tây  Thiếu\nĐịnh Sơn  Lâm\n💪  ⚡   🛡️',
+      illustration: '⚔️ Võ Phái Strategy\nClient: chooseSchool(situation)\n       │ changeSchool(school)\n       ▼\nWarrior (Context)\n  - school: MartialSchool\n  + fight(opponent)\n       │ school.attack()\n  ┌────┼────┐\n  ▼    ▼    ▼\nBình  Tây  Thiếu\nĐịnh  Sơn  Lâm\n💪    ⚡    🛡️',
     },
     code_examples: [
       {
@@ -984,88 +1701,146 @@ ruong.gatLua()`,
         label: 'Python',
         code: `from abc import ABC, abstractmethod
 
-class VoPhai(ABC):
-    """Strategy interface"""
+
+# Strategy: the interface common to all fighting styles
+class MartialSchool(ABC):
     @abstractmethod
-    def tan_cong(self, doi_thu: str) -> str: pass
+    def attack(self, opponent: str) -> str: ...
 
-class VoBinhDinh(VoPhai):
-    """Powerful strikes - Bình Định style"""
-    def tan_cong(self, doi_thu: str) -> str:
-        return f"💪 Võ Bình Định: Đánh 'Song Phi' vào {doi_thu}! Uy lực tối đa!"
 
-class VoTaySon(VoPhai):
-    """Fast multiple attacks - Tây Sơn style"""
-    def tan_cong(self, doi_thu: str) -> str:
-        return f"⚡ Võ Tây Sơn: Liên hoàn 7 đòn vào {doi_thu}! Tốc độ như điện!"
+# Concrete Strategies: different variants of the same "fight" algorithm
+class BinhDinhSchool(MartialSchool):
+    def attack(self, opponent: str) -> str:
+        return f"💪 Song Phi uy lực vào {opponent}!"
 
-class VoThieuLam(VoPhai):
-    """Defensive blocking - Thiếu Lâm style"""
-    def tan_cong(self, doi_thu: str) -> str:
-        return f"🛡️ Thiếu Lâm: Phòng thủ rồi phản đòn {doi_thu}! Lấy nhu chế cương!"
 
-class VoSi:
-    """Context"""
-    def __init__(self, ten: str, vo_phong: VoPhai):
-        self.ten = ten
-        self._vo_phong = vo_phong
+class TaySonSchool(MartialSchool):
+    def attack(self, opponent: str) -> str:
+        return f"⚡ Liên hoàn 7 đòn vào {opponent}!"
 
-    def doi_vo_phong(self, vo_phong: VoPhai):
-        print(f"🔄 {self.ten} đổi sang: {type(vo_phong).__name__}")
-        self._vo_phong = vo_phong
 
-    def chien_dau(self, doi_thu: str):
-        ket_qua = self._vo_phong.tan_cong(doi_thu)
-        print(f"⚔️ {self.ten}: {ket_qua}")
+class ThieuLamSchool(MartialSchool):
+    def attack(self, opponent: str) -> str:
+        return f"🛡️ Đỡ đòn rồi phản công {opponent}, lấy nhu chế cương!"
 
-# A warrior choosing different strategies
-hero = VoSi("Nguyễn Huệ", VoBinhDinh())
-hero.chien_dau("giặc Thanh")
 
-hero.doi_vo_phong(VoTaySon())  # Switch strategy at runtime
-hero.chien_dau("kẻ thù bao vây")
+# Context: keeps one strategy and works with it only through MartialSchool
+class Warrior:
+    def __init__(self, name: str, school: MartialSchool) -> None:
+        self.name = name
+        self._school = school
 
-hero.doi_vo_phong(VoThieuLam())
-hero.chien_dau("đòn tấn công mạnh")`,
+    # Setter: lets the client replace the strategy at runtime
+    def change_school(self, school: MartialSchool) -> None:
+        self._school = school
+
+    # Delegates the work; Warrior does not know which style is linked
+    def fight(self, opponent: str) -> None:
+        print(f"⚔️ {self.name}: {self._school.attack(opponent)}")
+
+
+# Client: knows the differences between styles and picks one per situation
+def choose_school(situation: str) -> MartialSchool:
+    if situation == "giáp dày":
+        return BinhDinhSchool()
+    if situation == "bị bao vây":
+        return TaySonSchool()
+    return ThieuLamSchool()
+
+
+hero = Warrior("Nguyễn Huệ", BinhDinhSchool())
+hero.fight("cọc gỗ luyện tập")
+
+battles = [
+    ("giáp dày", "kỵ binh giặc Thanh"),
+    ("bị bao vây", "toán quân phục kích"),
+    ("đối thủ mạnh hơn", "tướng giặc to khỏe"),
+]
+for situation, opponent in battles:
+    print(f"Tình huống: {situation}")
+    hero.change_school(choose_school(situation))
+    hero.fight(opponent)
+
+# Output:
+# ⚔️ Nguyễn Huệ: 💪 Song Phi uy lực vào cọc gỗ luyện tập!
+# Tình huống: giáp dày
+# ⚔️ Nguyễn Huệ: 💪 Song Phi uy lực vào kỵ binh giặc Thanh!
+# Tình huống: bị bao vây
+# ⚔️ Nguyễn Huệ: ⚡ Liên hoàn 7 đòn vào toán quân phục kích!
+# Tình huống: đối thủ mạnh hơn
+# ⚔️ Nguyễn Huệ: 🛡️ Đỡ đòn rồi phản công tướng giặc to khỏe, lấy nhu chế cương!`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `interface VoPhai {
-  tanCong(doiThu: string): string
+        code: `// Strategy: the interface common to all fighting styles
+interface MartialSchool {
+  attack(opponent: string): string
 }
 
-class VoBinhDinh implements VoPhai {
-  tanCong(dt: string) { return \`💪 Đánh Song Phi vào \${dt}!\` }
-}
-
-class VoTaySon implements VoPhai {
-  tanCong(dt: string) { return \`⚡ Liên hoàn 7 đòn vào \${dt}!\` }
-}
-
-class VoThieuLam implements VoPhai {
-  tanCong(dt: string) { return \`🛡️ Phòng thủ rồi phản đòn \${dt}!\` }
-}
-
-class VoSi {
-  constructor(private ten: string, private voPhai: VoPhai) {}
-
-  doiVoPhai(vp: VoPhai) { this.voPhai = vp }
-
-  chienDau(doiThu: string) {
-    console.log(\`⚔️ \${this.ten}: \${this.voPhai.tanCong(doiThu)}\`)
+// Concrete Strategies: different variants of the same "fight" algorithm
+class BinhDinhSchool implements MartialSchool {
+  attack(opponent: string): string {
+    return \`💪 Song Phi uy lực vào \${opponent}!\`
   }
 }
 
-const hero = new VoSi('Nguyễn Huệ', new VoBinhDinh())
-hero.chienDau('giặc Thanh')
-hero.doiVoPhai(new VoTaySon())
-hero.chienDau('kẻ thù bao vây')`,
+class TaySonSchool implements MartialSchool {
+  attack(opponent: string): string {
+    return \`⚡ Liên hoàn 7 đòn vào \${opponent}!\`
+  }
+}
+
+class ThieuLamSchool implements MartialSchool {
+  attack(opponent: string): string {
+    return \`🛡️ Đỡ đòn rồi phản công \${opponent}, lấy nhu chế cương!\`
+  }
+}
+
+// Context: keeps one strategy and works with it only through MartialSchool
+class Warrior {
+  constructor(private name: string, private school: MartialSchool) {}
+
+  // Setter: lets the client replace the strategy at runtime
+  changeSchool(school: MartialSchool): void {
+    this.school = school
+  }
+
+  // Delegates the work; Warrior does not know which style is linked
+  fight(opponent: string): void {
+    console.log(\`⚔️ \${this.name}: \${this.school.attack(opponent)}\`)
+  }
+}
+
+// Client: knows the differences between styles and picks one per situation
+type Situation = 'giáp dày' | 'bị bao vây' | 'đối thủ mạnh hơn'
+
+function chooseSchool(situation: Situation): MartialSchool {
+  switch (situation) {
+    case 'giáp dày': return new BinhDinhSchool()
+    case 'bị bao vây': return new TaySonSchool()
+    default: return new ThieuLamSchool()
+  }
+}
+
+const hero = new Warrior('Nguyễn Huệ', new BinhDinhSchool())
+hero.fight('cọc gỗ luyện tập')
+
+const battles: [Situation, string][] = [
+  ['giáp dày', 'kỵ binh giặc Thanh'],
+  ['bị bao vây', 'toán quân phục kích'],
+  ['đối thủ mạnh hơn', 'tướng giặc to khỏe'],
+]
+for (const [situation, opponent] of battles) {
+  console.log(\`Tình huống: \${situation}\`)
+  hero.changeSchool(chooseSchool(situation))
+  hero.fight(opponent)
+}`,
       },
     ],
     structure_notes: {
-      en: 'Context maintains a reference to one of the strategy objects. Strategy interface declares the algorithm method. ConcreteStrategies implement different algorithm variations.',
-      vi: 'Context duy trì tham chiếu đến một đối tượng strategy. Giao diện Strategy khai báo phương thức thuật toán. ConcreteStrategy triển khai các biến thể thuật toán khác nhau.',
+      en: 'The Context maintains a reference to one of the concrete strategies and communicates with it only through the Strategy interface. The Strategy interface is common to all concrete strategies and declares the method the context uses to execute a strategy. Concrete Strategies implement different variations of the algorithm the context uses. Each time the context needs to run the algorithm, it calls the execution method on the linked strategy object; it doesn\'t know what type of strategy it works with or how the algorithm is executed. The Client creates a specific strategy object and passes it to the context. The context exposes a setter that lets clients replace the associated strategy at runtime. Here Warrior is the Context, MartialSchool the Strategy with attack() as the execution method, the three schools are Concrete Strategies, and chooseSchool() plays the Client.',
+      vi: 'Context giữ tham chiếu đến một trong các strategy cụ thể và chỉ giao tiếp với nó qua giao diện Strategy. Giao diện Strategy dùng chung cho mọi strategy cụ thể và khai báo phương thức mà context dùng để thực thi strategy. Concrete Strategy triển khai các biến thể khác nhau của thuật toán mà context sử dụng. Mỗi khi cần chạy thuật toán, context gọi phương thức thực thi trên đối tượng strategy đang được gắn; nó không biết mình đang làm việc với loại strategy nào hay thuật toán được thực hiện ra sao. Client tạo một đối tượng strategy cụ thể và truyền vào context. Context cung cấp một setter để client thay strategy đang gắn lúc chạy. Ở đây Warrior là Context, MartialSchool là Strategy với attack() là phương thức thực thi, ba võ phái là các Concrete Strategy, còn chooseSchool() đóng vai Client.',
     },
   },
 
@@ -1077,28 +1852,28 @@ hero.chienDau('kẻ thù bao vây')`,
     complexity: 1,
     popularity: 2,
     intent: {
-      en: 'Defines the skeleton of an algorithm in the base class, letting subclasses override specific steps without changing the algorithm\'s overall structure.',
-      vi: 'Định nghĩa bộ khung của thuật toán trong lớp cơ sở, để các lớp con ghi đè các bước cụ thể mà không thay đổi cấu trúc tổng thể của thuật toán.',
+      en: 'Template Method is a behavioral design pattern that defines the skeleton of an algorithm in the superclass but lets subclasses override specific steps of the algorithm without changing its structure.',
+      vi: 'Template Method là một mẫu thiết kế hành vi, định nghĩa bộ khung của một thuật toán ở lớp cha nhưng cho phép các lớp con ghi đè những bước cụ thể của thuật toán mà không thay đổi cấu trúc của nó.',
     },
     problem: {
-      en: 'You have multiple classes that contain almost identical algorithms with minor differences. The overall structure should be fixed, but individual steps can vary.',
-      vi: 'Bạn có nhiều lớp chứa các thuật toán gần như giống nhau với sự khác biệt nhỏ. Cấu trúc tổng thể phải được cố định, nhưng các bước riêng lẻ có thể biến thiên.',
+      en: 'Imagine a data mining app that analyzes corporate documents. Users feed it documents in various formats (PDF, DOC, CSV), and it tries to extract meaningful data from them in a uniform format. The first version only handled DOC files, the next one added CSV, and a month later PDF. At some point you notice that the three classes share a lot of similar code: the code for dealing with each data format is entirely different, but the code for processing and analyzing the data is almost identical. You want to get rid of that duplication while keeping the algorithm structure intact. There is a second problem in the client code: it is full of conditionals that pick a course of action depending on the class of the processing object. If the three classes had a common interface or base class, the client could drop those conditionals and use polymorphism.',
+      vi: 'Hãy tưởng tượng một ứng dụng khai phá dữ liệu chuyên phân tích tài liệu của doanh nghiệp. Người dùng đưa vào tài liệu ở nhiều định dạng (PDF, DOC, CSV), và ứng dụng cố gắng trích xuất dữ liệu có ý nghĩa theo một định dạng thống nhất. Phiên bản đầu chỉ xử lý được tệp DOC, phiên bản sau hỗ trợ thêm CSV, và một tháng sau thì đến PDF. Đến một lúc, bạn nhận ra ba lớp này có rất nhiều mã giống nhau: phần làm việc với từng định dạng thì hoàn toàn khác, nhưng phần xử lý và phân tích dữ liệu gần như y hệt. Bạn muốn loại bỏ sự trùng lặp đó mà vẫn giữ nguyên cấu trúc thuật toán. Còn một vấn đề nữa ở mã client: nó chứa đầy câu lệnh điều kiện để chọn cách xử lý tùy theo lớp của đối tượng xử lý. Nếu ba lớp có chung một giao diện hoặc lớp cơ sở, client có thể bỏ các điều kiện đó và dùng đa hình.',
     },
     solution: {
-      en: 'Break the algorithm into steps and define the overall sequence in a base class method. Let subclasses override steps but keep the template method intact.',
-      vi: 'Chia thuật toán thành các bước và định nghĩa trình tự tổng thể trong phương thức lớp cơ sở. Cho phép các lớp con ghi đè các bước nhưng giữ nguyên phương thức khuôn mẫu.',
+      en: 'Break the algorithm into a series of steps, turn each step into a method, and put a series of calls to these methods inside a single template method. To use the algorithm, the client provides its own subclass, implements all abstract steps and overrides some of the optional ones if needed, but never the template method itself. In the data mining app, a base class for the three parsers defines the template method. Opening and closing files and extracting and parsing data differ per format, so they stay in the subclasses; analyzing the raw data and composing reports are almost the same everywhere, so they are pulled up into the base class and shared. This gives two types of steps: abstract steps, which every subclass must implement, and optional steps, which already have a default implementation but can still be overridden. A third type is the hook: an optional step with an empty body. The template method works even if a hook is not overridden; hooks are usually placed before and after crucial steps to give subclasses extra extension points. Consider making the template method final so subclasses cannot override it.',
+      vi: 'Chia thuật toán thành một chuỗi các bước, biến mỗi bước thành một phương thức, rồi đặt chuỗi lời gọi tới các phương thức này vào một phương thức khuôn mẫu (template method) duy nhất. Để dùng thuật toán, client cung cấp lớp con của riêng mình, triển khai mọi bước trừu tượng và ghi đè một số bước tùy chọn nếu cần, nhưng không bao giờ ghi đè chính phương thức khuôn mẫu. Trong ứng dụng khai phá dữ liệu, một lớp cơ sở chung cho ba bộ phân tích định nghĩa phương thức khuôn mẫu. Việc mở, đóng tệp và trích xuất, phân tích cú pháp dữ liệu khác nhau theo định dạng nên vẫn nằm ở lớp con; việc phân tích dữ liệu thô và soạn báo cáo gần như giống nhau nên được đưa lên lớp cơ sở để các lớp con dùng chung. Từ đó có hai loại bước: bước trừu tượng, mà mọi lớp con phải triển khai, và bước tùy chọn, đã có sẵn cài đặt mặc định nhưng vẫn có thể ghi đè. Loại bước thứ ba là hook: một bước tùy chọn có thân rỗng. Phương thức khuôn mẫu vẫn chạy được dù hook không được ghi đè; hook thường được đặt trước và sau các bước quan trọng để lớp con có thêm điểm mở rộng. Nên cân nhắc đánh dấu phương thức khuôn mẫu là final để lớp con không thể ghi đè nó.',
     },
     applicability: {
-      en: 'Use when you want clients to extend only particular steps of an algorithm, but not the whole algorithm and its structure.',
-      vi: 'Sử dụng khi muốn client chỉ mở rộng các bước cụ thể của thuật toán, nhưng không phải toàn bộ thuật toán và cấu trúc của nó.',
+      en: 'Use Template Method when you want to let clients extend only particular steps of an algorithm, but not the whole algorithm or its structure: the pattern turns a monolithic algorithm into a series of individual steps that subclasses can easily extend, while the structure defined in the superclass stays intact. Use it when you have several classes that contain almost identical algorithms with some minor differences, so that you might need to modify all of them whenever the algorithm changes: once the algorithm becomes a template method, you can pull the steps with similar implementations up into the superclass and eliminate the duplication, while code that varies stays in the subclasses.',
+      vi: 'Dùng Template Method khi bạn muốn cho client mở rộng chỉ một số bước cụ thể của thuật toán, chứ không phải toàn bộ thuật toán hay cấu trúc của nó: mẫu này biến một thuật toán nguyên khối thành chuỗi các bước riêng lẻ mà lớp con dễ dàng mở rộng, trong khi cấu trúc do lớp cha định nghĩa vẫn được giữ nguyên. Dùng khi bạn có nhiều lớp chứa các thuật toán gần như giống hệt nhau với vài khác biệt nhỏ, khiến mỗi lần thuật toán thay đổi bạn có thể phải sửa tất cả các lớp: khi thuật toán đã thành phương thức khuôn mẫu, bạn có thể đưa các bước có cài đặt giống nhau lên lớp cha để loại bỏ trùng lặp, còn phần mã khác nhau vẫn nằm ở lớp con.',
     },
     vietnamese_example: {
       title: { en: 'Cooking Traditional Vietnamese Soup', vi: 'Nấu Canh Truyền Thống Việt Nam' },
       description: {
-        en: 'Every Vietnamese soup (canh) follows the same template: 1) Prepare broth (nước dùng), 2) Add main ingredient, 3) Season with fish sauce (nước mắm), 4) Garnish and serve. But the specific steps differ by dish: Canh Chua (sour soup) uses tamarind + fish, Canh Bí (gourd soup) uses pork + gourd, Bún Bò Huế uses lemongrass + beef. The template is fixed; the steps are customized.',
-        vi: 'Mỗi món canh Việt Nam đều theo cùng một khuôn mẫu: 1) Chuẩn bị nước dùng, 2) Thêm nguyên liệu chính, 3) Nêm nếm với nước mắm, 4) Trang trí và phục vụ. Nhưng các bước cụ thể khác nhau theo món: Canh Chua dùng me + cá, Canh Bí dùng thịt heo + bí, Bún Bò Huế dùng sả + bò.',
+        en: 'Every Vietnamese soup (canh) is cooked in the same order: prepare the broth, add the main ingredients, season, put it in the bowl, and garnish. The abstract class SoupRecipe fixes that order in its template method cook(). The broth and the ingredients differ for every dish, so prepareBroth() and addIngredients() are abstract steps. Seasoning with fish sauce (season()) and sprinkling spring onions (garnish()) are optional steps with a default that most dishes share. beforeLadle() is a hook with an empty body, called just before the soup is ladled into the bowl. GourdBoneSoup (gourd and pork-bone soup) implements only the abstract steps and keeps every default. SourFishSoup (sour fish soup) also overrides garnish() with sawtooth herb and chili. HueBeefNoodleSoup overrides season() to add Huế shrimp paste (mắm ruốc) and uses the hook to blanch the noodles into the bowl before the broth goes in. The cooking order never changes; the client just calls cook() on any SoupRecipe.',
+        vi: 'Món canh Việt nào cũng được nấu theo cùng một trình tự: chuẩn bị nước dùng, cho nguyên liệu chính, nêm nếm, múc ra tô, rồi trang trí. Lớp trừu tượng SoupRecipe cố định trình tự đó trong phương thức khuôn mẫu cook(). Nước dùng và nguyên liệu khác nhau theo từng món, nên prepareBroth() và addIngredients() là bước trừu tượng. Nêm nước mắm (season()) và rắc hành lá (garnish()) là bước tùy chọn có cài đặt mặc định mà phần lớn các món dùng chung. beforeLadle() là hook có thân rỗng, được gọi ngay trước khi múc canh ra tô. GourdBoneSoup chỉ triển khai các bước trừu tượng và giữ nguyên mọi mặc định. SourFishSoup ghi đè thêm garnish() để rắc ngò gai và ớt đỏ. HueBeefNoodleSoup ghi đè season() để thêm mắm ruốc Huế, và dùng hook để trụng bún vào tô trước khi chan nước dùng. Trình tự nấu không bao giờ thay đổi; client chỉ việc gọi cook() trên bất kỳ SoupRecipe nào.',
       },
-      illustration: '🍲 Khuôn Nấu Canh\nNauCanh.nau() [Template]\n  │\n  ├── 1. chuan_bi_nuoc_dung() ← override\n  ├── 2. them_nguyen_lieu()    ← override\n  ├── 3. nem_nem()  [fish sauce - fixed]\n  └── 4. trang_tri()          ← override\n\nCanhChua  CanhBi  BunBoHue',
+      illustration: '🍲 Khuôn Nấu Canh\nSoupRecipe.cook() [template]\n  │\n  ├── 1. prepareBroth()    ← abstract\n  ├── 2. addIngredients()  ← abstract\n  ├── 3. season()          ← default\n  ├── 4. beforeLadle()     ← hook\n  └── 5. garnish()         ← default\n\nSourFishSoup  GourdBoneSoup  HueBeefNoodleSoup',
     },
     code_examples: [
       {
@@ -1106,100 +1881,157 @@ hero.chienDau('kẻ thù bao vây')`,
         label: 'Python',
         code: `from abc import ABC, abstractmethod
 
-class NauCanh(ABC):
-    """Template Method - Abstract cooking class"""
 
-    def nau(self):
-        """Template method - defines the algorithm skeleton"""
-        print(f"🍲 Bắt đầu nấu {self.ten_mon()}...")
-        self.chuan_bi_nuoc_dung()
-        self.them_nguyen_lieu()
-        self.nem_nem()  # Fixed step - always use fish sauce
-        self.trang_tri()
-        print(f"✅ {self.ten_mon()} hoàn thành!\n")
+# Abstract Class: declares the steps and the template method
+class SoupRecipe(ABC):
+    # Template method: fixes the order of the steps.
+    # Python has no "final", so subclasses must simply not override it.
+    def cook(self) -> None:
+        print(f"🍲 Nấu {self.dish_name()}:")
+        self.prepare_broth()
+        self.add_ingredients()
+        self.season()
+        self.before_ladle()
+        self.garnish()
+
+    # Abstract steps: every subclass must implement them
+    @abstractmethod
+    def dish_name(self) -> str: ...
 
     @abstractmethod
-    def ten_mon(self) -> str: pass
+    def prepare_broth(self) -> None: ...
 
     @abstractmethod
-    def chuan_bi_nuoc_dung(self): pass
+    def add_ingredients(self) -> None: ...
 
-    @abstractmethod
-    def them_nguyen_lieu(self): pass
+    # Optional steps: a shared default that subclasses may override
+    def season(self) -> None:
+        print("  🐟 Nêm nước mắm, muối, đường")
 
-    def nem_nem(self):
-        """Fixed step - Vietnamese always season with nước mắm"""
-        print("  🐟 Nêm nước mắm Phú Quốc, muối, đường...")
+    def garnish(self) -> None:
+        print("  🌿 Rắc hành lá")
 
-    @abstractmethod
-    def trang_tri(self): pass
+    # Hook: an empty optional step; the algorithm works without it
+    def before_ladle(self) -> None:
+        pass
 
-class CanhChua(NauCanh):
-    def ten_mon(self): return "Canh Chua Cá Lóc"
-    def chuan_bi_nuoc_dung(self): print("  🍅 Nấu nước dùng với cà chua và me chua")
-    def them_nguyen_lieu(self): print("  🐟 Thêm cá lóc, dứa, giá đỗ")
-    def trang_tri(self): print("  🌿 Rắc ngò gai và ớt đỏ lên trên")
 
-class CanhBi(NauCanh):
-    def ten_mon(self): return "Canh Bí Xương"
-    def chuan_bi_nuoc_dung(self): print("  🦴 Hầm xương heo 2 tiếng")
-    def them_nguyen_lieu(self): print("  🥬 Thêm bí đao và hành tím")
-    def trang_tri(self): print("  🌿 Rắc hành lá xắt nhỏ")
+# Concrete Classes: implement the abstract steps, override some optional ones
+class SourFishSoup(SoupRecipe):
+    def dish_name(self) -> str: return "Canh Chua Cá Lóc"
+    def prepare_broth(self) -> None: print("  🍅 Nấu nước me chua với cà chua")
+    def add_ingredients(self) -> None: print("  🐟 Thêm cá lóc, dứa, giá đỗ")
+    def garnish(self) -> None: print("  🌿 Rắc ngò gai và ớt đỏ")
 
-class BunBoHue(NauCanh):
-    def ten_mon(self): return "Bún Bò Huế"
-    def chuan_bi_nuoc_dung(self): print("  🌿 Hầm xương bò với sả và mắm ruốc Huế")
-    def them_nguyen_lieu(self): print("  🥩 Thêm thịt bò, chả cua, huyết")
-    def trang_tri(self): print("  🌶️ Rắc hành tím, rau sống, ớt sa tế")
 
-# Cook different soups using the same template
-for mon in [CanhChua(), CanhBi(), BunBoHue()]:
-    mon.nau()`,
+class GourdBoneSoup(SoupRecipe):
+    # Only the abstract steps; every default is kept
+    def dish_name(self) -> str: return "Canh Bí Xương"
+    def prepare_broth(self) -> None: print("  🦴 Hầm xương heo 2 tiếng")
+    def add_ingredients(self) -> None: print("  🥬 Thêm bí đao và hành tím")
+
+
+class HueBeefNoodleSoup(SoupRecipe):
+    def dish_name(self) -> str: return "Bún Bò Huế"
+    def prepare_broth(self) -> None: print("  🌿 Hầm xương bò với sả")
+    def add_ingredients(self) -> None: print("  🥩 Thêm bắp bò, chả cua, huyết")
+    def season(self) -> None: print("  🦐 Nêm mắm ruốc Huế và nước mắm")
+    def before_ladle(self) -> None: print("  🍜 Trụng bún, xếp vào tô")
+    def garnish(self) -> None: print("  🌶️ Thêm rau sống và sa tế")
+
+
+# Client: works with any dish through the abstract class
+def serve(dish: SoupRecipe) -> None:
+    dish.cook()
+
+
+for dish in [SourFishSoup(), GourdBoneSoup(), HueBeefNoodleSoup()]:
+    serve(dish)
+
+# Output:
+# 🍲 Nấu Canh Chua Cá Lóc:
+#   🍅 Nấu nước me chua với cà chua
+#   🐟 Thêm cá lóc, dứa, giá đỗ
+#   🐟 Nêm nước mắm, muối, đường
+#   🌿 Rắc ngò gai và ớt đỏ
+# 🍲 Nấu Canh Bí Xương:
+#   🦴 Hầm xương heo 2 tiếng
+#   🥬 Thêm bí đao và hành tím
+#   🐟 Nêm nước mắm, muối, đường
+#   🌿 Rắc hành lá
+# 🍲 Nấu Bún Bò Huế:
+#   🌿 Hầm xương bò với sả
+#   🥩 Thêm bắp bò, chả cua, huyết
+#   🦐 Nêm mắm ruốc Huế và nước mắm
+#   🍜 Trụng bún, xếp vào tô
+#   🌶️ Thêm rau sống và sa tế`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `abstract class NauCanh {
-  nau(): void {
-    console.log(\`🍲 Nấu \${this.tenMon()}...\`)
-    this.chuanBiNuocDung()
-    this.themNguyenLieu()
-    this.nemNem()
-    this.trangTri()
-    console.log(\`✅ \${this.tenMon()} xong!\n\`)
+        code: `// Abstract Class: declares the steps and the template method
+abstract class SoupRecipe {
+  // Template method: fixes the order of the steps.
+  // TypeScript has no "final", so subclasses must simply not override it.
+  cook(): void {
+    console.log(\`🍲 Nấu \${this.dishName()}:\`)
+    this.prepareBroth()
+    this.addIngredients()
+    this.season()
+    this.beforeLadle()
+    this.garnish()
   }
 
-  abstract tenMon(): string
-  abstract chuanBiNuocDung(): void
-  abstract themNguyenLieu(): void
-  abstract trangTri(): void
+  // Abstract steps: every subclass must implement them
+  abstract dishName(): string
+  protected abstract prepareBroth(): void
+  protected abstract addIngredients(): void
 
-  private nemNem(): void {
-    console.log('  🐟 Nêm nước mắm Phú Quốc...')
-  }
+  // Optional steps: a shared default that subclasses may override
+  protected season(): void { console.log('  🐟 Nêm nước mắm, muối, đường') }
+  protected garnish(): void { console.log('  🌿 Rắc hành lá') }
+
+  // Hook: an empty optional step; the algorithm works without it
+  protected beforeLadle(): void {}
 }
 
-class CanhChua extends NauCanh {
-  tenMon() { return 'Canh Chua Cá Lóc' }
-  chuanBiNuocDung() { console.log('  🍅 Nấu nước me chua + cà chua') }
-  themNguyenLieu() { console.log('  🐟 Thêm cá lóc + dứa + giá') }
-  trangTri() { console.log('  🌿 Ngò gai + ớt đỏ') }
+// Concrete Classes: implement the abstract steps, override some optional ones
+class SourFishSoup extends SoupRecipe {
+  dishName() { return 'Canh Chua Cá Lóc' }
+  protected prepareBroth() { console.log('  🍅 Nấu nước me chua với cà chua') }
+  protected addIngredients() { console.log('  🐟 Thêm cá lóc, dứa, giá đỗ') }
+  protected garnish() { console.log('  🌿 Rắc ngò gai và ớt đỏ') }
 }
 
-class BunBoHue extends NauCanh {
-  tenMon() { return 'Bún Bò Huế' }
-  chuanBiNuocDung() { console.log('  🌿 Hầm xương bò + sả + mắm ruốc') }
-  themNguyenLieu() { console.log('  🥩 Thịt bò + chả cua + huyết') }
-  trangTri() { console.log('  🌶️ Hành tím + rau sống + sa tế') }
+class GourdBoneSoup extends SoupRecipe {
+  // Only the abstract steps; every default is kept
+  dishName() { return 'Canh Bí Xương' }
+  protected prepareBroth() { console.log('  🦴 Hầm xương heo 2 tiếng') }
+  protected addIngredients() { console.log('  🥬 Thêm bí đao và hành tím') }
 }
 
-new CanhChua().nau()
-new BunBoHue().nau()`,
+class HueBeefNoodleSoup extends SoupRecipe {
+  dishName() { return 'Bún Bò Huế' }
+  protected prepareBroth() { console.log('  🌿 Hầm xương bò với sả') }
+  protected addIngredients() { console.log('  🥩 Thêm bắp bò, chả cua, huyết') }
+  protected season() { console.log('  🦐 Nêm mắm ruốc Huế và nước mắm') }
+  protected beforeLadle() { console.log('  🍜 Trụng bún, xếp vào tô') }
+  protected garnish() { console.log('  🌶️ Thêm rau sống và sa tế') }
+}
+
+// Client: works with any dish through the abstract class
+function serve(dish: SoupRecipe): void {
+  dish.cook()
+}
+
+for (const dish of [new SourFishSoup(), new GourdBoneSoup(), new HueBeefNoodleSoup()]) {
+  serve(dish)
+}`,
       },
     ],
     structure_notes: {
-      en: 'Abstract Class defines the template method and abstract primitive operations. Concrete Class implements the primitive operations to carry out subclass-specific steps.',
-      vi: 'Lớp Abstract định nghĩa phương thức khuôn mẫu và các thao tác nguyên thủy trừu tượng. Concrete Class triển khai các thao tác nguyên thủy cho các bước theo lớp con.',
+      en: 'The Abstract Class declares methods that act as steps of an algorithm, as well as the actual template method, which calls these methods in a specific order. The steps may either be declared abstract or have some default implementation; a hook is a step whose default body is empty. Concrete Classes can override all of the steps, but not the template method itself. In the diagram, methods marked * are abstract steps. Each concrete class box lists only the steps that class overrides, and dishName() is left out of those boxes for space.',
+      vi: 'Abstract Class khai báo các phương thức đóng vai trò là các bước của thuật toán, cùng với chính phương thức khuôn mẫu, phương thức gọi các bước đó theo một thứ tự nhất định. Các bước có thể được khai báo là trừu tượng hoặc có cài đặt mặc định; hook là một bước có thân mặc định rỗng. Concrete Class có thể ghi đè mọi bước, nhưng không được ghi đè chính phương thức khuôn mẫu. Trong sơ đồ, các phương thức có dấu * là bước trừu tượng. Hộp của mỗi lớp cụ thể chỉ liệt kê các bước mà lớp đó ghi đè, và bỏ qua dishName() cho gọn.',
     },
   },
 
@@ -1211,28 +2043,28 @@ new BunBoHue().nau()`,
     complexity: 3,
     popularity: 1,
     intent: {
-      en: 'Lets you add further operations to objects without modifying them. Defines a new operation to be performed on elements of an object structure.',
-      vi: 'Cho phép bạn thêm các thao tác vào đối tượng mà không sửa đổi chúng. Định nghĩa thao tác mới cần thực hiện trên các phần tử của cấu trúc đối tượng.',
+      en: 'Visitor is a behavioral design pattern that lets you separate algorithms from the objects on which they operate.',
+      vi: 'Visitor là một mẫu thiết kế hành vi, cho phép bạn tách các thuật toán khỏi những đối tượng mà chúng thao tác.',
     },
     problem: {
-      en: 'You need to add new operations to a class hierarchy without modifying those classes. The operations don\'t logically belong to those classes.',
-      vi: 'Bạn cần thêm các thao tác mới vào hệ thống phân cấp lớp mà không sửa đổi các lớp đó. Các thao tác không thuộc về các lớp đó một cách hợp lý.',
+      en: 'Imagine that your team develops an app that works with geographic information structured as one colossal graph. Each node may represent a complex entity such as a city, or more granular things like industries or sightseeing areas, and each node type is its own class. You get a task to export the graph into XML. The obvious plan is to add an export method to each node class and recurse over the graph, but the system architect refuses to let you alter the node classes: the code is already in production, and he does not want to risk breaking it because of a bug in your change. He also questions whether XML export belongs in classes whose primary job is working with geodata. And once this feature ships, someone from marketing will probably ask for a different export format or some other odd behavior, forcing you to change those precious and fragile classes again.',
+      vi: 'Hãy tưởng tượng nhóm của bạn phát triển một ứng dụng làm việc với thông tin địa lý được tổ chức thành một đồ thị khổng lồ. Mỗi nút có thể là một thực thể phức tạp như thành phố, hoặc những thứ chi tiết hơn như khu công nghiệp hay điểm tham quan, và mỗi loại nút là một lớp riêng. Bạn được giao nhiệm vụ xuất đồ thị ra định dạng XML. Cách hiển nhiên là thêm phương thức xuất vào từng lớp nút rồi duyệt đệ quy qua đồ thị, nhưng kiến trúc sư hệ thống không cho sửa các lớp nút: mã đã chạy trên môi trường production và ông không muốn mạo hiểm làm hỏng nó vì một lỗi trong thay đổi của bạn. Ông cũng nghi ngờ việc đặt mã xuất XML vào những lớp vốn có nhiệm vụ chính là xử lý dữ liệu địa lý. Hơn nữa, sau tính năng này, rất có thể bộ phận marketing sẽ yêu cầu xuất sang định dạng khác hoặc thêm một hành vi kỳ quặc nào đó, buộc bạn lại phải sửa những lớp quý giá và mong manh ấy.',
     },
     solution: {
-      en: 'Place new behavior into a separate class called a visitor. The objects that need the behavior accept visitors and call the appropriate visitor method.',
-      vi: 'Đặt hành vi mới vào một lớp riêng biệt gọi là visitor. Các đối tượng cần hành vi chấp nhận visitor và gọi phương thức visitor thích hợp.',
+      en: 'Place the new behavior into a separate class called a visitor instead of integrating it into existing classes. The object that had to perform the behavior is passed to one of the visitor\'s methods as an argument, which gives the method access to all the data it needs. Because the behavior differs per node class, the visitor defines a set of methods, one per class (doForCity, doForIndustry, doForSightSeeing). Calling the right one is the hard part: the methods have different signatures, so polymorphism does not apply, and checking each node\'s class with conditionals is a nightmare. Method overloading does not help either: the exact class of a node is unknown in advance, so the language would pick the method that takes the base Node class. Visitor solves this with a technique called Double Dispatch. Instead of the client selecting the method, each element "accepts" a visitor and calls the visiting method that matches its own class (City.accept(v) calls v.doForCity(this)). The node classes still have to change once, but the change is trivial and lets you add further behaviors without touching them again. With a common interface for all visitors, every existing node works with any visitor you introduce, so a new behavior only needs a new visitor class.',
+      vi: 'Đặt hành vi mới vào một lớp riêng gọi là visitor thay vì cố tích hợp nó vào các lớp hiện có. Đối tượng lẽ ra phải thực hiện hành vi giờ được truyền vào một phương thức của visitor dưới dạng tham số, giúp phương thức đó truy cập mọi dữ liệu cần thiết của đối tượng. Vì hành vi khác nhau theo từng lớp nút, visitor định nghĩa một tập phương thức, mỗi phương thức cho một lớp (doForCity, doForIndustry, doForSightSeeing). Khó khăn nằm ở việc gọi đúng phương thức: các phương thức có chữ ký khác nhau nên không dùng được đa hình, còn kiểm tra lớp của từng nút bằng câu lệnh điều kiện thì rất rối rắm. Nạp chồng phương thức (overloading) cũng không giúp được: lớp chính xác của nút không biết trước, nên ngôn ngữ sẽ chọn phương thức nhận lớp cơ sở Node. Visitor giải quyết việc này bằng kỹ thuật Double Dispatch (điều phối kép). Thay vì để client chọn phương thức, mỗi phần tử "chấp nhận" (accept) visitor và tự gọi phương thức thăm ứng với lớp của chính nó (City.accept(v) gọi v.doForCity(this)). Các lớp nút vẫn phải sửa một lần, nhưng thay đổi rất nhỏ và cho phép thêm các hành vi khác về sau mà không phải sửa lại. Khi có một giao diện chung cho mọi visitor, mọi nút hiện có đều làm việc được với bất kỳ visitor nào bạn thêm vào, nên muốn có hành vi mới chỉ cần thêm một lớp visitor.',
     },
     applicability: {
-      en: 'Use when you need to perform operations on all elements of a complex object structure, or when you want to collect related operations into one class.',
-      vi: 'Sử dụng khi cần thực hiện các thao tác trên tất cả phần tử của cấu trúc đối tượng phức tạp, hoặc khi muốn thu thập các thao tác liên quan vào một lớp.',
+      en: 'Use Visitor when you need to perform an operation on all elements of a complex object structure, such as an object tree: a visitor object implements several variants of the same operation, one for each target class, so it can run over a set of objects of different classes. Use it to clean up the business logic of auxiliary behaviors: the primary classes of your app stay focused on their main jobs, while all other behaviors are extracted into a set of visitor classes. Use it when a behavior makes sense only in some classes of a class hierarchy but not in others: extract the behavior into a visitor class and implement only the visiting methods for the relevant classes, leaving the rest empty.',
+      vi: 'Dùng Visitor khi cần thực hiện một thao tác trên mọi phần tử của một cấu trúc đối tượng phức tạp, chẳng hạn một cây đối tượng: đối tượng visitor cài đặt nhiều biến thể của cùng một thao tác, mỗi biến thể cho một lớp đích, nên có thể chạy thao tác trên một tập đối tượng thuộc nhiều lớp khác nhau. Dùng để tách các hành vi phụ trợ ra khỏi logic nghiệp vụ: các lớp chính của ứng dụng tập trung vào nhiệm vụ chính, còn mọi hành vi khác được chuyển sang một tập lớp visitor. Dùng khi một hành vi chỉ có ý nghĩa với một số lớp trong hệ phân cấp mà không có ý nghĩa với các lớp khác: tách hành vi đó ra một lớp visitor và chỉ cài đặt các phương thức thăm cho những lớp liên quan, để trống các phương thức còn lại.',
     },
     vietnamese_example: {
       title: { en: 'Tax Collector Visiting Guilds', vi: 'Quan Thu Thuế Thăm Các Phường Hội' },
       description: {
-        en: 'In ancient Vietnamese cities (kinh thành), a Royal Tax Collector (Quan Thu Thuế) visits different guilds: Silk Weavers (Phường Dệt Lụa), Potters (Phường Gốm Sứ), Carpenters (Phường Mộc). Each guild has a different tax calculation method, but the guilds themselves don\'t need to know about tax — they just accept the collector. A second visitor (Royal Auditor) can inspect the same guilds for quality instead. New visitor types (health inspector, census taker) can be added without changing the guilds.',
-        vi: 'Trong kinh thành Việt Nam cổ, Quan Thu Thuế đến thăm các phường hội khác nhau: Phường Dệt Lụa, Phường Gốm Sứ, Phường Mộc. Mỗi phường có phương pháp tính thuế khác nhau, nhưng bản thân các phường không cần biết về thuế — họ chỉ cần chấp nhận người thu thuế.',
+        en: 'In the old capital (kinh thành), each guild (phường hội) practices its own craft: SilkWeaversGuild weaves silk, PotteryGuild fires pottery, CarpentryGuild does woodwork. The guilds implement the Element interface Guild, whose only extra duty is accept(visitor). Court officials are the visitors: the GuildVisitor interface has one visiting method per guild (visitSilkWeaversGuild, visitPotteryGuild, visitCarpentryGuild). TaxCollectorVisitor (the tax collector) applies a different rate to each guild and keeps a running total. InspectorVisitor (the inspector) checks only the goods sent as tribute to the king, silk and pottery, so it leaves visitCarpentryGuild empty. The Capital client walks its list of guilds and calls accept on each one; each guild calls back the visiting method meant for its own class, which is the double dispatch. A new official, such as a census taker, is one new visitor class, and the guild classes stay unchanged.',
+        vi: 'Trong kinh thành xưa, mỗi phường hội làm một nghề riêng: SilkWeaversGuild dệt lụa, PotteryGuild nung gốm, CarpentryGuild làm đồ gỗ. Các phường triển khai giao diện Element là Guild, với nghĩa vụ thêm duy nhất là accept(visitor). Các quan triều đình là visitor: giao diện GuildVisitor có một phương thức thăm cho mỗi phường (visitSilkWeaversGuild, visitPotteryGuild, visitCarpentryGuild). TaxCollectorVisitor áp mức thuế khác nhau cho từng phường và cộng dồn tổng thuế. InspectorVisitor chỉ kiểm tra hàng tiến vua là lụa và gốm, nên để trống visitCarpentryGuild. Client Capital duyệt danh sách phường hội và gọi accept trên từng phường; mỗi phường gọi lại đúng phương thức thăm dành cho lớp của mình, đó chính là điều phối kép. Thêm một vị quan mới, chẳng hạn quan điều tra dân số, chỉ cần thêm một lớp visitor, còn các lớp phường hội giữ nguyên.',
       },
-      illustration: '🏛️ Quan Thu Thuế Visitor\n\nPhuongHoi ──accept(visitor)──▶\n  │                    ThuThueVisitor\n  ├─ PhuongDetLua         visit(lua)\n  ├─ PhuongGomSu    or    visit(gom)\n  └─ PhuongMoc            visit(moc)\n\nNew visitor = new operations!',
+      illustration: '🏛️ Quan Thu Thuế Visitor\n\nCapital ──welcomeVisitor(v)──▶ Guild[]\n\nSilkWeaversGuild.accept(v) ─▶ v.visitSilkWeaversGuild(this)\nPotteryGuild.accept(v)     ─▶ v.visitPotteryGuild(this)\nCarpentryGuild.accept(v)   ─▶ v.visitCarpentryGuild(this)\n\nv = TaxCollectorVisitor | InspectorVisitor\nNew visitor = new operation!',
     },
     code_examples: [
       {
@@ -1240,114 +2072,201 @@ new BunBoHue().nau()`,
         label: 'Python',
         code: `from abc import ABC, abstractmethod
 
-class PhuongHoi(ABC):
+
+# Visitor: one visiting method per Concrete Element class
+class GuildVisitor(ABC):
     @abstractmethod
-    def chap_nhan(self, visitor: 'KhachTham'): pass
-    @property
+    def visit_silk_weavers_guild(self, g: "SilkWeaversGuild") -> None: ...
+
     @abstractmethod
-    def doanh_thu(self) -> int: pass
+    def visit_pottery_guild(self, g: "PotteryGuild") -> None: ...
 
-class PhuongDetLua(PhuongHoi):
-    @property
-    def doanh_thu(self): return 10_000_000
-    def chap_nhan(self, visitor): visitor.tham_phuong_det_lua(self)
-    def __str__(self): return "Phường Dệt Lụa"
-
-class PhuongGomSu(PhuongHoi):
-    @property
-    def doanh_thu(self): return 5_000_000
-    def chap_nhan(self, visitor): visitor.tham_phuong_gom_su(self)
-    def __str__(self): return "Phường Gốm Sứ"
-
-class PhuongMoc(PhuongHoi):
-    @property
-    def doanh_thu(self): return 8_000_000
-    def chap_nhan(self, visitor): visitor.tham_phuong_moc(self)
-    def __str__(self): return "Phường Mộc"
-
-class KhachTham(ABC):
     @abstractmethod
-    def tham_phuong_det_lua(self, p: PhuongDetLua): pass
+    def visit_carpentry_guild(self, g: "CarpentryGuild") -> None: ...
+
+
+# Element: declares the accept method, typed with the Visitor interface
+class Guild(ABC):
     @abstractmethod
-    def tham_phuong_gom_su(self, p: PhuongGomSu): pass
-    @abstractmethod
-    def tham_phuong_moc(self, p: PhuongMoc): pass
+    def accept(self, visitor: GuildVisitor) -> None: ...
 
-class QuanThuThue(KhachTham):
-    """Visitor 1: Tax collection"""
-    def tham_phuong_det_lua(self, p):
-        thue = p.doanh_thu * 0.10
-        print(f"💰 Thuế {p} (lụa): {thue:,.0f}đ (10%)")
 
-    def tham_phuong_gom_su(self, p):
-        thue = p.doanh_thu * 0.08
-        print(f"💰 Thuế {p} (gốm): {thue:,.0f}đ (8%)")
+# Concrete Elements: accept() calls the visiting method for its own class
+class SilkWeaversGuild(Guild):
+    name = "Phường Dệt Lụa"
+    revenue = 10_000_000
+    silk_bolt_count = 120
 
-    def tham_phuong_moc(self, p):
-        thue = p.doanh_thu * 0.12
-        print(f"💰 Thuế {p} (mộc): {thue:,.0f}đ (12%)")
+    def accept(self, visitor: GuildVisitor) -> None:
+        visitor.visit_silk_weavers_guild(self)
 
-class QuanKiemTra(KhachTham):
-    """Visitor 2: Quality audit - different operation, same structure"""
-    def tham_phuong_det_lua(self, p): print(f"🔍 Kiểm tra chất lượng lụa: ✅ Đạt tiêu chuẩn")
-    def tham_phuong_gom_su(self, p): print(f"🔍 Kiểm tra gốm sứ: ⚠️ Cần cải thiện men gốm")
-    def tham_phuong_moc(self, p): print(f"🔍 Kiểm tra đồ mộc: ✅ Gỗ tốt, kỹ thuật đỉnh")
 
-phuong_hoi = [PhuongDetLua(), PhuongGomSu(), PhuongMoc()]
+class PotteryGuild(Guild):
+    name = "Phường Gốm Sứ"
+    revenue = 5_000_000
+    kiln_count = 4
+
+    def accept(self, visitor: GuildVisitor) -> None:
+        visitor.visit_pottery_guild(self)
+
+
+class CarpentryGuild(Guild):
+    name = "Phường Mộc"
+    revenue = 8_000_000
+
+    def accept(self, visitor: GuildVisitor) -> None:
+        visitor.visit_carpentry_guild(self)
+
+
+# Concrete Visitor 1: tax collection with a different rate per guild.
+# A visitor can accumulate state while it visits.
+class TaxCollectorVisitor(GuildVisitor):
+    def __init__(self) -> None:
+        self.total_tax = 0
+
+    def _collect(self, name: str, tax: int, rate: int) -> None:
+        self.total_tax += tax
+        print(f"💰 {name}: {tax:,}đ ({rate}%)")
+
+    def visit_silk_weavers_guild(self, g: SilkWeaversGuild) -> None:
+        self._collect(g.name, g.revenue * 10 // 100, 10)
+
+    def visit_pottery_guild(self, g: PotteryGuild) -> None:
+        self._collect(g.name, g.revenue * 8 // 100, 8)
+
+    def visit_carpentry_guild(self, g: CarpentryGuild) -> None:
+        self._collect(g.name, g.revenue * 12 // 100, 12)
+
+
+# Concrete Visitor 2: inspects tribute goods only, so one method stays empty
+class InspectorVisitor(GuildVisitor):
+    def visit_silk_weavers_guild(self, g: SilkWeaversGuild) -> None:
+        print(f"🔍 {g.name}: {g.silk_bolt_count} tấm lụa đạt chuẩn tiến vua")
+
+    def visit_pottery_guild(self, g: PotteryGuild) -> None:
+        print(f"🔍 {g.name}: {g.kiln_count} lò nung, men gốm cần cải thiện")
+
+    def visit_carpentry_guild(self, g: CarpentryGuild) -> None:
+        pass  # woodwork is not a tribute good: nothing to inspect
+
+
+# Client: a collection that works with guilds only through Guild
+class Capital:
+    def __init__(self) -> None:
+        self.guilds: list[Guild] = [SilkWeaversGuild(), PotteryGuild(), CarpentryGuild()]
+
+    def welcome_visitor(self, visitor: GuildVisitor) -> None:
+        for g in self.guilds:
+            g.accept(visitor)
+
+
+capital = Capital()
 
 print("=== QUAN THU THUẾ ===")
-quan_thue = QuanThuThue()
-for ph in phuong_hoi:
-    ph.chap_nhan(quan_thue)
+tax_collector = TaxCollectorVisitor()
+capital.welcome_visitor(tax_collector)
+print(f"Tổng thuế: {tax_collector.total_tax:,}đ")
 
-print("\n=== QUAN KIỂM TRA ===")
-quan_kt = QuanKiemTra()
-for ph in phuong_hoi:
-    ph.chap_nhan(quan_kt)`,
+print("=== QUAN KIỂM TRA ===")
+capital.welcome_visitor(InspectorVisitor())
+
+# Output:
+# === QUAN THU THUẾ ===
+# 💰 Phường Dệt Lụa: 1,000,000đ (10%)
+# 💰 Phường Gốm Sứ: 400,000đ (8%)
+# 💰 Phường Mộc: 960,000đ (12%)
+# Tổng thuế: 2,360,000đ
+# === QUAN KIỂM TRA ===
+# 🔍 Phường Dệt Lụa: 120 tấm lụa đạt chuẩn tiến vua
+# 🔍 Phường Gốm Sứ: 4 lò nung, men gốm cần cải thiện`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `interface KhachTham {
-  thamPhuongDetLua(p: PhuongDetLua): void
-  thamPhuongGomSu(p: PhuongGomSu): void
-  thamPhuongMoc(p: PhuongMoc): void
+        code: `// Visitor: one visiting method per Concrete Element class
+interface GuildVisitor {
+  visitSilkWeaversGuild(g: SilkWeaversGuild): void
+  visitPotteryGuild(g: PotteryGuild): void
+  visitCarpentryGuild(g: CarpentryGuild): void
 }
 
-abstract class PhuongHoi {
-  abstract chapNhan(visitor: KhachTham): void
-  abstract get doanhThu(): number
+// Element: declares the accept method, typed with the Visitor interface
+interface Guild {
+  accept(visitor: GuildVisitor): void
 }
 
-class PhuongDetLua extends PhuongHoi {
-  get doanhThu() { return 10_000_000 }
-  chapNhan(v: KhachTham) { v.thamPhuongDetLua(this) }
+// Concrete Elements: accept() calls the visiting method for its own class
+class SilkWeaversGuild implements Guild {
+  readonly name = 'Phường Dệt Lụa'
+  readonly revenue = 10_000_000
+  readonly silkBoltCount = 120
+  accept(visitor: GuildVisitor) { visitor.visitSilkWeaversGuild(this) }
 }
 
-class PhuongGomSu extends PhuongHoi {
-  get doanhThu() { return 5_000_000 }
-  chapNhan(v: KhachTham) { v.thamPhuongGomSu(this) }
+class PotteryGuild implements Guild {
+  readonly name = 'Phường Gốm Sứ'
+  readonly revenue = 5_000_000
+  readonly kilnCount = 4
+  accept(visitor: GuildVisitor) { visitor.visitPotteryGuild(this) }
 }
 
-class PhuongMoc extends PhuongHoi {
-  get doanhThu() { return 8_000_000 }
-  chapNhan(v: KhachTham) { v.thamPhuongMoc(this) }
+class CarpentryGuild implements Guild {
+  readonly name = 'Phường Mộc'
+  readonly revenue = 8_000_000
+  accept(visitor: GuildVisitor) { visitor.visitCarpentryGuild(this) }
 }
 
-class QuanThuThue implements KhachTham {
-  thamPhuongDetLua(p: PhuongDetLua) { console.log(\`💰 Lụa: \${p.doanhThu * 0.1}đ thuế\`) }
-  thamPhuongGomSu(p: PhuongGomSu) { console.log(\`💰 Gốm: \${p.doanhThu * 0.08}đ thuế\`) }
-  thamPhuongMoc(p: PhuongMoc) { console.log(\`💰 Mộc: \${p.doanhThu * 0.12}đ thuế\`) }
+// Concrete Visitor 1: tax collection with a different rate per guild.
+// A visitor can accumulate state while it visits.
+class TaxCollectorVisitor implements GuildVisitor {
+  totalTax = 0
+
+  private collect(name: string, tax: number, rate: number) {
+    this.totalTax += tax
+    console.log(\`💰 \${name}: \${tax.toLocaleString('en-US')}đ (\${rate}%)\`)
+  }
+
+  visitSilkWeaversGuild(g: SilkWeaversGuild) { this.collect(g.name, g.revenue * 10 / 100, 10) }
+  visitPotteryGuild(g: PotteryGuild) { this.collect(g.name, g.revenue * 8 / 100, 8) }
+  visitCarpentryGuild(g: CarpentryGuild) { this.collect(g.name, g.revenue * 12 / 100, 12) }
 }
 
-const guilds: PhuongHoi[] = [new PhuongDetLua(), new PhuongGomSu(), new PhuongMoc()]
-const thuThue = new QuanThuThue()
-guilds.forEach(g => g.chapNhan(thuThue))`,
+// Concrete Visitor 2: inspects tribute goods only, so one method stays empty
+class InspectorVisitor implements GuildVisitor {
+  visitSilkWeaversGuild(g: SilkWeaversGuild) {
+    console.log(\`🔍 \${g.name}: \${g.silkBoltCount} tấm lụa đạt chuẩn tiến vua\`)
+  }
+  visitPotteryGuild(g: PotteryGuild) {
+    console.log(\`🔍 \${g.name}: \${g.kilnCount} lò nung, men gốm cần cải thiện\`)
+  }
+  visitCarpentryGuild(_g: CarpentryGuild) {
+    // woodwork is not a tribute good: nothing to inspect
+  }
+}
+
+// Client: a collection that works with guilds only through Guild
+class Capital {
+  private guilds: Guild[] = [new SilkWeaversGuild(), new PotteryGuild(), new CarpentryGuild()]
+
+  welcomeVisitor(visitor: GuildVisitor) {
+    for (const g of this.guilds) g.accept(visitor)
+  }
+}
+
+const capital = new Capital()
+
+console.log('=== QUAN THU THUẾ ===')
+const taxCollector = new TaxCollectorVisitor()
+capital.welcomeVisitor(taxCollector)
+console.log(\`Tổng thuế: \${taxCollector.totalTax.toLocaleString('en-US')}đ\`)
+
+console.log('=== QUAN KIỂM TRA ===')
+capital.welcomeVisitor(new InspectorVisitor())`,
       },
     ],
     structure_notes: {
-      en: 'Visitor interface declares visit methods for each ConcreteElement. Element interface declares accept(visitor) method. ConcreteVisitors implement operations without modifying elements.',
-      vi: 'Giao diện Visitor khai báo các phương thức visit cho mỗi ConcreteElement. Giao diện Element khai báo phương thức accept(visitor). ConcreteVisitor triển khai các thao tác mà không sửa đổi các phần tử.',
+      en: 'The Visitor interface declares a set of visiting methods that take concrete elements of an object structure as arguments; in a language with overloading they may share one name, but their parameter types must differ. Each Concrete Visitor implements several versions of the same behavior, tailored for different concrete element classes. The Element interface declares a method for accepting visitors, with one parameter typed as the visitor interface. Each Concrete Element must implement the acceptance method so that it redirects the call to the visiting method that matches its own class; even if a base element class implements this method, every subclass must still override it and call the right visiting method. The Client usually represents a collection or another complex object, such as a Composite tree, and works with its elements through the abstract Element interface without knowing their concrete classes. The diagram leaves out the dependencies from the visiting methods\' parameter types to each concrete element class, to keep the lines readable.',
+      vi: 'Giao diện Visitor khai báo một tập phương thức thăm nhận các phần tử cụ thể của cấu trúc đối tượng làm tham số; với ngôn ngữ hỗ trợ nạp chồng, các phương thức này có thể trùng tên nhưng kiểu tham số phải khác nhau. Mỗi Concrete Visitor cài đặt nhiều phiên bản của cùng một hành vi, mỗi phiên bản dành cho một lớp phần tử cụ thể. Giao diện Element khai báo một phương thức để chấp nhận visitor, với một tham số có kiểu là giao diện visitor. Mỗi Concrete Element phải cài đặt phương thức chấp nhận sao cho nó chuyển lời gọi tới đúng phương thức thăm ứng với lớp của mình; kể cả khi lớp phần tử cơ sở đã cài đặt phương thức này, mọi lớp con vẫn phải ghi đè nó và gọi đúng phương thức thăm. Client thường là một tập hợp hoặc một đối tượng phức tạp khác, ví dụ cây Composite, và làm việc với các phần tử qua giao diện Element trừu tượng mà không cần biết lớp cụ thể của chúng. Sơ đồ không vẽ các quan hệ phụ thuộc từ kiểu tham số của phương thức thăm tới từng lớp phần tử cụ thể, để các đường nối dễ đọc.',
     },
   },
 ]

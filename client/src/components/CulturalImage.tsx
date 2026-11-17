@@ -47,9 +47,9 @@ export function FactoryMethodScene({ width = 480, height = 220 }: SceneProps) {
 
       {/* Center factory interface */}
       <rect x={180} y={height * 0.25} width={120} height={44} rx={6} fill="#1e293b" stroke="#64748b" strokeWidth={1.5} />
-      <text x={240} y={height * 0.37} textAnchor="middle" fontSize={10} fill="#94a3b8" fontStyle="italic">«interface»</text>
+      <text x={240} y={height * 0.37} textAnchor="middle" fontSize={10} fill="#94a3b8" fontStyle="italic">«abstract»</text>
       <text x={240} y={height * 0.49} textAnchor="middle" fontSize={10} fill="#e2e8f0" fontWeight="bold">BanhFactory</text>
-      <text x={240} y={height * 0.6} textAnchor="middle" fontSize={8} fill="#64748b">+ makeBanh()</text>
+      <text x={240} y={height * 0.6} textAnchor="middle" fontSize={8} fill="#64748b">+ makeBanh(): Banh</text>
 
       {/* Arrows from factory to workshops */}
       <line x1={190} y1={height * 0.52} x2={180} y2={height * 0.55} stroke="#64748b" strokeWidth={1} strokeDasharray="4,2" />

@@ -1,2 +1,4 @@
 
 design-patterns/
+__pycache__/
+*.pyc
