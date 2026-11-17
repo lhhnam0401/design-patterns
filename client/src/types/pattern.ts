@@ -59,7 +59,6 @@ export interface Pattern {
   vietnamese_example: {
     title: LocalizedText
     description: LocalizedText
-    illustration: string  // kept for PatternCard preview
   }
   diagram: Diagram
   code_examples: CodeExample[]

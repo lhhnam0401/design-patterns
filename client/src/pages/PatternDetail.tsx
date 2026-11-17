@@ -3,10 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Lightbulb, AlertCircle, CheckCircle2, Zap, GitBranch, ImageIcon } from 'lucide-react'
 import { getPattern, patternsByCategory } from '../data'
 import CodeBlock from '../components/CodeBlock'
-import IllustrationBox from '../components/IllustrationBox'
 import PatternDiagram from '../components/PatternDiagram'
-import { getCulturalScene } from '../components/CulturalImage'
 import PatternCard from '../components/PatternCard'
+import PatternScene from '../scenes/PatternScene'
 
 const complexityLabel = ['', 'Simple', 'Medium', 'Complex']
 const complexityLabelVi = ['', 'Đơn giản', 'Trung bình', 'Phức tạp']
@@ -60,8 +59,6 @@ export default function PatternDetail() {
     behavioral: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
   }[pattern.category]
 
-  const CulturalScene = getCulturalScene(pattern.slug)
-
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -82,7 +79,7 @@ export default function PatternDetail() {
         <div className="grid lg:grid-cols-3 gap-8">
 
           {/* ── Main ── */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 min-w-0">
 
             {/* Header */}
             <div>
@@ -106,8 +103,10 @@ export default function PatternDetail() {
             {/* ── Cultural illustration image ── */}
             <div>
               <SectionHeader icon={<ImageIcon className="w-4 h-4" />} label={t('pattern.example')} />
-              <div className="rounded-xl overflow-hidden border border-amber-500/20">
-                <CulturalScene />
+              <div className="rounded-xl overflow-x-auto border border-amber-500/20 bg-slate-950">
+                <div className="min-w-[640px]">
+                  <PatternScene pattern={pattern} lang={lang} />
+                </div>
               </div>
               <div className="mt-3 px-1">
                 <p className="text-amber-400 font-semibold text-sm mb-1">
@@ -144,9 +143,6 @@ export default function PatternDetail() {
                 {pattern.applicability[lang]}
               </Section>
             </div>
-
-            {/* ASCII illustration (compact) */}
-            <IllustrationBox pattern={pattern} />
 
             {/* Code examples */}
             <div>

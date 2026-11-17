@@ -3,6 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { ArrowRight, Code2, Globe2, BookMarked } from 'lucide-react'
 import { patternsByCategory } from '../data'
 import PatternCard from '../components/PatternCard'
+import type { Category, Pattern } from '../types/pattern'
+
+const categoryEntries = Object.entries(patternsByCategory) as [Category, Pattern[]][]
 
 const categoryConfig = {
   creational: {
@@ -82,7 +85,7 @@ export default function Home() {
 
           {/* Category overview cards */}
           <div className="grid md:grid-cols-3 gap-6">
-            {(Object.entries(patternsByCategory) as [keyof typeof patternsByCategory, any][]).map(
+            {categoryEntries.map(
               ([cat, patterns]) => {
                 const cfg = categoryConfig[cat]
                 return (
@@ -117,7 +120,7 @@ export default function Home() {
       </section>
 
       {/* Patterns preview - first 3 of each */}
-      {(Object.entries(patternsByCategory) as [keyof typeof patternsByCategory, any][]).map(
+      {categoryEntries.map(
         ([cat, patterns]) => {
           const cfg = categoryConfig[cat]
           return (
@@ -139,7 +142,7 @@ export default function Home() {
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {patterns.slice(0, 3).map((p: any) => (
+                {patterns.slice(0, 3).map(p => (
                   <PatternCard key={p.id} pattern={p} />
                 ))}
               </div>

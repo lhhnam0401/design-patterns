@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Pattern } from '../types/pattern'
-import { getCulturalScene } from './CulturalImage'
+import PatternScene from '../scenes/PatternScene'
 
 const categoryColors = {
   creational: 'border-emerald-500/30 hover:border-emerald-400/60',
@@ -42,8 +42,6 @@ export default function PatternCard({ pattern }: Props) {
   const badgeClass = categoryBadge[pattern.category]
   const dotClass = dotColor[pattern.category]
 
-  const CulturalScene = getCulturalScene(pattern.slug)
-
   return (
     <Link
       to={`/pattern/${pattern.slug}`}
@@ -53,7 +51,7 @@ export default function PatternCard({ pattern }: Props) {
     >
       {/* Cultural image thumbnail */}
       <div className="h-28 overflow-hidden opacity-90 group-hover:opacity-100 transition-opacity">
-        <CulturalScene height={112} />
+        <PatternScene pattern={pattern} lang={lang} compact />
       </div>
 
       {/* Content */}
