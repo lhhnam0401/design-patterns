@@ -1,0 +1,46 @@
+{
+  "site": {
+    "title": "Mẫu Thiết Kế",
+    "subtitle": "Học các mẫu thiết kế Gang of Four qua ví dụ văn hóa truyền thống Việt Nam",
+    "description": "23 mẫu thiết kế kinh điển được giải thích bằng đoạn mã và minh họa qua nền văn hóa truyền thống phong phú của Việt Nam"
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "creational": "Khởi tạo",
+    "structural": "Cấu trúc",
+    "behavioral": "Hành vi",
+    "all_patterns": "Tất cả mẫu"
+  },
+  "categories": {
+    "creational": "Mẫu Khởi Tạo",
+    "creational_desc": "Cơ chế tạo đối tượng giúp tăng tính linh hoạt và tái sử dụng",
+    "structural": "Mẫu Cấu Trúc",
+    "structural_desc": "Giải thích cách lắp ráp các đối tượng và lớp thành cấu trúc lớn hơn",
+    "behavioral": "Mẫu Hành Vi",
+    "behavioral_desc": "Phụ trách giao tiếp hiệu quả và phân công trách nhiệm giữa các đối tượng"
+  },
+  "pattern": {
+    "example": "Ví Dụ Việt Nam",
+    "intent": "Mục đích",
+    "problem": "Vấn đề",
+    "solution": "Giải pháp",
+    "structure": "Cấu trúc",
+    "code_example": "Ví dụ mã nguồn",
+    "view_code": "Xem mã",
+    "back": "Quay lại danh sách",
+    "complexity": "Độ phức tạp",
+    "popularity": "Mức độ phổ biến",
+    "also_known_as": "Còn gọi là",
+    "applicability": "Khi nào sử dụng"
+  },
+  "language": {
+    "en": "English",
+    "vi": "Tiếng Việt"
+  },
+  "home": {
+    "explore": "Khám phá các mẫu",
+    "total_patterns": "23 Mẫu thiết kế",
+    "categories": "3 Nhóm",
+    "languages": "2 Ngôn ngữ"
+  }
+}

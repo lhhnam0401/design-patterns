@@ -1,0 +1,46 @@
+{
+  "site": {
+    "title": "Design Patterns",
+    "subtitle": "Learn Gang of Four design patterns with Vietnamese cultural examples",
+    "description": "23 classic design patterns explained with code snippets and illustrated through Vietnam's rich traditional culture"
+  },
+  "nav": {
+    "home": "Home",
+    "creational": "Creational",
+    "structural": "Structural",
+    "behavioral": "Behavioral",
+    "all_patterns": "All Patterns"
+  },
+  "categories": {
+    "creational": "Creational Patterns",
+    "creational_desc": "Object creation mechanisms that increase flexibility and reuse",
+    "structural": "Structural Patterns",
+    "structural_desc": "Explain how to assemble objects and classes into larger structures",
+    "behavioral": "Behavioral Patterns",
+    "behavioral_desc": "Take care of effective communication and responsibilities between objects"
+  },
+  "pattern": {
+    "example": "Vietnamese Example",
+    "intent": "Intent",
+    "problem": "Problem",
+    "solution": "Solution",
+    "structure": "Structure",
+    "code_example": "Code Example",
+    "view_code": "View Code",
+    "back": "Back to Patterns",
+    "complexity": "Complexity",
+    "popularity": "Popularity",
+    "also_known_as": "Also known as",
+    "applicability": "When to use"
+  },
+  "language": {
+    "en": "English",
+    "vi": "Tiếng Việt"
+  },
+  "home": {
+    "explore": "Explore Patterns",
+    "total_patterns": "23 Design Patterns",
+    "categories": "3 Categories",
+    "languages": "2 Languages"
+  }
+}
