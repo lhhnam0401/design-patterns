@@ -31,7 +31,20 @@
     "complexity": "Độ phức tạp",
     "popularity": "Mức độ phổ biến",
     "also_known_as": "Còn gọi là",
-    "applicability": "Khi nào sử dụng"
+    "applicability": "Khi nào sử dụng",
+    "diagram": {
+      "label": "Sơ đồ lớp UML",
+      "instructions": "Kéo nền để di chuyển sơ đồ, kéo một hộp để dời nó. Phím: + và - để phóng to, thu nhỏ; 0 để vừa khung nhìn; phím mũi tên để di chuyển.",
+      "zoom_in": "Phóng to",
+      "zoom_out": "Thu nhỏ",
+      "zoom_level": "Mức thu phóng",
+      "fit": "Vừa khung nhìn",
+      "reset_layout": "Khôi phục bố cục",
+      "expand": "Mở rộng",
+      "collapse": "Thoát chế độ mở rộng",
+      "hint_ctrl": "Ctrl + cuộn để thu phóng",
+      "hint_meta": "⌘ + cuộn để thu phóng"
+    }
   },
   "language": {
     "en": "English",

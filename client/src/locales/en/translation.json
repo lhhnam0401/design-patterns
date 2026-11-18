@@ -31,7 +31,20 @@
     "complexity": "Complexity",
     "popularity": "Popularity",
     "also_known_as": "Also known as",
-    "applicability": "When to use"
+    "applicability": "When to use",
+    "diagram": {
+      "label": "UML class diagram",
+      "instructions": "Drag the background to pan and drag a box to move it. Keys: + and - zoom, 0 fits the diagram, arrow keys pan.",
+      "zoom_in": "Zoom in",
+      "zoom_out": "Zoom out",
+      "zoom_level": "Zoom level",
+      "fit": "Fit to view",
+      "reset_layout": "Reset layout",
+      "expand": "Expand",
+      "collapse": "Exit expanded view",
+      "hint_ctrl": "Ctrl + scroll to zoom",
+      "hint_meta": "⌘ + scroll to zoom"
+    }
   },
   "language": {
     "en": "English",

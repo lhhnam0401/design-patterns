@@ -4,7 +4,7 @@ import { behavioralPatterns } from './behavioral'
 import { patternDiagrams } from './diagrams'
 import type { Pattern, Category, Diagram } from '../types/pattern'
 
-const FALLBACK_DIAGRAM: Diagram = {
+export const FALLBACK_DIAGRAM: Diagram = {
   nodes: [
     { id: 'a', label: 'AbstractClass', kind: 'abstract', x: 1, y: 0, methods: ['+ operation()'] },
     { id: 'b', label: 'ConcreteClass', kind: 'class', x: 0, y: 2, methods: ['+ operation()'] },

@@ -121,7 +121,7 @@ export default function PatternDetail() {
             {/* ── UML Structure Diagram ── */}
             <div>
               <SectionHeader icon={<GitBranch className="w-4 h-4" />} label={t('pattern.structure')} />
-              <PatternDiagram diagram={pattern.diagram} />
+              <PatternDiagram key={pattern.slug} diagram={pattern.diagram} />
               <p className="text-slate-500 text-xs mt-2 px-1">{pattern.structure_notes[lang]}</p>
             </div>
 

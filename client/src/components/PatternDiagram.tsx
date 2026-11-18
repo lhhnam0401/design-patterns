@@ -1,243 +1,276 @@
-import type { Diagram, DiagramNode, DiagramEdge } from '../types/pattern'
+import { useEffect, useEffectEvent, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode, type Ref } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Maximize2, Minimize2, RotateCcw, Scan, ZoomIn, ZoomOut } from 'lucide-react'
+import type { Diagram } from '../types/pattern'
+import { DiagramContent, Markers } from './diagram/DiagramCanvas'
+import { layoutDiagram, type NodeOffsets, type Point } from './diagram/layout'
+import type { GestureAction } from './diagram/gestures'
+import { useDiagramInput } from './diagram/useDiagramInput'
+import {
+  BUTTON_ZOOM_FACTOR, fit, panBy, scaleLimits, zoomAt,
+  type Size, type Viewport,
+} from './diagram/viewport'
 
-// ── Layout constants ──────────────────────────────────────────
-const COL_W = 180   // grid cell width
-const ROW_H = 130   // grid cell height
-const BOX_W = 160   // box width
-const BOX_MIN_H = 64
-const METHOD_H = 18
-const PAD_X = 20    // canvas padding
-const PAD_Y = 20
+/** Used until the frame has been measured (and when rendering on the server). */
+const DEFAULT_FRAME: Size = { width: 800, height: 440 }
+const KEY_PAN_STEP = 48
+const HINT_MS = 1500
+const GRID = 24
 
-const COLORS = {
-  class:     { fill: '#1e293b', stroke: '#3b82f6', header: '#1d4ed8', headerText: '#eff6ff', text: '#94a3b8' },
-  abstract:  { fill: '#1e293b', stroke: '#a855f7', header: '#7e22ce', headerText: '#faf5ff', text: '#94a3b8' },
-  interface: { fill: '#1e2a1e', stroke: '#22c55e', header: '#15803d', headerText: '#f0fdf4', text: '#86efac' },
-}
+type Hint = 'ctrl' | 'meta' | null
 
-const ARROW = {
-  inherits:   { dash: '',       end: 'tri-open' },
-  implements: { dash: '6,3',    end: 'tri-open' },
-  composes:   { dash: '',       end: 'diamond-filled' },
-  aggregates: { dash: '',       end: 'diamond-open' },
-  associates: { dash: '',       end: 'arrow' },
-  depends:    { dash: '6,3',    end: 'arrow' },
-}
-
-function boxH(node: DiagramNode) {
-  return BOX_MIN_H + (node.methods?.length ?? 0) * METHOD_H
-}
-
-function nodeCenter(node: DiagramNode): [number, number] {
-  return [
-    PAD_X + node.x * COL_W + BOX_W / 2,
-    PAD_Y + node.y * ROW_H + boxH(node) / 2,
-  ]
-}
-
-function edgePoints(
-  from: DiagramNode,
-  to: DiagramNode
-): { x1: number; y1: number; x2: number; y2: number } {
-  const [fx, fy] = nodeCenter(from)
-  const [tx, ty] = nodeCenter(to)
-
-  // Exit/enter from box edges
-  const dx = tx - fx
-  const dy = ty - fy
-  const hw = BOX_W / 2
-  const hh = boxH(from) / 2
-  const thh = boxH(to) / 2
-
-  let x1: number, y1: number, x2: number, y2: number
-
-  // Determine from-exit edge
-  if (Math.abs(dx) / hw > Math.abs(dy) / hh) {
-    x1 = fx + Math.sign(dx) * hw
-    y1 = fy + dy * (hw / Math.abs(dx))
-  } else {
-    x1 = fx + dx * (hh / Math.abs(dy))
-    y1 = fy + Math.sign(dy) * hh
-  }
-
-  // Determine to-enter edge
-  if (Math.abs(dx) / (BOX_W / 2) > Math.abs(dy) / thh) {
-    x2 = tx - Math.sign(dx) * hw
-    y2 = ty - dy * (hw / Math.abs(dx))
-  } else {
-    x2 = tx - dx * (thh / Math.abs(dy))
-    y2 = ty - Math.sign(dy) * thh
-  }
-
-  return { x1, y1, x2, y2 }
-}
-
-// ── SVG Markers (arrowheads) ──────────────────────────────────
-function Markers() {
-  return (
-    <defs>
-      {/* Open triangle (inherit/implement) */}
-      <marker id="tri-open" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
-        <path d="M0,0 L9,4 L0,8 Z" fill="none" stroke="#64748b" strokeWidth="1.2" />
-      </marker>
-      {/* Filled diamond (compose) */}
-      <marker id="diamond-filled" markerWidth="12" markerHeight="8" refX="1" refY="4" orient="auto">
-        <path d="M0,4 L5,0 L10,4 L5,8 Z" fill="#64748b" />
-      </marker>
-      {/* Open diamond (aggregate) */}
-      <marker id="diamond-open" markerWidth="12" markerHeight="8" refX="1" refY="4" orient="auto">
-        <path d="M0,4 L5,0 L10,4 L5,8 Z" fill="#0f172a" stroke="#64748b" strokeWidth="1" />
-      </marker>
-      {/* Plain arrow */}
-      <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-        <path d="M0,0 L7,3 L0,6" fill="none" stroke="#64748b" strokeWidth="1.2" />
-      </marker>
-    </defs>
-  )
-}
-
-// ── Node box ──────────────────────────────────────────────────
-function NodeBox({ node }: { node: DiagramNode }) {
-  const x = PAD_X + node.x * COL_W
-  const y = PAD_Y + node.y * ROW_H
-  const h = boxH(node)
-  const c = COLORS[node.kind]
-  const HEADER_H = 34
-
-  return (
-    <g>
-      {/* Shadow */}
-      <rect x={x + 3} y={y + 3} width={BOX_W} height={h} rx={6} fill="rgba(0,0,0,0.4)" />
-      {/* Body */}
-      <rect x={x} y={y} width={BOX_W} height={h} rx={6} fill={c.fill} stroke={c.stroke} strokeWidth={1.5} />
-      {/* Header bg */}
-      <rect x={x} y={y} width={BOX_W} height={HEADER_H} rx={6} fill={c.header} />
-      <rect x={x} y={y + HEADER_H - 6} width={BOX_W} height={6} fill={c.header} />
-
-      {/* Stereotype */}
-      {node.kind !== 'class' && (
-        <text
-          x={x + BOX_W / 2}
-          y={y + 12}
-          textAnchor="middle"
-          fontSize={9}
-          fill={c.headerText}
-          opacity={0.8}
-          fontStyle="italic"
-        >
-          «{node.kind}»
-        </text>
-      )}
-
-      {/* Class name */}
-      <text
-        x={x + BOX_W / 2}
-        y={y + (node.kind !== 'class' ? 26 : 22)}
-        textAnchor="middle"
-        fontSize={11}
-        fontWeight="bold"
-        fill={c.headerText}
-        fontStyle={node.kind === 'abstract' ? 'italic' : 'normal'}
-      >
-        {node.label}
-      </text>
-
-      {/* Role label */}
-      {node.role && (
-        <text
-          x={x + BOX_W - 6}
-          y={y + h - 6}
-          textAnchor="end"
-          fontSize={8}
-          fill={c.stroke}
-          opacity={0.7}
-          fontStyle="italic"
-        >
-          {node.role}
-        </text>
-      )}
-
-      {/* Methods */}
-      {node.kind !== 'class' && node.methods && node.methods.length > 0 && (
-        <line x1={x} y1={y + HEADER_H} x2={x + BOX_W} y2={y + HEADER_H} stroke={c.stroke} strokeWidth={0.7} opacity={0.5} />
-      )}
-      {node.methods?.map((m, i) => (
-        <text
-          key={i}
-          x={x + 10}
-          y={y + HEADER_H + 4 + (i + 1) * METHOD_H - 4}
-          fontSize={9.5}
-          fill={c.text}
-          fontFamily="ui-monospace, monospace"
-        >
-          {m}
-        </text>
-      ))}
-    </g>
-  )
-}
-
-// ── Edge line ─────────────────────────────────────────────────
-function EdgeLine({ edge, nodeMap }: { edge: DiagramEdge; nodeMap: Map<string, DiagramNode> }) {
-  const from = nodeMap.get(edge.from)
-  const to = nodeMap.get(edge.to)
-  if (!from || !to) return null
-
-  const { x1, y1, x2, y2 } = edgePoints(from, to)
-  const a = ARROW[edge.kind]
-  const mx = (x1 + x2) / 2
-  const my = (y1 + y2) / 2
-
-  return (
-    <g>
-      <line
-        x1={x1} y1={y1} x2={x2} y2={y2}
-        stroke="#475569"
-        strokeWidth={1.5}
-        strokeDasharray={a.dash || undefined}
-        markerEnd={`url(#${a.end})`}
-      />
-      {edge.label && (
-        <text x={mx} y={my - 5} textAnchor="middle" fontSize={9} fill="#64748b">
-          {edge.label}
-        </text>
-      )}
-    </g>
-  )
-}
-
-// ── Main component ────────────────────────────────────────────
 interface Props {
   diagram: Diagram
 }
 
+function ToolButton({ label, onClick, disabled, children, buttonRef }: {
+  label: string
+  onClick: () => void
+  disabled?: boolean
+  children: ReactNode
+  buttonRef?: Ref<HTMLButtonElement>
+}) {
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-300 transition-colors
+        hover:bg-slate-800 hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+        disabled:pointer-events-none disabled:opacity-40"
+    >
+      {children}
+    </button>
+  )
+}
+
+const isApplePlatform = () =>
+  typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)
+
 export default function PatternDiagram({ diagram }: Props) {
-  const nodeMap = new Map(diagram.nodes.map(n => [n.id, n]))
+  const { t } = useTranslation()
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
+  const frameRef = useRef<HTMLDivElement>(null)
+  const toggleRef = useRef<HTMLButtonElement>(null)
+  const hintTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const maxX = Math.max(...diagram.nodes.map(n => n.x)) + 1
-  const maxY = Math.max(...diagram.nodes.map(n => n.y)) + 1
-  const maxH = Math.max(...diagram.nodes.map(n => boxH(n)))
+  const [offsets, setOffsets] = useState<NodeOffsets>({})
+  const [frame, setFrame] = useState<Size>(DEFAULT_FRAME)
+  /** null = follow the fitted view (refits on resize until the user zooms or pans). */
+  const [userViewport, setUserViewport] = useState<Viewport | null>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [hint, setHint] = useState<Hint>(null)
 
-  const svgW = PAD_X * 2 + maxX * COL_W
-  const svgH = PAD_Y * 2 + maxY * ROW_H + maxH
+  const layout = useMemo(() => layoutDiagram(diagram, offsets), [diagram, offsets])
+  const fitted = useMemo(() => fit(layout.bounds, frame), [layout.bounds, frame])
+  const vp = userViewport ?? fitted
+  const limits = scaleLimits(fitted)
+  const moved = Object.keys(offsets).length > 0
+
+  const updateViewport = (fn: (v: Viewport) => Viewport) => setUserViewport(prev => fn(prev ?? fitted))
+  const frameCenter: Point = { x: frame.width / 2, y: frame.height / 2 }
+  const zoomBy = (factor: number, anchor: Point = frameCenter) => updateViewport(v => zoomAt(v, factor, anchor, limits))
+  const fitView = () => setUserViewport(null)
+
+  const onGesture = (a: GestureAction) => {
+    switch (a.type) {
+      case 'pan':
+        updateViewport(v => panBy(v, a.dx, a.dy))
+        break
+      case 'pinch':
+        updateViewport(v => zoomAt(panBy(v, a.dx, a.dy), a.factor, a.center, limits))
+        break
+      case 'dragNode':
+        // Freeze the view so the fitted view doesn't shift while the bounds change.
+        updateViewport(v => v)
+        setOffsets(prev => {
+          const o = prev[a.nodeId] ?? { dx: 0, dy: 0 }
+          return { ...prev, [a.nodeId]: { dx: o.dx + a.dx, dy: o.dy + a.dy } }
+        })
+        break
+    }
+  }
+
+  const showHint = () => {
+    setHint(isApplePlatform() ? 'meta' : 'ctrl')
+    clearTimeout(hintTimer.current)
+    hintTimer.current = setTimeout(() => setHint(null), HINT_MS)
+  }
+
+  const { handlers, panning, draggingId } = useDiagramInput({
+    frameRef,
+    expanded,
+    scale: vp.scale,
+    onGesture,
+    onWheelZoom: zoomBy,
+    onPlainWheel: showHint,
+  })
+
+  // Track the frame size; the fitted view follows it.
+  useEffect(() => {
+    const el = frameRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      if (width > 0 && height > 0) setFrame(f => (f.width === width && f.height === height ? f : { width, height }))
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  useEffect(() => () => clearTimeout(hintTimer.current), [])
+
+  const toggleExpanded = () => {
+    setExpanded(e => !e)
+    setUserViewport(null) // refit to the new frame
+  }
+
+  const closeExpanded = useEffectEvent(() => {
+    setExpanded(false)
+    setUserViewport(null)
+  })
+
+  // Expanded mode: lock page scroll, close on Esc, keep focus inside, restore on close.
+  useEffect(() => {
+    if (!expanded) return
+    const frameEl = frameRef.current
+    const toggle = toggleRef.current
+    const scrollY = window.scrollY
+    const { overflow } = document.body.style
+    document.body.style.overflow = 'hidden'
+    frameEl?.focus()
+
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); closeExpanded() }
+    }
+    const onFocusIn = (e: FocusEvent) => {
+      if (frameEl && e.target instanceof Node && !frameEl.contains(e.target)) frameEl.focus()
+    }
+    window.addEventListener('keydown', onKey)
+    document.addEventListener('focusin', onFocusIn)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('focusin', onFocusIn)
+      document.body.style.overflow = overflow
+      window.scrollTo(0, scrollY)
+      toggle?.focus()
+    }
+  }, [expanded])
+
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return // leave browser shortcuts alone
+    const actions: Record<string, () => void> = {
+      '+': () => zoomBy(BUTTON_ZOOM_FACTOR),
+      '=': () => zoomBy(BUTTON_ZOOM_FACTOR),
+      '-': () => zoomBy(1 / BUTTON_ZOOM_FACTOR),
+      '_': () => zoomBy(1 / BUTTON_ZOOM_FACTOR),
+      '0': fitView,
+      ArrowLeft: () => updateViewport(v => panBy(v, KEY_PAN_STEP, 0)),
+      ArrowRight: () => updateViewport(v => panBy(v, -KEY_PAN_STEP, 0)),
+      ArrowUp: () => updateViewport(v => panBy(v, 0, KEY_PAN_STEP)),
+      ArrowDown: () => updateViewport(v => panBy(v, 0, -KEY_PAN_STEP)),
+    }
+    const action = actions[e.key]
+    if (!action) return
+    e.preventDefault()
+    action()
+  }
+
+  const transform = `translate(${vp.x} ${vp.y}) scale(${vp.scale})`
+  const percent = `${Math.round(vp.scale * 100)}%`
+  const descId = `${uid}-desc`
 
   return (
-    <div className="rounded-xl overflow-hidden border border-slate-700/50 bg-slate-950">
-      <svg
-        viewBox={`0 0 ${svgW} ${svgH}`}
-        width="100%"
-        style={{ display: 'block', maxHeight: 320 }}
-        aria-label="Pattern UML diagram"
+    // The placeholder keeps its height while the viewer is expanded, so the page doesn't jump.
+    <div className="relative h-[clamp(360px,60vh,560px)]">
+      <div
+        ref={frameRef}
+        tabIndex={0}
+        role={expanded ? 'dialog' : 'group'}
+        aria-modal={expanded ? true : undefined}
+        aria-label={t('pattern.diagram.label')}
+        aria-describedby={descId}
+        aria-keyshortcuts="+ - 0 ArrowLeft ArrowRight ArrowUp ArrowDown"
+        onKeyDown={onKeyDown}
+        className={`overflow-hidden bg-slate-950 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+          expanded ? 'fixed inset-0 z-[100]' : 'absolute inset-0 rounded-xl border border-slate-700/50'
+        }`}
+        style={{ touchAction: expanded ? 'none' : 'pan-x pan-y' }}
       >
-        <Markers />
-        {/* Grid hint lines (subtle) */}
-        {diagram.edges.map((e, i) => (
-          <EdgeLine key={i} edge={e} nodeMap={nodeMap} />
-        ))}
-        {diagram.nodes.map(n => (
-          <NodeBox key={n.id} node={n} />
-        ))}
-      </svg>
+        <span id={descId} className="sr-only">{t('pattern.diagram.instructions')}</span>
+
+        <svg
+          width="100%"
+          height="100%"
+          className="block select-none"
+          role="img"
+          aria-label={t('pattern.diagram.label')}
+          style={{
+            touchAction: expanded ? 'none' : 'pan-x pan-y',
+            cursor: draggingId ? 'grabbing' : panning ? 'grabbing' : 'grab',
+            fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+          }}
+          {...handlers}
+        >
+          <Markers prefix={uid} />
+          <defs>
+            <pattern
+              id={`${uid}-grid`}
+              width={GRID}
+              height={GRID}
+              patternUnits="userSpaceOnUse"
+              patternTransform={transform}
+            >
+              <circle cx={1} cy={1} r={1} fill="#1e293b" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill={`url(#${uid}-grid)`} />
+          <g transform={transform}>
+            <DiagramContent layout={layout} markerPrefix={uid} activeNodeId={draggingId} />
+          </g>
+        </svg>
+
+        {hint && (
+          <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center" aria-hidden="true">
+            <span className="rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1.5 text-xs text-slate-200 shadow-lg">
+              {t(hint === 'meta' ? 'pattern.diagram.hint_meta' : 'pattern.diagram.hint_ctrl')}
+            </span>
+          </div>
+        )}
+
+        <div
+          className="absolute bottom-3 right-3 flex items-center gap-0.5 rounded-lg border border-slate-700
+            bg-slate-900/80 p-1 shadow-lg backdrop-blur"
+        >
+          <ToolButton label={t('pattern.diagram.zoom_out')} onClick={() => zoomBy(1 / BUTTON_ZOOM_FACTOR)} disabled={vp.scale <= limits.min + 1e-6}>
+            <ZoomOut className="h-4 w-4" />
+          </ToolButton>
+          <span className="w-12 text-center text-xs tabular-nums text-slate-300" title={t('pattern.diagram.zoom_level')}>
+            <span className="sr-only">{t('pattern.diagram.zoom_level')}: </span>
+            {percent}
+          </span>
+          <ToolButton label={t('pattern.diagram.zoom_in')} onClick={() => zoomBy(BUTTON_ZOOM_FACTOR)} disabled={vp.scale >= limits.max - 1e-6}>
+            <ZoomIn className="h-4 w-4" />
+          </ToolButton>
+          <span className="mx-0.5 h-5 w-px bg-slate-700" aria-hidden="true" />
+          <ToolButton label={t('pattern.diagram.fit')} onClick={fitView}>
+            <Scan className="h-4 w-4" />
+          </ToolButton>
+          <ToolButton label={t('pattern.diagram.reset_layout')} onClick={() => setOffsets({})} disabled={!moved}>
+            <RotateCcw className="h-4 w-4" />
+          </ToolButton>
+          <ToolButton
+            buttonRef={toggleRef}
+            label={t(expanded ? 'pattern.diagram.collapse' : 'pattern.diagram.expand')}
+            onClick={toggleExpanded}
+          >
+            {expanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </ToolButton>
+        </div>
+      </div>
     </div>
   )
 }
