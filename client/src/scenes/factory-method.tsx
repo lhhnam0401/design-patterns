@@ -8,12 +8,12 @@ import type { SceneArtProps, SceneDefinition } from './types'
 
 const factoryMethod: SceneDefinition = {
   slug: 'factory-method',
-  title: { en: 'Factory Method: two Tết rice-cake workshops', vi: 'Factory Method: hai xưởng làm bánh Tết' },
+  title: { en: 'Factory Method: two households wrap their Tết cakes', vi: 'Factory Method: hai gia đình gói bánh Tết' },
   sky: 'night',
   tags: [
     { nodeId: 'creator', method: 'prepareForNewYear', caption: { en: 'the shared Tết routine', vi: 'quy trình đón Tết chung' }, at: [480, 82], to: [480, 128] },
-    { nodeId: 'concA', method: 'makeRiceCake', caption: { en: 'Northern workshop', vi: 'xưởng miền Bắc' }, at: [190, 124], to: [190, 182] },
-    { nodeId: 'concB', method: 'makeRiceCake', caption: { en: 'Southern workshop', vi: 'xưởng miền Nam' }, at: [770, 124], to: [770, 182] },
+    { nodeId: 'concA', method: 'makeRiceCake', caption: { en: 'a Northern family', vi: 'gia đình miền Bắc' }, at: [190, 124], to: [190, 182] },
+    { nodeId: 'concB', method: 'makeRiceCake', caption: { en: 'a Southern family', vi: 'gia đình miền Nam' }, at: [770, 124], to: [770, 182] },
     { nodeId: 'prodA', caption: { en: 'square, in lá dong', vi: 'vuông, gói lá dong' }, at: [92, 262], to: [170, 300] },
     { nodeId: 'prodB', caption: { en: 'round, in banana leaf', vi: 'tròn, gói lá chuối' }, at: [876, 262], to: [800, 318] },
     { nodeId: 'product', caption: { en: 'all the routine knows', vi: 'thứ quy trình biết' }, at: [604, 296], to: [512, 356] },

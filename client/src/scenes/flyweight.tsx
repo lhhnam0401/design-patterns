@@ -6,8 +6,8 @@ import { C, INK, SCENE_COLORS } from './kit/palette'
 import { Lantern } from './kit/props'
 import type { SceneDefinition } from './types'
 
-/** The three shared lantern designs (the intrinsic state). */
-const DESIGNS = [
+/** The three shared lantern designs (the intrinsic state): red, yellow and pink, as in the code sample. */
+export const DESIGNS = [
   { body: '#a93c31', petal: '#c77767' },
   { body: '#9a7137', petal: '#c9a86a' },
   { body: '#7f4e55', petal: '#b98587' },

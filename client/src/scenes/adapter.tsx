@@ -12,15 +12,15 @@ const adapter: SceneDefinition = {
   title: { en: 'Adapter: recording a đàn tranh through MIDI', vi: 'Adapter: thu âm đàn tranh qua MIDI' },
   sky: 'interior',
   tags: [
-    { nodeId: 'adaptee', method: 'pluckString', caption: { en: 'knows strings, not MIDI', vi: 'chỉ biết dây đàn, không biết MIDI' }, at: [150, 132], to: [214, 284] },
-    { nodeId: 'adapter', method: 'sendMidi', caption: { en: 'turns notes into plucks', vi: 'đổi nốt nhạc thành cú gảy' }, at: [440, 402], to: [470, 336] },
-    { nodeId: 'target', caption: { en: 'the port it expects', vi: 'cổng mà phần mềm cần' }, at: [600, 222], to: [688, 300] },
+    { nodeId: 'adaptee', method: 'pluckString', caption: { en: 'the musician plucks strings', vi: 'nghệ sĩ gảy dây đàn' }, at: [150, 132], to: [214, 284] },
+    { nodeId: 'adapter', method: 'readNote', caption: { en: 'turns each pluck into a note', vi: 'đổi mỗi cú gảy thành nốt' }, at: [440, 402], to: [470, 336] },
+    { nodeId: 'target', caption: { en: 'the port it reads', vi: 'cổng mà phần mềm đọc' }, at: [600, 222], to: [688, 300] },
     { nodeId: 'keyboard', caption: { en: 'already speaks MIDI', vi: 'vốn đã nói MIDI' }, at: [616, 418], to: [616, 374] },
-    { nodeId: 'client', method: 'record', caption: { en: 'the recording software', vi: 'phần mềm thu âm' }, at: [806, 112], to: [800, 226] },
+    { nodeId: 'client', method: 'record', caption: { en: 'records every note', vi: 'thu lại mọi nốt' }, at: [806, 112], to: [800, 226] },
   ],
   calls: [
-    { nodeId: 'target', method: 'sendMidi', d: 'M730,292 Q712,300 700,308', at: [756, 334] },
-    { nodeId: 'adaptee', method: 'pluckString', d: 'M400,290 C380,268 356,266 338,280', at: [372, 250] },
+    { nodeId: 'target', method: 'readNote', d: 'M730,292 Q712,300 700,308', at: [756, 334] },
+    { nodeId: 'adaptee', method: 'nextPluck', d: 'M400,290 C380,268 356,266 338,280', at: [372, 250] },
   ],
   untagged: [],
   Art: function AdapterArt({ lang }: SceneArtProps) {

@@ -47,14 +47,17 @@ function mouseWedding(x: number, y: number, w = 96, h = 90) {
   )
 }
 
-/** A carved woodblock seen from the front. */
-function block(x: number, y: number, w = 52, h = 38) {
+/** A rolled master print lying on a shelf, with a hanging name slip. `x, y` is the left end of the roll. */
+function masterPrint(x: number, y: number, slip: string, w = 48) {
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={2} fill="#5b3418" stroke={INK} strokeWidth={1.6} />
-      <rect x={x + 4} y={y + 4} width={w - 8} height={h - 8} fill="#7a4a24" stroke={INK} strokeWidth={0.8} />
-      <path d={`M${x + 12},${y + h - 10} q8,-18 20,-12 q8,4 10,-6`} stroke="#c08a4a" strokeWidth={2} fill="none" />
-      <circle cx={x + w - 14} cy={y + 12} r={3} fill="#c08a4a" />
+      <rect x={x} y={y - 12} width={w} height={12} rx={6} fill="#f4e6c4" stroke={INK} strokeWidth={1.4} />
+      <ellipse cx={x + w} cy={y - 6} rx={3} ry={6} fill="#e6d3a8" stroke={INK} strokeWidth={1.1} />
+      <line x1={x + 10} y1={y - 12} x2={x + 10} y2={y} stroke="#c9a96a" strokeWidth={1} />
+      <line x1={x + w / 2} y1={y} x2={x + w / 2} y2={y + 6} stroke={INK} strokeWidth={0.9} />
+      <rect x={x + w / 2 - 6} y={y + 6} width={12} height={16} fill={slip} stroke={INK} strokeWidth={1} />
+      <line x1={x + w / 2 - 3} y1={y + 11} x2={x + w / 2 + 3} y2={y + 11} stroke="#f4e6c4" strokeWidth={1} />
+      <line x1={x + w / 2 - 3} y1={y + 15} x2={x + w / 2 + 3} y2={y + 15} stroke="#f4e6c4" strokeWidth={1} />
     </g>
   )
 }
@@ -67,13 +70,13 @@ const DRY = [
 
 const prototype: SceneDefinition = {
   slug: 'prototype',
-  title: { en: 'Prototype: printing copies from a Đông Hồ woodblock', vi: 'Prototype: in tranh Đông Hồ từ bản khắc gỗ' },
+  title: { en: 'Prototype: copying Đông Hồ master prints', vi: 'Prototype: nhân bản tranh mẫu Đông Hồ' },
   sky: 'interior',
   tags: [
-    { nodeId: 'registry', method: 'get', caption: { en: 'carved blocks, by name', vi: 'các bản khắc theo tên' }, at: [122, 104], to: [122, 168] },
+    { nodeId: 'registry', method: 'get', caption: { en: 'master prints, by name', vi: 'tranh mẫu theo tên' }, at: [122, 104], to: [122, 168] },
     { nodeId: 'client', caption: { en: 'the printer', vi: 'người thợ in' }, at: [292, 412], to: [292, 362] },
     { nodeId: 'proto', method: 'clone', caption: { en: 'press a copy, never redraw', vi: 'in bản mới, không vẽ lại' }, at: [430, 246], to: [418, 328] },
-    { nodeId: 'concA', caption: { en: 'same block, new colours', vi: 'cùng bản khắc, màu khác' }, at: [646, 290], to: [640, 236] },
+    { nodeId: 'concA', caption: { en: 'same design, new colours', vi: 'cùng mẫu, màu khác' }, at: [646, 290], to: [640, 236] },
     { nodeId: 'concB', caption: { en: 'the mouse wedding', vi: 'đám cưới chuột' }, at: [856, 300], to: [868, 238] },
   ],
   calls: [
@@ -99,13 +102,13 @@ const prototype: SceneDefinition = {
         <Lantern x={320} y={110} r={12} cord={40} />
         <Lantern x={940} y={100} r={12} cord={30} color="#f2a03b" />
 
-        {/* The registry: a shelf of named woodblocks */}
+        {/* The registry: a shelf of rolled master prints, each with a name slip */}
         <Shelf x={40} y={360} w={164} h={196} rows={3} />
-        {block(52, 175)}
-        {block(116, 175)}
-        {block(52, 224)}
-        {block(116, 224)}
-        {block(84, 273)}
+        {masterPrint(54, 199, '#a93c31')}
+        {masterPrint(120, 199, '#9a7137')}
+        {masterPrint(54, 248, '#356659')}
+        {masterPrint(120, 248, '#a93c31')}
+        {masterPrint(87, 297, '#9a7137')}
 
         {/* Printing table: a block pressed onto fresh paper */}
         <Table x={330} y={370} w={170} h={34} color={C.wood} />

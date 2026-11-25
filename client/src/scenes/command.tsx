@@ -77,8 +77,8 @@ const command: SceneDefinition = {
         <rect x={452} y={366} width={78} height={40} rx={3} fill={C.lacquerDark} stroke={INK} strokeWidth={2} />
         <rect x={452} y={360} width={78} height={10} rx={2} fill={C.lacquer} stroke={INK} strokeWidth={1.5} />
         <circle cx={491} cy={386} r={5} fill={C.gold} stroke={INK} />
-        <Caption x={335} y={432} size={10} fill="#fde68a">{lang === 'vi' ? 'chờ ban bố' : 'pending'}</Caption>
-        <Caption x={491} y={432} size={10} fill="#fde68a">{lang === 'vi' ? 'đã ban bố' : 'proclaimed'}</Caption>
+        <Caption x={335} y={432} size={10} fill={C.goldDark}>{lang === 'vi' ? 'chờ ban bố' : 'pending'}</Caption>
+        <Caption x={491} y={432} size={10} fill={C.goldDark}>{lang === 'vi' ? 'đã ban bố' : 'proclaimed'}</Caption>
 
         {/* The city: a citadel going up and the tax office */}
         <Banner x={630} y={358} h={110} color="#b91c1c" />

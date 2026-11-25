@@ -28,8 +28,8 @@ export const structuralPatterns: Omit<Pattern, 'diagram'>[] = [
     vietnamese_example: {
       title: { en: 'Đàn Tranh → MIDI Adapter', vi: 'Đàn Tranh → Bộ Chuyển MIDI' },
       description: {
-        en: 'A Đàn Tranh (Vietnamese zither) is played by plucking a numbered string with a chosen strength, while the recording software only understands MIDI messages: a note number and a velocity from 0 to 127. RecordingSoftware (the recording software) is the Client, and MidiDevice with sendMidi(note, velocity) is the Client Interface it expects. Zither is the Service: useful, but its pluckString(stringNumber, strength) method does not match MidiDevice. ZitherMidiAdapter implements MidiDevice and wraps a Zither. When the software calls sendMidi(), the adapter looks up which string plays that note of the pentatonic scale (Hò, Xự, Xang, Xê, Cống), turns the velocity into a soft, medium or strong pluck, and calls pluckString(). The software records the Đàn Tranh exactly like a MIDI keyboard (MidiKeyboard), and neither the instrument nor the software had to change.',
-        vi: 'Đàn Tranh được chơi bằng cách gảy một dây đã đánh số với một lực nhất định, còn phần mềm ghi âm chỉ hiểu tín hiệu MIDI: số hiệu nốt và velocity (độ mạnh) từ 0 đến 127. RecordingSoftware (phần mềm ghi âm) là Client, và MidiDevice với phương thức sendMidi(note, velocity) là Client Interface mà nó mong đợi. Zither là Service: hữu ích, nhưng phương thức pluckString(stringNumber, strength) (số dây, lực gảy) của nó không khớp với MidiDevice. ZitherMidiAdapter triển khai MidiDevice và bao bọc một Zither. Khi phần mềm gọi sendMidi(), adapter tra xem dây nào phát nốt đó trong thang ngũ cung (Hò, Xự, Xang, Xê, Cống), đổi velocity thành lực gảy nhẹ, vừa hoặc mạnh, rồi gọi pluckString(). Phần mềm ghi âm Đàn Tranh y như ghi một bàn phím MIDI (MidiKeyboard), và cả cây đàn lẫn phần mềm đều không phải thay đổi.',
+        en: 'A musician plays the Đàn Tranh (Vietnamese zither) by plucking a numbered string, softly, medium or hard, while the recording software only takes in MIDI messages: a note number and a velocity from 0 to 127. RecordingSoftware is the Client: record() keeps calling readNote() and writes down every note it gets. MidiDevice, with readNote(), is the Client Interface it expects. Zither is the Service: useful, but it only knows strings and strength; pluckString(stringNumber, strength) is the musician\'s action, and nextPluck() hands each pluck over in its own format. ZitherMidiAdapter, like a pickup clipped onto the instrument, implements MidiDevice and wraps a Zither. Each time the software asks for a note, the adapter takes the next pluck from the zither, looks up the MIDI note of that string in the pentatonic scale (Hò, Xự, Xang, Xê, Cống = C, D, F, G, A) and turns soft, medium or hard into a velocity of 40, 80 or 110. The software records the Đàn Tranh exactly like a MIDI keyboard (MidiKeyboard), and neither the instrument nor the software had to change.',
+        vi: 'Nghệ sĩ chơi Đàn Tranh bằng cách gảy một dây đã đánh số, nhẹ, vừa hoặc mạnh, còn phần mềm thu âm chỉ nhận tín hiệu MIDI: số hiệu nốt và velocity (độ mạnh) từ 0 đến 127. RecordingSoftware là Client: record() liên tục gọi readNote() và ghi lại mọi nốt nhận được. MidiDevice, với readNote(), là Client Interface mà nó mong đợi. Zither là Service: hữu ích, nhưng chỉ biết dây đàn và lực gảy; pluckString(stringNumber, strength) là động tác của nghệ sĩ, còn nextPluck() trao lại từng cú gảy theo định dạng riêng của nó. ZitherMidiAdapter, giống một bộ thu âm kẹp vào thân đàn, triển khai MidiDevice và bao bọc một Zither. Mỗi lần phần mềm xin một nốt, adapter lấy cú gảy kế tiếp từ cây đàn, tra nốt MIDI của dây đó trong thang ngũ cung (Hò, Xự, Xang, Xê, Cống = C, D, F, G, A) và đổi lực nhẹ, vừa, mạnh thành velocity 40, 80 hoặc 110. Phần mềm thu Đàn Tranh y như thu một bàn phím MIDI (MidiKeyboard), và cả cây đàn lẫn phần mềm đều không phải thay đổi.',
       },
     },
     code_examples: [
@@ -37,6 +37,7 @@ export const structuralPatterns: Omit<Pattern, 'diagram'>[] = [
         language: 'python',
         label: 'Python',
         code: `from abc import ABC, abstractmethod
+from typing import NamedTuple, Optional
 
 
 # Service: a useful existing class with an incompatible interface.
@@ -44,59 +45,83 @@ export const structuralPatterns: Omit<Pattern, 'diagram'>[] = [
 class Zither:
     STRING_NAMES = {1: "Hò", 2: "Xự", 3: "Xang", 4: "Xê", 5: "Cống"}
 
-    def pluck_string(self, string_number: int, strength: str) -> str:
-        return f"Đàn Tranh: gảy dây {string_number} ({self.STRING_NAMES[string_number]}), lực {strength}"
+    def __init__(self) -> None:
+        self._plucks: list[tuple[int, str]] = []
+
+    # The musician's action
+    def pluck_string(self, string_number: int, strength: str) -> None:
+        print(f"🪕 Gảy dây {string_number} ({self.STRING_NAMES[string_number]}), lực {strength}")
+        self._plucks.append((string_number, strength))
+
+    # Hands over the next pluck, or None when the musician has stopped
+    def next_pluck(self) -> Optional[tuple[int, str]]:
+        return self._plucks.pop(0) if self._plucks else None
+
+
+# What the recording software understands: a MIDI note and its velocity
+class MidiNote(NamedTuple):
+    note: int
+    velocity: int
 
 
 # Client Interface: the protocol the recording software expects
 class MidiDevice(ABC):
     @abstractmethod
-    def send_midi(self, note: int, velocity: int) -> str: ...
+    def read_note(self) -> Optional[MidiNote]: ...
 
 
 # A device that already follows the client interface
 class MidiKeyboard(MidiDevice):
-    def send_midi(self, note: int, velocity: int) -> str:
-        return f"Bàn phím MIDI: nốt {note}, velocity {velocity}"
+    def __init__(self, keys: list[tuple[int, int]]) -> None:
+        self._pressed = [MidiNote(note, velocity) for note, velocity in keys]
+
+    def read_note(self) -> Optional[MidiNote]:
+        return self._pressed.pop(0) if self._pressed else None
 
 
 # Adapter: implements the client interface and wraps the service
 class ZitherMidiAdapter(MidiDevice):
-    # MIDI note -> string number (Hò Xự Xang Xê Cống = C D F G A)
-    NOTE_TO_STRING = {60: 1, 62: 2, 65: 3, 67: 4, 69: 5}
+    # String number -> MIDI note (Hò Xự Xang Xê Cống = C D F G A)
+    STRING_TO_NOTE = {1: 60, 2: 62, 3: 65, 4: 67, 5: 69}
+    STRENGTH_TO_VELOCITY = {"nhẹ": 40, "vừa": 80, "mạnh": 110}
 
-    def __init__(self, zither: Zither):
+    def __init__(self, zither: Zither) -> None:
         self._zither = zither
 
-    def send_midi(self, note: int, velocity: int) -> str:
-        # Translate the call into the format the service expects
-        if note not in self.NOTE_TO_STRING:
-            raise ValueError(f"Đàn Tranh không có nốt {note}")
-        string_number = self.NOTE_TO_STRING[note]
-        strength = "mạnh" if velocity >= 100 else "vừa" if velocity >= 50 else "nhẹ"
-        return self._zither.pluck_string(string_number, strength)
+    def read_note(self) -> Optional[MidiNote]:
+        # Translate what the service produces into what the client expects
+        pluck = self._zither.next_pluck()
+        if pluck is None:
+            return None
+        string_number, strength = pluck
+        return MidiNote(self.STRING_TO_NOTE[string_number], self.STRENGTH_TO_VELOCITY[strength])
 
 
 # Client: existing business logic that only knows MidiDevice
 class RecordingSoftware:
-    def record(self, device: MidiDevice, melody: list[tuple[int, int]]) -> None:
-        for note, velocity in melody:
-            print(device.send_midi(note, velocity))
+    def record(self, device: MidiDevice) -> None:
+        track = []
+        while (midi := device.read_note()) is not None:
+            track.append(f"nốt {midi.note} (velocity {midi.velocity})")
+        print(f"🎙️ Đã thu: {', '.join(track)}")
 
 
 daw = RecordingSoftware()
-daw.record(MidiKeyboard(), [(60, 90), (62, 90)])
+daw.record(MidiKeyboard([(60, 90), (62, 90)]))
 
-# daw.record(Zither(), ...) would fail: Zither has no send_midi()
-adapter = ZitherMidiAdapter(Zither())
-daw.record(adapter, [(60, 110), (65, 80), (69, 40)])
+# daw.record(Zither()) would fail: Zither has no read_note()
+zither = Zither()
+zither.pluck_string(1, "mạnh")
+zither.pluck_string(3, "vừa")
+zither.pluck_string(5, "nhẹ")
+daw.record(ZitherMidiAdapter(zither))
 
 # Output:
-# Bàn phím MIDI: nốt 60, velocity 90
-# Bàn phím MIDI: nốt 62, velocity 90
-# Đàn Tranh: gảy dây 1 (Hò), lực mạnh
-# Đàn Tranh: gảy dây 3 (Xang), lực vừa
-# Đàn Tranh: gảy dây 5 (Cống), lực nhẹ`,
+# 🎙️ Đã thu: nốt 60 (velocity 90), nốt 62 (velocity 90)
+# 🪕 Gảy dây 1 (Hò), lực mạnh
+# 🪕 Gảy dây 3 (Xang), lực vừa
+# 🪕 Gảy dây 5 (Cống), lực nhẹ
+# 🎙️ Đã thu: nốt 60 (velocity 110), nốt 65 (velocity 80), nốt 69 (velocity 40)`,
       },
       {
         language: 'typescript',
@@ -105,60 +130,83 @@ daw.record(adapter, [(60, 110), (65, 80), (69, 40)])
 // It knows strings and plucking strength, not MIDI notes and velocity.
 class Zither {
   private stringNames: Record<number, string> = { 1: 'Hò', 2: 'Xự', 3: 'Xang', 4: 'Xê', 5: 'Cống' }
+  private plucks: [number, string][] = []
 
-  pluckString(stringNumber: number, strength: string): string {
-    return \`Đàn Tranh: gảy dây \${stringNumber} (\${this.stringNames[stringNumber]}), lực \${strength}\`
+  // The musician's action
+  pluckString(stringNumber: number, strength: string): void {
+    console.log(\`🪕 Gảy dây \${stringNumber} (\${this.stringNames[stringNumber]}), lực \${strength}\`)
+    this.plucks.push([stringNumber, strength])
+  }
+
+  // Hands over the next pluck, or null when the musician has stopped
+  nextPluck(): [number, string] | null {
+    return this.plucks.shift() ?? null
   }
 }
 
+// What the recording software understands: a MIDI note and its velocity
+type MidiNote = { note: number; velocity: number }
+
 // Client Interface: the protocol the recording software expects
 interface MidiDevice {
-  sendMidi(note: number, velocity: number): string
+  readNote(): MidiNote | null
 }
 
 // A device that already follows the client interface
 class MidiKeyboard implements MidiDevice {
-  sendMidi(note: number, velocity: number): string {
-    return \`Bàn phím MIDI: nốt \${note}, velocity \${velocity}\`
+  private pressed: MidiNote[]
+
+  constructor(keys: [number, number][]) {
+    this.pressed = keys.map(([note, velocity]) => ({ note, velocity }))
+  }
+
+  readNote(): MidiNote | null {
+    return this.pressed.shift() ?? null
   }
 }
 
 // Adapter: implements the client interface and wraps the service
 class ZitherMidiAdapter implements MidiDevice {
-  // MIDI note -> string number (Hò Xự Xang Xê Cống = C D F G A)
-  private noteToString: Record<number, number> = { 60: 1, 62: 2, 65: 3, 67: 4, 69: 5 }
+  // String number -> MIDI note (Hò Xự Xang Xê Cống = C D F G A)
+  private stringToNote: Record<number, number> = { 1: 60, 2: 62, 3: 65, 4: 67, 5: 69 }
+  private strengthToVelocity: Record<string, number> = { 'nhẹ': 40, 'vừa': 80, 'mạnh': 110 }
 
   constructor(private zither: Zither) {}
 
-  sendMidi(note: number, velocity: number): string {
-    // Translate the call into the format the service expects
-    const stringNumber = this.noteToString[note]
-    if (stringNumber === undefined) throw new Error(\`Đàn Tranh không có nốt \${note}\`)
-    const strength = velocity >= 100 ? 'mạnh' : velocity >= 50 ? 'vừa' : 'nhẹ'
-    return this.zither.pluckString(stringNumber, strength)
+  readNote(): MidiNote | null {
+    // Translate what the service produces into what the client expects
+    const pluck = this.zither.nextPluck()
+    if (!pluck) return null
+    const [stringNumber, strength] = pluck
+    return { note: this.stringToNote[stringNumber], velocity: this.strengthToVelocity[strength] }
   }
 }
 
 // Client: existing business logic that only knows MidiDevice
 class RecordingSoftware {
-  record(device: MidiDevice, melody: [number, number][]): void {
-    for (const [note, velocity] of melody) {
-      console.log(device.sendMidi(note, velocity))
+  record(device: MidiDevice): void {
+    const track: string[] = []
+    for (let midi = device.readNote(); midi; midi = device.readNote()) {
+      track.push(\`nốt \${midi.note} (velocity \${midi.velocity})\`)
     }
+    console.log(\`🎙️ Đã thu: \${track.join(', ')}\`)
   }
 }
 
 const daw = new RecordingSoftware()
-daw.record(new MidiKeyboard(), [[60, 90], [62, 90]])
+daw.record(new MidiKeyboard([[60, 90], [62, 90]]))
 
-// daw.record(new Zither(), ...) won't compile: Zither has no sendMidi()
-const adapter = new ZitherMidiAdapter(new Zither())
-daw.record(adapter, [[60, 110], [65, 80], [69, 40]])`,
+// daw.record(new Zither()) won't compile: Zither has no readNote()
+const zither = new Zither()
+zither.pluckString(1, 'mạnh')
+zither.pluckString(3, 'vừa')
+zither.pluckString(5, 'nhẹ')
+daw.record(new ZitherMidiAdapter(zither))`,
       },
     ],
     structure_notes: {
-      en: 'The diagram and code show the object adapter, which uses composition: the adapter implements the interface of one object and wraps the other, and it works in all popular languages. The Client (RecordingSoftware) contains the existing business logic of the program. The Client Interface (MidiDevice) describes the protocol other classes must follow to collaborate with the client code. The Service (Zither) is a useful class, usually 3rd-party or legacy, that the client can\'t use directly because its interface is incompatible. The Adapter (ZitherMidiAdapter) implements the client interface while wrapping the service object; it receives calls through the client interface and translates them into calls the wrapped service understands. Because the client works with the adapter only through the client interface, you can add new adapters, for example when the service\'s interface changes or is replaced, without changing the client. MidiKeyboard is an extra class that already follows the client interface, to show that the client treats it and the adapter the same way. The second variant, the class adapter, inherits interfaces from both the client and the service at the same time, so it doesn\'t wrap any object: the adaptation happens in overridden methods, and the adapter can be used in place of an existing client class. It needs multiple inheritance (as in C++), so it is not shown here.',
-      vi: 'Sơ đồ và mã minh họa object adapter (adapter đối tượng), dùng nguyên tắc kết hợp đối tượng: adapter triển khai giao diện của một đối tượng và bao bọc đối tượng kia; cách này dùng được trong mọi ngôn ngữ phổ biến. Client (RecordingSoftware) chứa logic nghiệp vụ hiện có của chương trình. Client Interface (MidiDevice) mô tả giao thức mà các lớp khác phải tuân theo để làm việc được với mã client. Service (Zither) là một lớp hữu ích, thường của bên thứ ba hoặc mã cũ, mà client không dùng trực tiếp được vì giao diện không tương thích. Adapter (ZitherMidiAdapter) triển khai client interface đồng thời bao bọc đối tượng service; nó nhận lời gọi qua client interface rồi dịch thành lời gọi mà service bên trong hiểu được. Vì client chỉ làm việc với adapter qua client interface, bạn có thể thêm adapter mới, chẳng hạn khi giao diện của service thay đổi hoặc bị thay thế, mà không phải sửa client. MidiKeyboard là một lớp bổ sung vốn đã theo client interface, để cho thấy client đối xử với nó và với adapter như nhau. Biến thể thứ hai, class adapter (adapter lớp), kế thừa giao diện của cả client lẫn service cùng lúc, nên không cần bao bọc đối tượng nào: việc chuyển đổi diễn ra trong các phương thức được ghi đè, và adapter có thể dùng thay cho một lớp client có sẵn. Biến thể này cần đa kế thừa (như trong C++), nên không được minh họa ở đây.',
+      en: 'The diagram and code show the object adapter, which uses composition: the adapter implements the interface of one object and wraps the other, and it works in all popular languages. The Client (RecordingSoftware) contains the existing business logic of the program. The Client Interface (MidiDevice) describes the protocol other classes must follow to collaborate with the client code. The Service (Zither) is a useful class, usually 3rd-party or legacy, that the client can\'t use directly because its interface is incompatible. The Adapter (ZitherMidiAdapter) implements the client interface while wrapping the service object; it receives calls through the client interface, makes the calls the wrapped service understands, and translates the results back (here, each pluck from nextPluck() becomes a MIDI note returned by readNote()). Because the client works with the adapter only through the client interface, you can add new adapters, for example when the service\'s interface changes or is replaced, without changing the client. MidiKeyboard is an extra class that already follows the client interface, to show that the client treats it and the adapter the same way. The second variant, the class adapter, inherits interfaces from both the client and the service at the same time, so it doesn\'t wrap any object: the adaptation happens in overridden methods, and the adapter can be used in place of an existing client class. It needs multiple inheritance (as in C++), so it is not shown here.',
+      vi: 'Sơ đồ và mã minh họa object adapter (adapter đối tượng), dùng nguyên tắc kết hợp đối tượng: adapter triển khai giao diện của một đối tượng và bao bọc đối tượng kia; cách này dùng được trong mọi ngôn ngữ phổ biến. Client (RecordingSoftware) chứa logic nghiệp vụ hiện có của chương trình. Client Interface (MidiDevice) mô tả giao thức mà các lớp khác phải tuân theo để làm việc được với mã client. Service (Zither) là một lớp hữu ích, thường của bên thứ ba hoặc mã cũ, mà client không dùng trực tiếp được vì giao diện không tương thích. Adapter (ZitherMidiAdapter) triển khai client interface đồng thời bao bọc đối tượng service; nó nhận lời gọi qua client interface, gọi những phương thức mà service bên trong hiểu được, rồi dịch kết quả trở lại (ở đây, mỗi cú gảy lấy từ nextPluck() trở thành một nốt MIDI do readNote() trả về). Vì client chỉ làm việc với adapter qua client interface, bạn có thể thêm adapter mới, chẳng hạn khi giao diện của service thay đổi hoặc bị thay thế, mà không phải sửa client. MidiKeyboard là một lớp bổ sung vốn đã theo client interface, để cho thấy client đối xử với nó và với adapter như nhau. Biến thể thứ hai, class adapter (adapter lớp), kế thừa giao diện của cả client lẫn service cùng lúc, nên không cần bao bọc đối tượng nào: việc chuyển đổi diễn ra trong các phương thức được ghi đè, và adapter có thể dùng thay cho một lớp client có sẵn. Biến thể này cần đa kế thừa (như trong C++), nên không được minh họa ở đây.',
     },
   },
 
@@ -188,8 +236,8 @@ daw.record(adapter, [[60, 110], [65, 80], [69, 40]])`,
     vietnamese_example: {
       title: { en: 'Áo Dài Styles & Fabrics', vi: 'Áo Dài - Kiểu Dáng & Chất Liệu' },
       description: {
-        en: 'An Áo Dài varies in two independent dimensions: style (kiểu dáng) and fabric (chất liệu). With inheritance alone, every style needs one subclass per fabric (TraditionalSilk, TraditionalBrocade, ModernSilk and so on), so 3 styles and 3 fabrics already need 9 classes. With Bridge, the style hierarchy is the Abstraction: Style decides which parts to cut and in what order (sew()), and the Refined Abstractions Traditional (high collar, ankle-length flaps) and Modern (boat neck, knee-length flaps, plus embroidery) vary that logic. The fabric hierarchy is the Implementation: Fabric declares the primitive steps name(), cut() and embroider(), and the Concrete Implementations Silk and Brocade carry them out in their own way. Style keeps a Fabric in its fabric field, which is the bridge, so any style can be sewn in any fabric and 3 + 3 classes cover all 9 combinations. Adding Cotton means one new Fabric class, without touching the styles.',
-        vi: 'Áo Dài thay đổi theo hai chiều độc lập: kiểu dáng và chất liệu. Nếu chỉ dùng kế thừa, mỗi kiểu dáng cần một lớp con cho mỗi chất liệu (TraditionalSilk, TraditionalBrocade, ModernSilk...), nên 3 kiểu dáng và 3 chất liệu đã cần tới 9 lớp. Với Bridge, hệ phân cấp kiểu dáng là Abstraction: Style quyết định cắt những phần nào và theo thứ tự nào (sew()), còn các Refined Abstraction là Traditional (cổ cao, tà dài chấm gót) và Modern (cổ thuyền, tà ngắn qua gối, thêm thêu hoa) thay đổi logic đó. Hệ phân cấp chất liệu là Implementation: Fabric khai báo các bước cơ bản name(), cut() và embroider(), và các Concrete Implementation là Silk (tơ lụa) và Brocade (gấm) thực hiện chúng theo cách riêng. Style giữ một Fabric trong trường fabric, đó chính là cây cầu nối, nên kiểu dáng nào cũng may được bằng chất liệu nào, và 3 + 3 lớp đủ cho cả 9 tổ hợp. Thêm vải Cotton chỉ cần một lớp Fabric mới, không phải sửa các kiểu dáng.',
+        en: 'An Áo Dài varies in two independent dimensions: style (kiểu dáng) and fabric (chất liệu). With inheritance alone, every style needs one subclass per fabric (TraditionalSilk, TraditionalBrocade, ModernSilk and ModernBrocade), so 2 styles and 2 fabrics already need 4 classes, and the count multiplies with every new option. With Bridge, the style hierarchy is the Abstraction: Style decides which parts to cut and in what order (sew()), and the Refined Abstractions Traditional (high collar, ankle-length flaps) and Modern (boat neck, knee-length flaps, plus embroidery) vary that logic. The fabric hierarchy is the Implementation: Fabric declares the primitive steps name(), cut() and embroider(), and the Concrete Implementations Silk and Brocade carry them out in their own way. Style keeps a Fabric in its fabric field, which is the bridge, so any style can be sewn in any fabric, and 2 + 2 classes cover all 4 combinations. Adding Cotton then means one new Fabric class, where inheritance would need one new subclass per style (TraditionalCotton and ModernCotton), and the styles stay untouched.',
+        vi: 'Áo Dài thay đổi theo hai chiều độc lập: kiểu dáng và chất liệu. Nếu chỉ dùng kế thừa, mỗi kiểu dáng cần một lớp con cho mỗi chất liệu (TraditionalSilk, TraditionalBrocade, ModernSilk và ModernBrocade), nên 2 kiểu dáng và 2 chất liệu đã cần tới 4 lớp, và số lớp còn nhân lên với mỗi lựa chọn mới. Với Bridge, hệ phân cấp kiểu dáng là Abstraction: Style quyết định cắt những phần nào và theo thứ tự nào (sew()), còn các Refined Abstraction là Traditional (cổ cao, tà dài chấm gót) và Modern (cổ thuyền, tà ngắn qua gối, thêm thêu hoa) thay đổi logic đó. Hệ phân cấp chất liệu là Implementation: Fabric khai báo các bước cơ bản name(), cut() và embroider(), và các Concrete Implementation là Silk (tơ lụa) và Brocade (gấm) thực hiện chúng theo cách riêng. Style giữ một Fabric trong trường fabric, đó chính là cây cầu nối, nên kiểu dáng nào cũng may được bằng chất liệu nào, và 2 + 2 lớp đủ cho cả 4 tổ hợp. Khi đó thêm vải Cotton chỉ cần một lớp Fabric mới, trong khi kế thừa phải thêm một lớp con cho mỗi kiểu dáng (TraditionalCotton và ModernCotton), và các kiểu dáng không phải sửa.',
       },
     },
     code_examples: [
@@ -577,7 +625,7 @@ console.log(\`Sức mạnh sau khi điều Kỵ Binh đi: \${corps.getStrength()
       vi: 'Dùng Decorator khi cần gán thêm hành vi cho đối tượng lúc chạy mà không làm hỏng mã đang dùng các đối tượng đó: bạn chia logic nghiệp vụ thành các lớp, tạo một decorator cho mỗi lớp, rồi ghép đối tượng với các tổ hợp logic khác nhau lúc chạy, trong khi client vẫn đối xử với chúng như nhau vì chúng có chung một giao diện. Dùng khi việc mở rộng hành vi bằng kế thừa bất tiện hoặc không thể làm được: nhiều ngôn ngữ có từ khóa final để chặn kế thừa, và với một lớp final, cách duy nhất để tái sử dụng hành vi của nó là bọc nó trong decorator của riêng bạn.',
     },
     vietnamese_example: {
-      title: { en: 'Phở Broth Customization', vi: 'Tùy Chỉnh Nước Dùng Phở' },
+      title: { en: 'A Bowl of Phở, One Topping at a Time', vi: 'Bát Phở Thêm Từng Món' },
       description: {
         en: 'Every bowl starts as a plain PlainNoodleSoup (the Concrete Component, 40.000đ). Customers then choose toppings: thịt bò (beef), trứng (egg), ớt (chili), hành lá (spring onion). Each topping is a Concrete Decorator (AddBeef, AddEgg, AddChili, AddSpringOnion) that extends the base decorator NoodleSoupDecorator, which holds a reference to any NoodleSoup and delegates describe() and price() to it. Each topping calls the parent method first, then appends its name and adds its price. The order-taking code wraps the bowl at runtime, one topping at a time, so PlainNoodleSoup → AddBeef → AddEgg → AddChili → AddSpringOnion costs 75.000đ without a class for each combination. The bill printer, the client, only sees the NoodleSoup interface and treats a plain bowl and a fully loaded one the same way.',
         vi: 'Bát phở nào cũng bắt đầu là một PlainNoodleSoup (Concrete Component, 40.000đ). Sau đó khách chọn thêm: thịt bò, trứng, ớt, hành lá. Mỗi món thêm là một Concrete Decorator (AddBeef, AddEgg, AddChili, AddSpringOnion) kế thừa decorator cơ sở NoodleSoupDecorator; lớp này giữ tham chiếu tới một NoodleSoup bất kỳ và ủy quyền describe() và price() cho nó. Mỗi món thêm gọi phương thức của lớp cha trước, rồi nối thêm tên và cộng thêm giá của mình. Mã nhận order bọc bát phở lúc chạy, từng món một, nên PlainNoodleSoup → AddBeef → AddEgg → AddChili → AddSpringOnion có giá 75.000đ mà không cần một lớp cho mỗi tổ hợp. Phần in hóa đơn, tức client, chỉ thấy giao diện NoodleSoup và đối xử với bát phở không như bát đầy đủ topping theo cùng một cách.',
@@ -991,8 +1039,8 @@ new HeadCook().prepareFeast(3)`,
     vietnamese_example: {
       title: { en: 'Lantern Festival (Hội An Đèn Lồng)', vi: 'Lễ Hội Đèn Lồng Hội An' },
       description: {
-        en: 'During the Hội An Lantern Festival, thousands of lanterns float on the Thu Bồn river. Their color (đỏ/vàng), shape (tròn/vuông) and pattern (hoa sen/rồng) repeat across thousands of lanterns, so they are the intrinsic state kept in the Flyweight LanternFlyweight, which is immutable. Each lantern\'s position on the river and the wish written on it are unique, so they are the extrinsic state stored in the Context Lantern, together with a reference to its flyweight; Lantern.display() passes x, y and wish into the flyweight\'s display(). The Flyweight Factory LanternFactory keeps a pool keyed by color, shape and pattern and returns an existing lantern type or creates a new one. The Client LanternFestival stores the contexts and asks the factory for a type each time it releases a lantern, so 10,005 lanterns share just 2 flyweight objects.',
-        vi: 'Trong Lễ hội Đèn Lồng Hội An, hàng nghìn chiếc đèn trôi trên sông Thu Bồn. Màu sắc (đỏ/vàng), hình dáng (tròn/vuông) và họa tiết (hoa sen/rồng) lặp lại trên hàng nghìn chiếc đèn, nên đó là trạng thái nội tại, được giữ trong Flyweight LanternFlyweight và không thể thay đổi. Vị trí trên sông và lời ước viết trên mỗi chiếc đèn là riêng, nên đó là trạng thái ngoại tại, được lưu trong Context Lantern cùng một tham chiếu tới flyweight của nó; Lantern.display() truyền x, y và wish vào display() của flyweight. Flyweight Factory LanternFactory giữ một pool theo khóa màu, hình dáng và họa tiết, trả về kiểu đèn có sẵn hoặc tạo kiểu mới. Client LanternFestival lưu các context và hỏi factory lấy kiểu đèn mỗi lần thả đèn, nên 10.005 chiếc đèn chỉ dùng chung 2 đối tượng flyweight.',
+        en: 'During the Hội An Lantern Festival, thousands of lanterns float on the Thu Bồn river. They come in three designs, a red round lantern with lotuses, a yellow square one with a dragon and a pink round one with peach blossoms. The color (đỏ/vàng/hồng), shape (tròn/vuông) and pattern (hoa sen/rồng/hoa đào) repeat across thousands of lanterns, so they are the intrinsic state kept in the Flyweight LanternFlyweight, which is immutable. Each lantern\'s position on the river and the wish written on it are unique, so they are the extrinsic state stored in the Context Lantern, together with a reference to its flyweight; Lantern.display() passes x, y and wish into the flyweight\'s display(). The Flyweight Factory LanternFactory keeps a pool keyed by color, shape and pattern and returns an existing lantern type or creates a new one. The Client LanternFestival stores the contexts and asks the factory for a type each time it releases a lantern, so 10,006 lanterns share just 3 flyweight objects, one per design.',
+        vi: 'Trong Lễ hội Đèn Lồng Hội An, hàng nghìn chiếc đèn trôi trên sông Thu Bồn. Đèn có ba mẫu: đèn đỏ tròn vẽ hoa sen, đèn vàng vuông vẽ rồng và đèn hồng tròn vẽ hoa đào. Màu sắc (đỏ/vàng/hồng), hình dáng (tròn/vuông) và họa tiết (hoa sen/rồng/hoa đào) lặp lại trên hàng nghìn chiếc đèn, nên đó là trạng thái nội tại, được giữ trong Flyweight LanternFlyweight và không thể thay đổi. Vị trí trên sông và lời ước viết trên mỗi chiếc đèn là riêng, nên đó là trạng thái ngoại tại, được lưu trong Context Lantern cùng một tham chiếu tới flyweight của nó; Lantern.display() truyền x, y và wish vào display() của flyweight. Flyweight Factory LanternFactory giữ một pool theo khóa màu, hình dáng và họa tiết, trả về kiểu đèn có sẵn hoặc tạo kiểu mới. Client LanternFestival lưu các context và hỏi factory lấy kiểu đèn mỗi lần thả đèn, nên 10.006 chiếc đèn chỉ dùng chung 3 đối tượng flyweight, mỗi mẫu một đối tượng.',
       },
     },
     code_examples: [
@@ -1063,14 +1111,18 @@ thu_bon_river.release_lantern(20, 5, "Ước hạnh phúc", "đỏ", "tròn", "h
 thu_bon_river.release_lantern(15, 4, "Ước thành công", "vàng", "vuông", "rồng")
 thu_bon_river.release_lantern(8, 6, "Ước sức khỏe", "đỏ", "tròn", "hoa sen")
 thu_bon_river.release_lantern(25, 2, "Ước phú quý", "vàng", "vuông", "rồng")
+thu_bon_river.release_lantern(12, 1, "Ước đỗ đạt", "hồng", "tròn", "hoa đào")
 thu_bon_river.display()
 
-# Release 10,000 more lanterns: the pool does not grow
+# Release 10,000 more lanterns in the three designs: the pool does not grow
+designs = [
+    ("Ước bình an", "đỏ", "tròn", "hoa sen"),
+    ("Ước an khang", "vàng", "vuông", "rồng"),
+    ("Ước sum vầy", "hồng", "tròn", "hoa đào"),
+]
 for i in range(10000):
-    if i % 2 == 0:
-        thu_bon_river.release_lantern(i, i % 7, "Ước bình an", "đỏ", "tròn", "hoa sen")
-    else:
-        thu_bon_river.release_lantern(i, i % 7, "Ước an khang", "vàng", "vuông", "rồng")
+    wish, color, shape, pattern = designs[i % 3]
+    thu_bon_river.release_lantern(i, i % 7, wish, color, shape, pattern)
 
 print(f"{len(thu_bon_river.lanterns)} đèn lồng, {LanternFactory.type_count()} flyweight")
 
@@ -1080,7 +1132,8 @@ print(f"{len(thu_bon_river.lanterns)} đèn lồng, {LanternFactory.type_count()
 # 🏮 vàng/vuông/rồng tại (15, 4): Ước thành công
 # 🏮 đỏ/tròn/hoa sen tại (8, 6): Ước sức khỏe
 # 🏮 vàng/vuông/rồng tại (25, 2): Ước phú quý
-# 10005 đèn lồng, 2 flyweight`,
+# 🏮 hồng/tròn/hoa đào tại (12, 1): Ước đỗ đạt
+# 10006 đèn lồng, 3 flyweight`,
       },
       {
         language: 'typescript',
@@ -1149,12 +1202,18 @@ thuBonRiver.releaseLantern(20, 5, 'Ước hạnh phúc', 'đỏ', 'tròn', 'hoa 
 thuBonRiver.releaseLantern(15, 4, 'Ước thành công', 'vàng', 'vuông', 'rồng')
 thuBonRiver.releaseLantern(8, 6, 'Ước sức khỏe', 'đỏ', 'tròn', 'hoa sen')
 thuBonRiver.releaseLantern(25, 2, 'Ước phú quý', 'vàng', 'vuông', 'rồng')
+thuBonRiver.releaseLantern(12, 1, 'Ước đỗ đạt', 'hồng', 'tròn', 'hoa đào')
 thuBonRiver.display()
 
-// Release 10,000 more lanterns: the pool does not grow
+// Release 10,000 more lanterns in the three designs: the pool does not grow
+const designs: [string, string, string, string][] = [
+  ['Ước bình an', 'đỏ', 'tròn', 'hoa sen'],
+  ['Ước an khang', 'vàng', 'vuông', 'rồng'],
+  ['Ước sum vầy', 'hồng', 'tròn', 'hoa đào'],
+]
 for (let i = 0; i < 10000; i++) {
-  if (i % 2 === 0) thuBonRiver.releaseLantern(i, i % 7, 'Ước bình an', 'đỏ', 'tròn', 'hoa sen')
-  else thuBonRiver.releaseLantern(i, i % 7, 'Ước an khang', 'vàng', 'vuông', 'rồng')
+  const [wish, color, shape, pattern] = designs[i % 3]
+  thuBonRiver.releaseLantern(i, i % 7, wish, color, shape, pattern)
 }
 
 console.log(\`\${thuBonRiver.lanterns.length} đèn lồng, \${LanternFactory.typeCount()} flyweight\`)`,
@@ -1192,8 +1251,8 @@ console.log(\`\${thuBonRiver.lanterns.length} đèn lồng, \${LanternFactory.ty
     vietnamese_example: {
       title: { en: 'Quan Lại (Mandarin) Access Control', vi: 'Quan Lại - Kiểm Soát Tiếp Cận' },
       description: {
-        en: 'At the imperial court, petitioners never reach the Emperor directly. CourtSession (the court session) is the Client: it holds a reference of type Emperor, the Service Interface, and calls grantAudience() without knowing who answers. The real Emperor, RealEmperor, is the Service, and summoning him to the throne hall is costly. MandarinProxy, the mandarin, is the Proxy: he implements the same Emperor interface and stands in front of the Emperor. He records every petition (logging proxy), turns away anyone not on his list (protection proxy), summons the Emperor only when the first valid petition arrives (virtual proxy), and answers a repeated petition from the earlier decree (caching proxy). The Emperor\'s class never changes, and the court session cannot tell whether it is talking to the mandarin or to the Emperor himself.',
-        vi: 'Ở triều đình, người dâng đơn không bao giờ gặp thẳng Hoàng Đế. CourtSession (buổi thiết triều) là Client: nó giữ một tham chiếu kiểu Emperor, tức Service Interface, và gọi grantAudience() mà không cần biết ai sẽ trả lời. Hoàng Đế thật, RealEmperor, là Service, và việc mời ngài ra điện rất tốn kém. MandarinProxy, viên quan lại, là Proxy: ông triển khai cùng giao diện Emperor và đứng chắn trước Hoàng Đế. Ông ghi sổ mọi lá đơn (logging proxy), từ chối người không có tên trong danh sách (protection proxy), chỉ mời Hoàng Đế ra khi có lá đơn hợp lệ đầu tiên (virtual proxy), và trả lời đơn trùng lặp bằng chiếu chỉ đã ban trước đó (caching proxy). Lớp của Hoàng Đế không hề thay đổi, và buổi thiết triều không phân biệt được mình đang nói chuyện với quan lại hay với chính Hoàng Đế.',
+        en: 'At the imperial court, petitioners never reach the Emperor directly. CourtSession (the court session) is the Client: it holds a reference of type Emperor, the Service Interface, and calls grantAudience() without knowing who answers. The real Emperor, RealEmperor, is the Service, and summoning him to the throne hall is costly. MandarinProxy, the mandarin, is the Proxy: he implements the same Emperor interface and stands in front of the Emperor. He does two jobs. He turns away anyone not on his list of officials (a protection proxy), and he summons the Emperor only when the first valid petition arrives, so a quiet day never wakes the court (a virtual proxy). The Emperor\'s class never changes, and the court session cannot tell whether it is talking to the mandarin or to the Emperor himself. The same doorway can do other jobs too: a mandarin who writes every petition in a ledger would be a logging proxy, and one who answers a repeated petition from the decree already issued would be a caching proxy.',
+        vi: 'Ở triều đình, người dâng đơn không bao giờ gặp thẳng Hoàng Đế. CourtSession (buổi thiết triều) là Client: nó giữ một tham chiếu kiểu Emperor, tức Service Interface, và gọi grantAudience() mà không cần biết ai sẽ trả lời. Hoàng Đế thật, RealEmperor, là Service, và việc mời ngài ra điện rất tốn kém. MandarinProxy, viên quan lại, là Proxy: ông triển khai cùng giao diện Emperor và đứng chắn trước Hoàng Đế. Ông làm hai việc. Ông từ chối người không có tên trong danh sách các quan (protection proxy), và chỉ mời Hoàng Đế ra khi có lá đơn hợp lệ đầu tiên, nên một ngày yên ắng không bao giờ phải đánh thức triều đình (virtual proxy). Lớp của Hoàng Đế không hề thay đổi, và buổi thiết triều không phân biệt được mình đang nói chuyện với quan lại hay với chính Hoàng Đế. Cùng một cửa ải đó còn có thể làm việc khác: viên quan ghi mọi lá đơn vào sổ sẽ là logging proxy, còn viên quan trả lời đơn trùng lặp bằng chiếu chỉ đã ban sẽ là caching proxy.',
       },
     },
     code_examples: [
@@ -1201,7 +1260,7 @@ console.log(\`\${thuBonRiver.lanterns.length} đèn lồng, \${LanternFactory.ty
         language: 'python',
         label: 'Python',
         code: `from abc import ABC, abstractmethod
-from typing import Dict, Optional, Set
+from typing import Optional, Set
 
 
 # Service Interface: the proxy must follow it to pass as the real Emperor
@@ -1224,27 +1283,17 @@ class MandarinProxy(Emperor):
     def __init__(self, permitted: Set[str]) -> None:
         self._emperor: Optional[RealEmperor] = None
         self._permitted = permitted
-        self._decrees: Dict[str, str] = {}
 
     def grant_audience(self, name: str, petition: str) -> str:
-        # Logging proxy: record the request before anything else
-        print(f"[Quan Lại] ghi sổ: {name} xin tâu '{petition}'")
-
-        # Protection proxy: only listed officials get through
+        # Protection proxy: only officials on the list get through
         if name not in self._permitted:
             return f"🚫 {name} không được yết kiến"
 
-        # Caching proxy: the petition is the cache key
-        if petition in self._decrees:
-            return f"📜 Theo chiếu cũ: {self._decrees[petition]}"
-
-        # Virtual proxy: create the service only when it is really needed
+        # Virtual proxy: summon the Emperor only for the first valid petition
         if self._emperor is None:
             self._emperor = RealEmperor()
 
-        result = self._emperor.grant_audience(name, petition)
-        self._decrees[petition] = result
-        return result
+        return self._emperor.grant_audience(name, petition)
 
 
 # Client: works only through the Emperor interface,
@@ -1260,16 +1309,13 @@ class CourtSession:
 court = CourtSession(MandarinProxy({"Tể Tướng", "Đại Tướng"}))
 court.submit_petition("Dân Thường", "giảm thuế")
 court.submit_petition("Tể Tướng", "mở khoa thi")
-court.submit_petition("Đại Tướng", "mở khoa thi")
+court.submit_petition("Đại Tướng", "đắp đê sông Hồng")
 
 # Output:
-# [Quan Lại] ghi sổ: Dân Thường xin tâu 'giảm thuế'
 # 🚫 Dân Thường không được yết kiến
-# [Quan Lại] ghi sổ: Tể Tướng xin tâu 'mở khoa thi'
 # 👑 Triệu Hoàng Đế ra điện Kính Thiên
 # Hoàng Đế phán: chuẩn tấu việc 'mở khoa thi'
-# [Quan Lại] ghi sổ: Đại Tướng xin tâu 'mở khoa thi'
-# 📜 Theo chiếu cũ: Hoàng Đế phán: chuẩn tấu việc 'mở khoa thi'`,
+# Hoàng Đế phán: chuẩn tấu việc 'đắp đê sông Hồng'`,
       },
       {
         language: 'typescript',
@@ -1293,27 +1339,17 @@ class RealEmperor implements Emperor {
 // Proxy: same interface, holds a reference to the service and manages its lifecycle
 class MandarinProxy implements Emperor {
   private emperor: RealEmperor | null = null
-  private decrees = new Map<string, string>()
 
   constructor(private readonly permitted: Set<string>) {}
 
   grantAudience(name: string, petition: string): string {
-    // Logging proxy: record the request before anything else
-    console.log(\`[Quan Lại] ghi sổ: \${name} xin tâu '\${petition}'\`)
-
-    // Protection proxy: only listed officials get through
+    // Protection proxy: only officials on the list get through
     if (!this.permitted.has(name)) return \`🚫 \${name} không được yết kiến\`
 
-    // Caching proxy: the petition is the cache key
-    const oldDecree = this.decrees.get(petition)
-    if (oldDecree !== undefined) return \`📜 Theo chiếu cũ: \${oldDecree}\`
-
-    // Virtual proxy: create the service only when it is really needed
+    // Virtual proxy: summon the Emperor only for the first valid petition
     if (this.emperor === null) this.emperor = new RealEmperor()
 
-    const result = this.emperor.grantAudience(name, petition)
-    this.decrees.set(petition, result)
-    return result
+    return this.emperor.grantAudience(name, petition)
   }
 }
 
@@ -1330,12 +1366,12 @@ class CourtSession {
 const court = new CourtSession(new MandarinProxy(new Set(['Tể Tướng', 'Đại Tướng'])))
 court.submitPetition('Dân Thường', 'giảm thuế')
 court.submitPetition('Tể Tướng', 'mở khoa thi')
-court.submitPetition('Đại Tướng', 'mở khoa thi')`,
+court.submitPetition('Đại Tướng', 'đắp đê sông Hồng')`,
       },
     ],
     structure_notes: {
-      en: 'Service Interface declares the interface of the Service; the proxy must follow this interface to be able to disguise itself as a service object. Service is a class that provides some useful business logic. Proxy has a reference field that points to a service object; after the proxy finishes its own processing (lazy initialization, logging, access control, caching, etc.), it passes the request to the service object. Proxies usually manage the full lifecycle of their service objects. Client works with both services and proxies through the same interface, so you can pass a proxy into any code that expects a service object. For space, the diagram leaves out the proxy\'s list of permitted officials.',
-      vi: 'Service Interface khai báo giao diện của Service; proxy phải tuân theo giao diện này để có thể đóng giả làm đối tượng dịch vụ. Service là lớp cung cấp một logic nghiệp vụ hữu ích nào đó. Proxy có một trường tham chiếu trỏ tới đối tượng dịch vụ; sau khi xử lý xong phần việc của mình (khởi tạo trễ, ghi log, kiểm soát truy cập, cache, v.v.), proxy chuyển yêu cầu cho đối tượng dịch vụ. Thông thường proxy quản lý toàn bộ vòng đời của đối tượng dịch vụ. Client làm việc với cả dịch vụ lẫn proxy qua cùng một giao diện, nhờ đó bạn có thể truyền proxy vào bất kỳ đoạn mã nào đang chờ một đối tượng dịch vụ. Để gọn, sơ đồ lược bỏ danh sách quan được phép yết kiến của proxy.',
+      en: 'Service Interface declares the interface of the Service; the proxy must follow this interface to be able to disguise itself as a service object. Service is a class that provides some useful business logic. Proxy has a reference field that points to a service object; after the proxy finishes its own processing (lazy initialization, logging, access control, caching, etc.), it passes the request to the service object. Proxies usually manage the full lifecycle of their service objects. Client works with both services and proxies through the same interface, so you can pass a proxy into any code that expects a service object. Here the proxy combines two of these jobs, access control (permitted) and lazy initialization (emperor).',
+      vi: 'Service Interface khai báo giao diện của Service; proxy phải tuân theo giao diện này để có thể đóng giả làm đối tượng dịch vụ. Service là lớp cung cấp một logic nghiệp vụ hữu ích nào đó. Proxy có một trường tham chiếu trỏ tới đối tượng dịch vụ; sau khi xử lý xong phần việc của mình (khởi tạo trễ, ghi log, kiểm soát truy cập, cache, v.v.), proxy chuyển yêu cầu cho đối tượng dịch vụ. Thông thường proxy quản lý toàn bộ vòng đời của đối tượng dịch vụ. Client làm việc với cả dịch vụ lẫn proxy qua cùng một giao diện, nhờ đó bạn có thể truyền proxy vào bất kỳ đoạn mã nào đang chờ một đối tượng dịch vụ. Ở đây proxy kết hợp hai việc trong số đó: kiểm soát truy cập (permitted) và khởi tạo trễ (emperor).',
     },
   },
 ]

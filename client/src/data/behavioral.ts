@@ -31,8 +31,8 @@ export const behavioralPatterns: Omit<Pattern, 'diagram'>[] = [
     vietnamese_example: {
       title: { en: 'Petitioning the Imperial Court', vi: 'Dâng Đơn Lên Triều Đình' },
       description: {
-        en: 'In old Vietnam, a citizen\'s petition (Petition, the request object) travels up the ladder of officials. Official is the Handler interface, with setSuperior() and handle(). BaseOfficial is the Base Handler: it stores the superior official in superior and, by default, forwards the petition to him. The Concrete Handlers VillageChief (village chief), DistrictMagistrate (district magistrate), Prefect (prefect) and Emperor (the Emperor) each handle one kind of matter: land disputes, theft, dikes and war. Each one checks the petition and either settles it or calls the base method to pass it up. This is the canonical variant, where at most one official handles a petition. The client builds the chain with setSuperior() and files petitions with filePetition(). A petition nobody handles reaches the end of the chain and comes back unresolved, and a petition filed directly with the district skips the village chief entirely.',
-        vi: 'Thời xưa, lá đơn thỉnh cầu của người dân (Petition, đối tượng yêu cầu) được chuyển dần lên các cấp quan. Official là giao diện Handler, gồm setSuperior() và handle(). BaseOfficial là Base Handler: nó lưu quan cấp trên trong superior và mặc định chuyển đơn lên cho người đó. Các Concrete Handler là VillageChief (xã trưởng), DistrictMagistrate (quan huyện), Prefect (phủ doãn) và Emperor (Hoàng Đế), mỗi người lo một loại việc: tranh chấp ruộng đất, trộm cắp, đê điều và quân sự. Mỗi người xem lá đơn rồi hoặc tự giải quyết, hoặc gọi phương thức của lớp cơ sở để chuyển đơn lên trên. Đây là biến thể chuẩn mực, trong đó mỗi lá đơn được tối đa một vị quan xử lý. Client dựng chuỗi bằng setSuperior() và nộp đơn qua filePetition(). Lá đơn không ai nhận sẽ đi tới cuối chuỗi rồi bị trả về, còn lá đơn nộp thẳng lên huyện thì bỏ qua xã trưởng hoàn toàn.',
+        en: 'In old Vietnam, a citizen\'s petition (Petition, the request object) travels up the ladder of officials. Each petition carries a level that says how much authority it takes to settle it, from 1 for a quarrel over a field boundary to 4 for a war. Official is the Handler interface, with setSuperior() and handle(). BaseOfficial is the Base Handler: it stores the superior official in superior and, by default, forwards the petition to him. The Concrete Handlers VillageChief (village chief), DistrictMagistrate (district magistrate), Prefect (prefect) and Emperor (the Emperor) may settle petitions up to level 1, 2, 3 and 4 respectively. Each one reads the level and either settles the petition or calls the base method to pass it up, so a petition stops at the lowest official with enough authority. The order of the links matters: if the Emperor stood first, he would end up settling every field quarrel himself. This is the canonical variant, where at most one official handles a petition. The client builds the chain with setSuperior() and files petitions with filePetition(). A land dispute filed directly with the district is settled there without the village chief. A request for rain, which no official has the power to grant, reaches the end of the chain and comes back unresolved.',
+        vi: 'Thời xưa, lá đơn thỉnh cầu của người dân (Petition, đối tượng yêu cầu) được chuyển dần lên các cấp quan. Mỗi lá đơn mang một mức độ (level) cho biết cần quyền hạn tới đâu mới xử được, từ 1 cho một vụ tranh chấp bờ ruộng tới 4 cho chuyện chiến tranh. Official là giao diện Handler, gồm setSuperior() và handle(). BaseOfficial là Base Handler: nó lưu quan cấp trên trong superior và mặc định chuyển đơn lên cho người đó. Các Concrete Handler là VillageChief (xã trưởng), DistrictMagistrate (quan huyện), Prefect (tri phủ) và Emperor (Hoàng Đế), lần lượt được xử các lá đơn tới mức 1, 2, 3 và 4. Mỗi người xem mức độ của lá đơn rồi hoặc tự giải quyết, hoặc gọi phương thức của lớp cơ sở để chuyển đơn lên trên, nên lá đơn dừng lại ở vị quan thấp nhất đủ quyền xử nó. Thứ tự các mắt xích vì thế rất quan trọng: nếu Hoàng Đế đứng đầu chuỗi, ngài sẽ phải tự xử mọi vụ tranh chấp bờ ruộng. Đây là biến thể chuẩn mực, trong đó mỗi lá đơn được tối đa một vị quan xử lý. Client dựng chuỗi bằng setSuperior() và nộp đơn qua filePetition(). Lá đơn tranh chấp đất nộp thẳng lên huyện được xử ngay ở huyện mà không qua xã trưởng. Lá đơn xin trời làm mưa, việc không vị quan nào có quyền làm, sẽ đi tới cuối chuỗi rồi bị trả về.',
       },
     },
     code_examples: [
@@ -43,10 +43,11 @@ export const behavioralPatterns: Omit<Pattern, 'diagram'>[] = [
 from typing import Optional
 
 
-# The request: all of its data travels in one object
+# The request: all of its data travels in one object.
+# level: the authority it takes to settle it, from 1 (village) to 4 (throne)
 class Petition:
-    def __init__(self, kind: str, content: str) -> None:
-        self.kind = kind
+    def __init__(self, level: int, content: str) -> None:
+        self.level = level
         self.content = content
 
 
@@ -75,32 +76,32 @@ class BaseOfficial(Official):
         return None  # end of the chain: nobody handled it
 
 
-# Concrete Handlers: each one decides to settle the petition
-# or pass it up to the next official
+# Concrete Handlers: each one settles what lies within its authority
+# and passes anything more serious up to the next official
 class VillageChief(BaseOfficial):
     def handle(self, petition: Petition) -> Optional[str]:
-        if petition.kind == "ruộng đất":
-            return f"Xã Trưởng phân xử: {petition.content}"
+        if petition.level <= 1:
+            return f"Xã Trưởng hòa giải: {petition.content}"
         return super().handle(petition)
 
 
 class DistrictMagistrate(BaseOfficial):
     def handle(self, petition: Petition) -> Optional[str]:
-        if petition.kind == "trộm cắp":
-            return f"Huyện Quan xét án: {petition.content}"
+        if petition.level <= 2:
+            return f"Quan Huyện xét xử: {petition.content}"
         return super().handle(petition)
 
 
 class Prefect(BaseOfficial):
     def handle(self, petition: Petition) -> Optional[str]:
-        if petition.kind == "đê điều":
-            return f"Phủ Doãn cho đắp đê: {petition.content}"
+        if petition.level <= 3:
+            return f"Tri Phủ giải quyết: {petition.content}"
         return super().handle(petition)
 
 
 class Emperor(BaseOfficial):
     def handle(self, petition: Petition) -> Optional[str]:
-        if petition.kind == "quân sự":
+        if petition.level <= 4:
             return f"Hoàng Đế 👑 ra chiếu: {petition.content}"
         return super().handle(petition)
 
@@ -108,7 +109,7 @@ class Emperor(BaseOfficial):
 # Client: can send a petition to any official in the chain
 def file_petition(official: Official, petition: Petition) -> None:
     result = official.handle(petition)
-    print(result if result else f"❌ Không quan nào nhận đơn: {petition.content}")
+    print(result if result else f"❌ Không quan nào đủ quyền xử: {petition.content}")
 
 
 # Client: builds the chain Xã → Huyện → Phủ → Triều đình
@@ -117,32 +118,34 @@ district = DistrictMagistrate()
 village.set_superior(district).set_superior(Prefect()).set_superior(Emperor())
 
 print("Dân nộp đơn ở xã:")
-file_petition(village, Petition("ruộng đất", "tranh chấp bờ ruộng"))
-file_petition(village, Petition("trộm cắp", "mất trộm trâu"))
-file_petition(village, Petition("đê điều", "đê sông Hồng sắp vỡ"))
-file_petition(village, Petition("quân sự", "giặc tràn qua biên giới"))
-file_petition(village, Petition("thiên văn", "sao chổi xuất hiện"))
+file_petition(village, Petition(1, "tranh chấp bờ ruộng"))
+file_petition(village, Petition(2, "mất trộm trâu"))
+file_petition(village, Petition(3, "đê sông Hồng sắp vỡ"))
+file_petition(village, Petition(4, "giặc tràn qua biên giới"))
+# Above every official: only Heaven can make it rain
+file_petition(village, Petition(5, "xin trời làm mưa"))
 
 # The request can enter at any link, not only the first one
 print("Đơn nộp thẳng lên huyện:")
-file_petition(district, Petition("ruộng đất", "lấn đất làng bên"))
+file_petition(district, Petition(1, "lấn đất làng bên"))
 
 # Output:
 # Dân nộp đơn ở xã:
-# Xã Trưởng phân xử: tranh chấp bờ ruộng
-# Huyện Quan xét án: mất trộm trâu
-# Phủ Doãn cho đắp đê: đê sông Hồng sắp vỡ
+# Xã Trưởng hòa giải: tranh chấp bờ ruộng
+# Quan Huyện xét xử: mất trộm trâu
+# Tri Phủ giải quyết: đê sông Hồng sắp vỡ
 # Hoàng Đế 👑 ra chiếu: giặc tràn qua biên giới
-# ❌ Không quan nào nhận đơn: sao chổi xuất hiện
+# ❌ Không quan nào đủ quyền xử: xin trời làm mưa
 # Đơn nộp thẳng lên huyện:
-# ❌ Không quan nào nhận đơn: lấn đất làng bên`,
+# Quan Huyện xét xử: lấn đất làng bên`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `// The request: all of its data travels in one object
+        code: `// The request: all of its data travels in one object.
+// level: the authority it takes to settle it, from 1 (village) to 4 (throne)
 interface Petition {
-  kind: string
+  level: number
   content: string
 }
 
@@ -168,39 +171,39 @@ abstract class BaseOfficial implements Official {
   }
 }
 
-// Concrete Handlers: each one decides to settle the petition
-// or pass it up to the next official
+// Concrete Handlers: each one settles what lies within its authority
+// and passes anything more serious up to the next official
 class VillageChief extends BaseOfficial {
   handle(petition: Petition): string | null {
-    if (petition.kind === 'ruộng đất') return \`Xã Trưởng phân xử: \${petition.content}\`
+    if (petition.level <= 1) return \`Xã Trưởng hòa giải: \${petition.content}\`
     return super.handle(petition)
   }
 }
 
 class DistrictMagistrate extends BaseOfficial {
   handle(petition: Petition): string | null {
-    if (petition.kind === 'trộm cắp') return \`Huyện Quan xét án: \${petition.content}\`
+    if (petition.level <= 2) return \`Quan Huyện xét xử: \${petition.content}\`
     return super.handle(petition)
   }
 }
 
 class Prefect extends BaseOfficial {
   handle(petition: Petition): string | null {
-    if (petition.kind === 'đê điều') return \`Phủ Doãn cho đắp đê: \${petition.content}\`
+    if (petition.level <= 3) return \`Tri Phủ giải quyết: \${petition.content}\`
     return super.handle(petition)
   }
 }
 
 class Emperor extends BaseOfficial {
   handle(petition: Petition): string | null {
-    if (petition.kind === 'quân sự') return \`Hoàng Đế 👑 ra chiếu: \${petition.content}\`
+    if (petition.level <= 4) return \`Hoàng Đế 👑 ra chiếu: \${petition.content}\`
     return super.handle(petition)
   }
 }
 
 // Client: can send a petition to any official in the chain
 function filePetition(official: Official, petition: Petition): void {
-  console.log(official.handle(petition) ?? \`❌ Không quan nào nhận đơn: \${petition.content}\`)
+  console.log(official.handle(petition) ?? \`❌ Không quan nào đủ quyền xử: \${petition.content}\`)
 }
 
 // Client: builds the chain Xã → Huyện → Phủ → Triều đình
@@ -209,15 +212,16 @@ const district = new DistrictMagistrate()
 village.setSuperior(district).setSuperior(new Prefect()).setSuperior(new Emperor())
 
 console.log('Dân nộp đơn ở xã:')
-filePetition(village, { kind: 'ruộng đất', content: 'tranh chấp bờ ruộng' })
-filePetition(village, { kind: 'trộm cắp', content: 'mất trộm trâu' })
-filePetition(village, { kind: 'đê điều', content: 'đê sông Hồng sắp vỡ' })
-filePetition(village, { kind: 'quân sự', content: 'giặc tràn qua biên giới' })
-filePetition(village, { kind: 'thiên văn', content: 'sao chổi xuất hiện' })
+filePetition(village, { level: 1, content: 'tranh chấp bờ ruộng' })
+filePetition(village, { level: 2, content: 'mất trộm trâu' })
+filePetition(village, { level: 3, content: 'đê sông Hồng sắp vỡ' })
+filePetition(village, { level: 4, content: 'giặc tràn qua biên giới' })
+// Above every official: only Heaven can make it rain
+filePetition(village, { level: 5, content: 'xin trời làm mưa' })
 
 // The request can enter at any link, not only the first one
 console.log('Đơn nộp thẳng lên huyện:')
-filePetition(district, { kind: 'ruộng đất', content: 'lấn đất làng bên' })`,
+filePetition(district, { level: 1, content: 'lấn đất làng bên' })`,
       },
     ],
     structure_notes: {
@@ -468,6 +472,245 @@ secretary.revoke()`,
     structure_notes: {
       en: 'Sender (also called Invoker) is responsible for initiating requests. It has a field storing a reference to a command object and triggers that command instead of sending the request directly to the receiver. The sender isn\'t responsible for creating the command object; it usually gets a pre-created command from the client via the constructor. Command interface usually declares just a single method for executing the command. Concrete Commands implement various kinds of requests. A concrete command isn\'t supposed to do the work on its own but to pass the call to one of the business logic objects, although these classes can be merged to simplify the code. Parameters needed to call a method on the receiving object can be declared as fields of the concrete command, and the command can be made immutable by allowing those fields to be set only through the constructor. Receiver contains some business logic, and almost any object can act as one: most commands only handle the details of how a request reaches the receiver, while the receiver does the actual work. Client creates and configures concrete command objects, passing all request parameters, including a receiver instance, into the command\'s constructor; the resulting command can then be associated with one or more senders. In this example the Command interface also declares undo() and the sender keeps a queue and a history; these support the queuing and undo uses of the pattern and are not part of its minimal structure.',
       vi: 'Sender (còn gọi là Invoker) chịu trách nhiệm khởi phát yêu cầu. Nó có một trường lưu tham chiếu tới đối tượng command và kích hoạt command đó thay vì gửi yêu cầu thẳng tới receiver. Sender không chịu trách nhiệm tạo command; thông thường nó nhận một command đã tạo sẵn từ client qua hàm khởi tạo. Giao diện Command thường chỉ khai báo một phương thức duy nhất để thực thi command. Concrete Command triển khai các loại yêu cầu khác nhau. Concrete command không tự làm công việc mà chuyển lời gọi cho một đối tượng nghiệp vụ, dù có thể gộp hai lớp này để mã đơn giản hơn. Các tham số cần để gọi phương thức trên đối tượng nhận có thể được khai báo thành trường của concrete command, và có thể làm command bất biến bằng cách chỉ cho phép gán các trường này qua hàm khởi tạo. Receiver chứa logic nghiệp vụ, và hầu như đối tượng nào cũng có thể làm receiver: phần lớn command chỉ lo chi tiết chuyển yêu cầu tới receiver, còn receiver mới làm công việc thực sự. Client tạo và cấu hình các concrete command, truyền mọi tham số của yêu cầu, kể cả một thể hiện receiver, vào hàm khởi tạo của command; sau đó command có thể được gắn với một hoặc nhiều sender. Trong ví dụ này, giao diện Command còn khai báo undo() và sender giữ một hàng chờ cùng sổ lịch sử; các phần này phục vụ việc xếp hàng và hoàn tác, không thuộc cấu trúc tối thiểu của mẫu.',
+    },
+  },
+
+  {
+    id: 'interpreter',
+    slug: 'interpreter',
+    name: { en: 'Interpreter', vi: 'Thông Dịch' },
+    category: 'behavioral',
+    complexity: 3,
+    popularity: 1,
+    intent: {
+      en: 'Interpreter turns each rule of a small language into a class, so that a sentence in that language becomes a tree of objects that can work out its own meaning.',
+      vi: 'Interpreter biến mỗi quy tắc của một ngôn ngữ nhỏ thành một lớp, nhờ đó mỗi câu trong ngôn ngữ ấy trở thành một cây đối tượng tự tính ra được ý nghĩa của mình.',
+    },
+    problem: {
+      en: 'Some programs keep receiving short sentences in a tiny language of their own: a search box that accepts "red AND (shoes OR boots)", a pricing rule such as "10% off orders above 500.000", a unit converter, or an amount of money written out in words. The quick fix is one function full of string checks and nested ifs. It copes with the first few sentences, but after that every new word or rule means reopening the function, and the grammar lives only in the head of whoever wrote it. When the same sentences need a second job, such as printing them back or checking them for mistakes, someone writes a second tangle that has to agree with the first.',
+      vi: 'Có những chương trình liên tục nhận vào các câu ngắn viết bằng một ngôn ngữ rất nhỏ của riêng chúng: ô tìm kiếm chấp nhận "đỏ AND (giày OR ủng)", một luật giá như "giảm 10% cho đơn trên 500.000", một bộ đổi đơn vị, hay một số tiền được viết bằng chữ. Cách làm nhanh là viết một hàm đầy những phép so sánh chuỗi và if lồng nhau. Hàm đó đối phó được vài câu đầu, nhưng sau đó mỗi chữ hay quy tắc mới lại buộc phải mở hàm ra sửa, còn ngữ pháp chỉ nằm trong đầu người đã viết nó. Khi cùng những câu ấy cần thêm một việc khác, chẳng hạn in lại hay kiểm tra lỗi, ai đó lại viết thêm một mớ rối thứ hai và phải giữ cho nó khớp với mớ thứ nhất.',
+    },
+    solution: {
+      en: 'Write the grammar down as a handful of rules, then give each rule its own class. Symbols that stand alone, such as a single number word, become terminal expressions. Rules that combine other parts, such as "a number times a unit", become nonterminal expressions that keep their parts as fields. A sentence is then represented as a tree of these objects, called an abstract syntax tree. To find out what the sentence means, the client calls interpret() on the root. Every node interprets its children first and combines their results, so the work spreads down the tree on its own. Turning text into the tree is a separate job: the pattern does not say how to parse, and a small hand-written parser is usually enough. Because each rule is a class, a new rule means a new class, and a new way of reading the tree, such as printing it, means a new method on the expression classes.',
+      vi: 'Hãy viết ngữ pháp ra thành một vài quy tắc, rồi cho mỗi quy tắc một lớp riêng. Những ký hiệu đứng một mình, chẳng hạn một chữ số, trở thành biểu thức kết thúc (terminal expression). Những quy tắc ghép các phần khác lại, chẳng hạn "một số nhân với một đơn vị", trở thành biểu thức không kết thúc (nonterminal expression), giữ các phần của nó làm trường. Khi đó mỗi câu được biểu diễn bằng một cây gồm các đối tượng này, gọi là cây cú pháp trừu tượng (abstract syntax tree). Muốn biết câu mang nghĩa gì, client gọi interpret() trên nút gốc. Mỗi nút thông dịch các nút con trước rồi kết hợp kết quả của chúng, nên công việc tự lan xuống khắp cây. Biến văn bản thành cây là một việc riêng: mẫu này không quy định cách phân tích cú pháp (parse), và thường chỉ cần một bộ phân tích nhỏ tự viết. Vì mỗi quy tắc là một lớp, thêm quy tắc mới nghĩa là thêm lớp mới, còn thêm một cách đọc cây mới, chẳng hạn in cây ra, nghĩa là thêm một phương thức vào các lớp biểu thức.',
+    },
+    applicability: {
+      en: 'Use Interpreter when a problem keeps arriving as sentences in a simple language and you want the grammar to be visible in the code: search filters, pricing or validation rules, unit formulas, small query or template languages. It suits grammars with a few dozen rules at most. With hundreds of rules the class hierarchy becomes hard to manage, and a parser generator or an existing library is the better tool. It also assumes that speed is not critical. Walking a tree of objects is slower than running a sentence that has been translated into something flatter first, which is why fast regular-expression engines turn each expression into a state machine before matching. If what you mostly need is many different operations over a grammar that rarely changes, pair the tree with Visitor instead of adding a method to every class.',
+      vi: 'Dùng Interpreter khi một bài toán liên tục xuất hiện dưới dạng các câu trong một ngôn ngữ đơn giản và bạn muốn ngữ pháp hiện rõ trong mã: bộ lọc tìm kiếm, luật tính giá hay luật kiểm tra dữ liệu, công thức đổi đơn vị, ngôn ngữ truy vấn hay ngôn ngữ mẫu (template) nhỏ. Mẫu này hợp với những ngữ pháp có nhiều nhất vài chục quy tắc. Khi có hàng trăm quy tắc, cây phân cấp lớp trở nên khó quản lý, và một công cụ sinh bộ phân tích cú pháp hay một thư viện có sẵn sẽ phù hợp hơn. Mẫu này cũng giả định rằng tốc độ không quá quan trọng. Duyệt một cây đối tượng chậm hơn chạy một câu đã được dịch trước sang dạng phẳng hơn, vì thế các bộ máy biểu thức chính quy nhanh thường biến mỗi biểu thức thành một máy trạng thái rồi mới so khớp. Nếu điều bạn cần chủ yếu là nhiều thao tác khác nhau trên một ngữ pháp ít thay đổi, hãy ghép cây với Visitor thay vì thêm một phương thức vào mọi lớp.',
+    },
+    vietnamese_example: {
+      title: { en: 'Reading an Amount Written in Words', vi: 'Đọc Số Tiền Viết Bằng Chữ' },
+      description: {
+        en: 'On Vietnamese invoices, receipts and bank slips, the total is written twice: once in digits and once in words after "Bằng chữ:" ("in words"), so that nobody can quietly add a zero. ReceiptReader reads the words back into a number so the two can be compared. The language is small. Không to chín are the digits, and a few of them change with position: mốt and tư replace một and bốn right after mươi (hai mươi mốt is 21), lăm or nhăm replaces năm right after mười or mươi (mười lăm is 15), and linh, or lẻ in the South, marks an empty tens place (sáu trăm linh năm is 605). Mươi and trăm multiply the word just before them by ten and a hundred; nghìn, or ngàn in the South, and triệu multiply the whole group before them by a thousand and a million. AmountExpression is the abstract expression, with interpret(). NumberWord is the terminal expression: one word and its value. Multiply and Add are the nonterminal expressions: each holds two smaller expressions and combines what they interpret to. "Bảy mươi lăm nghìn" becomes the tree (bảy × mươi + lăm) × nghìn, and interpreting it gives 75.000. The reader\'s parse() builds the tree; parsing sits outside the pattern, which only describes how the tree is represented and evaluated. explain() is a second operation on the same tree that prints it with brackets.',
+        vi: 'Trên hóa đơn, biên lai và giấy nộp tiền ở Việt Nam, số tiền được ghi hai lần: một lần bằng số và một lần bằng chữ sau dòng "Bằng chữ:", để không ai lén thêm được một số 0. ReceiptReader đọc phần chữ thành con số để so với phần số. Ngôn ngữ này rất nhỏ. Từ không đến chín là các chữ số, và vài chữ đổi cách viết theo vị trí: mốt và tư thay cho một và bốn khi đứng ngay sau mươi (hai mươi mốt là 21), lăm hoặc nhăm thay cho năm khi đứng ngay sau mười hoặc mươi (mười lăm là 15), còn linh, hay lẻ ở miền Nam, đánh dấu hàng chục bị trống (sáu trăm linh năm là 605). Mươi và trăm nhân chữ đứng ngay trước chúng với mười và một trăm; nghìn, hay ngàn ở miền Nam, và triệu nhân cả nhóm đứng trước với một nghìn và một triệu. AmountExpression là biểu thức trừu tượng, có interpret(). NumberWord là biểu thức kết thúc: một chữ cùng giá trị của nó. Multiply và Add là các biểu thức không kết thúc: mỗi lớp giữ hai biểu thức nhỏ hơn và kết hợp kết quả thông dịch của chúng. "Bảy mươi lăm nghìn" trở thành cây (bảy × mươi + lăm) × nghìn, và thông dịch cây đó cho ra 75.000. Phương thức parse() của ReceiptReader dựng cây; việc phân tích cú pháp nằm ngoài mẫu, vì mẫu chỉ mô tả cách biểu diễn và tính giá trị của cây. explain() là thao tác thứ hai trên cùng cái cây, in cây ra kèm dấu ngoặc.',
+      },
+    },
+    code_examples: [
+      {
+        language: 'python',
+        label: 'Python',
+        code: `from abc import ABC, abstractmethod
+from functools import reduce
+
+
+# Abstract Expression: every node of the tree can interpret itself
+class AmountExpression(ABC):
+    @abstractmethod
+    def interpret(self) -> int: ...
+
+    # A second operation on the same tree: write it out with brackets
+    @abstractmethod
+    def explain(self, in_product: bool = False) -> str: ...
+
+
+# Terminal Expression: one number word and its value
+class NumberWord(AmountExpression):
+    VALUES = {
+        "không": 0, "linh": 0, "lẻ": 0, "một": 1, "mốt": 1, "hai": 2, "ba": 3,
+        "bốn": 4, "tư": 4, "năm": 5, "lăm": 5, "nhăm": 5, "sáu": 6, "bảy": 7,
+        "tám": 8, "chín": 9, "mười": 10, "mươi": 10, "trăm": 100,
+        "nghìn": 1_000, "ngàn": 1_000, "triệu": 1_000_000,
+    }
+
+    def __init__(self, word: str) -> None:
+        if word not in self.VALUES:
+            raise ValueError(f'Không hiểu chữ "{word}"')
+        self.word = word
+
+    def interpret(self) -> int:
+        return self.VALUES[self.word]
+
+    def explain(self, in_product: bool = False) -> str:
+        return self.word
+
+
+# Nonterminal Expressions: each holds smaller expressions
+# and interprets itself by interpreting them first
+class Multiply(AmountExpression):
+    def __init__(self, left: AmountExpression, right: AmountExpression) -> None:
+        self.left = left
+        self.right = right
+
+    def interpret(self) -> int:
+        return self.left.interpret() * self.right.interpret()
+
+    def explain(self, in_product: bool = False) -> str:
+        return f"{self.left.explain(True)} × {self.right.explain(True)}"
+
+
+class Add(AmountExpression):
+    def __init__(self, left: AmountExpression, right: AmountExpression) -> None:
+        self.left = left
+        self.right = right
+
+    def interpret(self) -> int:
+        return self.left.interpret() + self.right.interpret()
+
+    def explain(self, in_product: bool = False) -> str:
+        text = f"{self.left.explain()} + {self.right.explain()}"
+        return f"({text})" if in_product else text  # brackets only inside a product
+
+
+# Joins parts left to right: a + b + c becomes Add(Add(a, b), c)
+def add_all(parts: list[AmountExpression]) -> AmountExpression:
+    return reduce(Add, parts)
+
+
+# Client: builds the tree for a sentence, then asks the tree what it means.
+# parse() is not part of the pattern: the Gang of Four leave parsing to the client.
+class ReceiptReader:
+    SMALL_UNITS = ("mươi", "trăm")  # multiply the word just before them
+    LARGE_UNITS = ("nghìn", "ngàn", "triệu")  # multiply the whole group before them
+
+    def parse(self, words: list[str]) -> AmountExpression:
+        terms: list[AmountExpression] = []
+        group: list[AmountExpression] = []
+        for word in words:
+            if word in self.SMALL_UNITS:
+                group.append(Multiply(group.pop(), NumberWord(word)))
+            elif word in self.LARGE_UNITS:
+                terms.append(Multiply(add_all(group), NumberWord(word)))
+                group = []
+            else:
+                group.append(NumberWord(word))
+        if group:
+            terms.append(add_all(group))
+        return add_all(terms)
+
+    def read(self, line: str) -> None:
+        words = line.removeprefix("Bằng chữ:").removesuffix("đồng").lower().split()
+        tree = self.parse(words)
+        amount = f"{tree.interpret():,}".replace(",", ".")
+        print(line)
+        print(f"→ {tree.explain()} = {amount}")
+
+
+reader = ReceiptReader()
+reader.read("Bằng chữ: Bảy mươi lăm nghìn đồng")
+reader.read("Bằng chữ: Sáu trăm linh năm nghìn đồng")
+reader.read("Bằng chữ: Một triệu không trăm hai mươi tư nghìn đồng")
+
+# Output:
+# Bằng chữ: Bảy mươi lăm nghìn đồng
+# → (bảy × mươi + lăm) × nghìn = 75.000
+# Bằng chữ: Sáu trăm linh năm nghìn đồng
+# → (sáu × trăm + linh + năm) × nghìn = 605.000
+# Bằng chữ: Một triệu không trăm hai mươi tư nghìn đồng
+# → một × triệu + (không × trăm + hai × mươi + tư) × nghìn = 1.024.000`,
+      },
+      {
+        language: 'typescript',
+        label: 'TypeScript',
+        code: `// Abstract Expression: every node of the tree can interpret itself
+interface AmountExpression {
+  interpret(): number
+  // A second operation on the same tree: write it out with brackets
+  explain(inProduct?: boolean): string
+}
+
+// Terminal Expression: one number word and its value
+class NumberWord implements AmountExpression {
+  private static readonly VALUES: Record<string, number> = {
+    'không': 0, 'linh': 0, 'lẻ': 0, 'một': 1, 'mốt': 1, 'hai': 2, 'ba': 3,
+    'bốn': 4, 'tư': 4, 'năm': 5, 'lăm': 5, 'nhăm': 5, 'sáu': 6, 'bảy': 7,
+    'tám': 8, 'chín': 9, 'mười': 10, 'mươi': 10, 'trăm': 100,
+    'nghìn': 1_000, 'ngàn': 1_000, 'triệu': 1_000_000,
+  }
+
+  constructor(private readonly word: string) {
+    if (!(word in NumberWord.VALUES)) throw new Error(\`Không hiểu chữ "\${word}"\`)
+  }
+
+  interpret(): number { return NumberWord.VALUES[this.word] }
+
+  explain(): string { return this.word }
+}
+
+// Nonterminal Expressions: each holds smaller expressions
+// and interprets itself by interpreting them first
+class Multiply implements AmountExpression {
+  constructor(private readonly left: AmountExpression, private readonly right: AmountExpression) {}
+
+  interpret(): number { return this.left.interpret() * this.right.interpret() }
+
+  explain(): string { return \`\${this.left.explain(true)} × \${this.right.explain(true)}\` }
+}
+
+class Add implements AmountExpression {
+  constructor(private readonly left: AmountExpression, private readonly right: AmountExpression) {}
+
+  interpret(): number { return this.left.interpret() + this.right.interpret() }
+
+  explain(inProduct = false): string {
+    const text = \`\${this.left.explain()} + \${this.right.explain()}\`
+    return inProduct ? \`(\${text})\` : text // brackets only inside a product
+  }
+}
+
+// Joins parts left to right: a + b + c becomes Add(Add(a, b), c)
+const addAll = (parts: AmountExpression[]): AmountExpression =>
+  parts.reduce((total, part) => new Add(total, part))
+
+// Client: builds the tree for a sentence, then asks the tree what it means.
+// parse() is not part of the pattern: the Gang of Four leave parsing to the client.
+class ReceiptReader {
+  private static readonly SMALL_UNITS = ['mươi', 'trăm'] // multiply the word just before them
+  private static readonly LARGE_UNITS = ['nghìn', 'ngàn', 'triệu'] // multiply the whole group before them
+
+  parse(words: string[]): AmountExpression {
+    const terms: AmountExpression[] = []
+    let group: AmountExpression[] = []
+    for (const word of words) {
+      if (ReceiptReader.SMALL_UNITS.includes(word)) {
+        group.push(new Multiply(group.pop()!, new NumberWord(word)))
+      } else if (ReceiptReader.LARGE_UNITS.includes(word)) {
+        terms.push(new Multiply(addAll(group), new NumberWord(word)))
+        group = []
+      } else {
+        group.push(new NumberWord(word))
+      }
+    }
+    if (group.length > 0) terms.push(addAll(group))
+    return addAll(terms)
+  }
+
+  read(line: string): void {
+    const words = line.replace('Bằng chữ:', '').replace(/đồng$/, '').toLowerCase().trim().split(/\\s+/)
+    const tree = this.parse(words)
+    console.log(line)
+    console.log(\`→ \${tree.explain()} = \${tree.interpret().toLocaleString('vi-VN')}\`)
+  }
+}
+
+const reader = new ReceiptReader()
+reader.read('Bằng chữ: Bảy mươi lăm nghìn đồng')
+reader.read('Bằng chữ: Sáu trăm linh năm nghìn đồng')
+reader.read('Bằng chữ: Một triệu không trăm hai mươi tư nghìn đồng')`,
+      },
+    ],
+    structure_notes: {
+      en: 'The Gang of Four name five participants. AbstractExpression declares the interpret operation that every node of the syntax tree shares; here it is AmountExpression. A TerminalExpression handles one symbol of the grammar and has no children; NumberWord is a single word such as bảy or nghìn. A NonterminalExpression stands for one rule that combines other symbols. It keeps a field for each part and interprets itself by interpreting those parts; Multiply and Add each hold a left and a right expression. Context carries information the whole tree needs while it is being interpreted, such as the values of variables. Every Vietnamese number word has a fixed value, so this example needs no Context. The Client builds the syntax tree, or is handed one, and calls interpret() on its root; ReceiptReader does both. The syntax tree is a Composite: nonterminal expressions are containers and terminal expressions are leaves. Identical terminals can be shared as flyweights, because a word like mươi means the same thing wherever it appears. When the list of operations keeps growing, a Visitor can hold them instead of the expression classes.',
+      vi: 'Gang of Four nêu năm thành phần. AbstractExpression khai báo thao tác interpret mà mọi nút của cây cú pháp đều có; ở đây là AmountExpression. TerminalExpression xử lý một ký hiệu của ngữ pháp và không có nút con; NumberWord là một chữ như bảy hay nghìn. NonterminalExpression đại diện cho một quy tắc ghép các ký hiệu khác lại. Nó giữ một trường cho mỗi phần và tự thông dịch bằng cách thông dịch các phần đó; Multiply và Add mỗi lớp giữ một biểu thức bên trái và một biểu thức bên phải. Context chứa thông tin mà cả cây cần trong lúc được thông dịch, chẳng hạn giá trị của các biến. Mỗi chữ số tiếng Việt có giá trị cố định, nên ví dụ này không cần Context. Client dựng cây cú pháp, hoặc nhận một cây có sẵn, rồi gọi interpret() trên nút gốc; ReceiptReader làm cả hai việc. Cây cú pháp chính là một Composite: các biểu thức không kết thúc là vật chứa, các biểu thức kết thúc là lá. Những nút kết thúc giống nhau có thể được dùng chung theo kiểu Flyweight, vì một chữ như mươi mang cùng một nghĩa ở bất cứ đâu nó xuất hiện. Khi danh sách thao tác cứ dài thêm, Visitor có thể giữ các thao tác đó thay cho các lớp biểu thức.',
     },
   },
 
@@ -792,8 +1035,8 @@ console.log(\`Iterator a đang ở: \${a.getNext()?.name}; iterator b đang ở:
     vietnamese_example: {
       title: { en: 'Village Council (Hội Đồng Làng)', vi: 'Hội Đồng Làng - Điều Phối Xã Hội' },
       description: {
-        en: 'In a Vietnamese village (làng), the farmer, the merchant and the potter don\'t knock on each other\'s doors; they bring their news to the Village Council (Hội Đồng Làng). Farmer, Merchant and Potter are the components. They extend Villager, which holds a reference to the Mediator interface, and each does its own work: harvest(), buyRice() and sellAtMarket(), makeJars(). When something important happens, a villager only calls notifyCouncil(), which sends notify(this, event) to the mediator. VillageCouncil is the concrete mediator: it keeps a reference to every villager, recognizes who sent each event and decides who acts next. When the farmer finishes the harvest, the council calls the merchant to buy the rice; once the rice is bought, it asks the potter for storage jars; when the jars are ready, it sends the merchant to the market. No villager knows the others exist, so a Bát Tràng potter can work in any village, or with no council at all, and another village can change the whole chain by providing its own mediator.',
-        vi: 'Trong làng Việt Nam, người nông dân, thương nhân và thợ gốm không tự gõ cửa nhà nhau; họ mang tin tức lên Hội Đồng Làng. Farmer, Merchant và Potter là các thành phần (component). Chúng kế thừa Villager, lớp giữ tham chiếu tới giao diện Mediator, và mỗi người tự lo việc của mình: harvest(), buyRice() và sellAtMarket(), makeJars(). Khi có chuyện quan trọng, dân làng chỉ gọi notifyCouncil(), phương thức này gửi notify(this, event) lên mediator. VillageCouncil là mediator cụ thể: nó giữ tham chiếu tới từng người dân, nhận ra ai gửi sự kiện và quyết định ai làm tiếp. Nông dân gặt xong thì hội đồng mời thương nhân đến thu mua lúa; thương nhân mua xong thì hội đồng nhờ thợ gốm nặn chum đựng lúa; chum xong thì hội đồng cho thương nhân mang hàng ra chợ. Không người dân nào biết đến những người khác, nên một thợ gốm Bát Tràng có thể làm việc ở bất kỳ làng nào, kể cả khi không có hội đồng, và một làng khác có thể thay đổi cả chuỗi phối hợp chỉ bằng cách dùng mediator của riêng mình.',
+        en: 'In a Vietnamese village (làng), the farmer, the merchant and the potter don\'t knock on each other\'s doors; they bring their news to the Village Council (Hội Đồng Làng). Farmer, Merchant and Potter are the components. They extend Villager, which holds a reference to the Mediator interface, and each does its own work: harvest(), buyRice() and makeJars(). When something important happens, a villager only calls notifyCouncil(), which sends notify(this, event) to the mediator. VillageCouncil is the concrete mediator: it keeps a reference to every villager, recognizes who sent each event and decides who acts next. This season the harvest is poor. The council knows the village needs 100 baskets of rice to last until the next harvest, so it asks the merchant to buy the shortfall from the neighbouring village. Once the rice is bought, it orders from the potter just as many jars as the rice will fill, then tells the village it has enough to eat. Without the council, the farmer would need references to both the merchant and the potter, the merchant would have to tell the potter how much rice to store, and every new trade in the village would add more of these direct links. No villager knows the others exist, so a Bát Tràng potter can work in any village, or with no council at all, and another village can change the whole arrangement by providing its own mediator.',
+        vi: 'Trong làng Việt Nam, người nông dân, thương nhân và thợ gốm không tự gõ cửa nhà nhau; họ mang tin tức lên Hội Đồng Làng. Farmer, Merchant và Potter là các thành phần (component). Chúng kế thừa Villager, lớp giữ tham chiếu tới giao diện Mediator, và mỗi người tự lo việc của mình: harvest(), buyRice() và makeJars(). Khi có chuyện quan trọng, dân làng chỉ gọi notifyCouncil(), phương thức này gửi notify(this, event) lên mediator. VillageCouncil là mediator cụ thể: nó giữ tham chiếu tới từng người dân, nhận ra ai gửi sự kiện và quyết định ai làm tiếp. Vụ này mất mùa. Hội đồng biết làng cần 100 thúng lúa để ăn tới vụ sau, nên nhờ thương nhân mua phần còn thiếu ở làng bên. Lúa mua về rồi, hội đồng đặt thợ gốm nặn vừa đủ số chum để chứa chỗ lúa đó, rồi báo cho cả làng biết đã đủ ăn. Nếu không có hội đồng, nông dân phải giữ tham chiếu tới cả thương nhân lẫn thợ gốm, thương nhân phải tự báo thợ gốm cần chứa bao nhiêu lúa, và mỗi nghề mới trong làng lại thêm những mối liên hệ trực tiếp như thế. Không người dân nào biết đến những người khác, nên một thợ gốm Bát Tràng có thể làm việc ở bất kỳ làng nào, kể cả khi không có hội đồng, và một làng khác có thể thay đổi cả cách phối hợp chỉ bằng cách dùng mediator của riêng mình.',
       },
     },
     code_examples: [
@@ -801,6 +1044,7 @@ console.log(\`Iterator a đang ở: \${a.getNext()?.name}; iterator b đang ở:
         language: 'python',
         label: 'Python',
         code: `from abc import ABC, abstractmethod
+from math import ceil
 from typing import Optional
 
 
@@ -823,28 +1067,34 @@ class Villager:
 
 # Concrete Components: do their own work and never call each other
 class Farmer(Villager):
-    def harvest(self) -> None:
-        print(f"🌾 {self.name}: gặt xong 100 thúng lúa")
+    baskets = 0
+
+    def harvest(self, baskets: int) -> None:
+        self.baskets = baskets
+        print(f"🌾 {self.name}: gặt được {baskets} thúng lúa")
         self.notify_council("harvested")
 
 
 class Merchant(Villager):
-    def buy_rice(self) -> None:
-        print(f"💰 {self.name}: thu mua lúa của làng")
-        self.notify_council("rice_bought")
+    baskets = 0
 
-    def sell_at_market(self) -> None:
-        print(f"🛒 {self.name}: chở chum lúa ra chợ phiên")
+    def buy_rice(self, baskets: int) -> None:
+        self.baskets = baskets
+        print(f"💰 {self.name}: mua {baskets} thúng lúa ở làng bên")
+        self.notify_council("rice_bought")
 
 
 class Potter(Villager):
-    def make_jars(self) -> None:
-        print(f"🏺 {self.name}: nặn xong chum đựng lúa")
+    def make_jars(self, count: int) -> None:
+        print(f"🏺 {self.name}: nặn xong {count} chum")
         self.notify_council("jars_ready")
 
 
 # Concrete Mediator: holds every component and decides who acts next
 class VillageCouncil(Mediator):
+    NEED = 100  # baskets the village eats until the next harvest
+    BASKETS_PER_JAR = 10
+
     def __init__(self, farmer: Farmer, merchant: Merchant, potter: Potter) -> None:
         self.farmer = farmer
         self.merchant = merchant
@@ -854,14 +1104,22 @@ class VillageCouncil(Mediator):
 
     def notify(self, sender: Villager, event: str) -> None:
         if sender is self.farmer and event == "harvested":
-            print("⚖️ Hội đồng: mời thương nhân đến thu mua")
-            self.merchant.buy_rice()
+            shortfall = self.NEED - self.farmer.baskets
+            if shortfall > 0:
+                print(f"⚖️ Hội đồng: mất mùa, làng còn thiếu {shortfall} thúng")
+                self.merchant.buy_rice(shortfall)
+            else:
+                self._order_jars(self.farmer.baskets)
         elif sender is self.merchant and event == "rice_bought":
-            print("⚖️ Hội đồng: nhờ thợ gốm nặn chum")
-            self.potter.make_jars()
+            self._order_jars(self.farmer.baskets + self.merchant.baskets)
         elif sender is self.potter and event == "jars_ready":
-            print("⚖️ Hội đồng: cho thương nhân mang hàng ra chợ")
-            self.merchant.sell_at_market()
+            print("⚖️ Hội đồng: lúa đã vào chum, làng đủ ăn tới vụ sau")
+
+    # The jar order depends on what two other villagers did
+    def _order_jars(self, baskets: int) -> None:
+        jars = ceil(baskets / self.BASKETS_PER_JAR)
+        print(f"⚖️ Hội đồng: {baskets} thúng lúa cần {jars} chum")
+        self.potter.make_jars(jars)
 
 
 # Client code: links the components to the mediator, then triggers one event
@@ -870,22 +1128,22 @@ merchant = Merchant("Thương nhân Lê")
 potter = Potter("Thợ gốm Trần")
 VillageCouncil(farmer, merchant, potter)
 
-farmer.harvest()
+# A poor season: the harvest falls short of what the village needs
+farmer.harvest(60)
 
 # A component without a mediator still works on its own
 print("---")
-Potter("Thợ gốm Bát Tràng").make_jars()
+Potter("Thợ gốm Bát Tràng").make_jars(3)
 
 # Output:
-# 🌾 Nông dân Nguyễn: gặt xong 100 thúng lúa
-# ⚖️ Hội đồng: mời thương nhân đến thu mua
-# 💰 Thương nhân Lê: thu mua lúa của làng
-# ⚖️ Hội đồng: nhờ thợ gốm nặn chum
-# 🏺 Thợ gốm Trần: nặn xong chum đựng lúa
-# ⚖️ Hội đồng: cho thương nhân mang hàng ra chợ
-# 🛒 Thương nhân Lê: chở chum lúa ra chợ phiên
+# 🌾 Nông dân Nguyễn: gặt được 60 thúng lúa
+# ⚖️ Hội đồng: mất mùa, làng còn thiếu 40 thúng
+# 💰 Thương nhân Lê: mua 40 thúng lúa ở làng bên
+# ⚖️ Hội đồng: 100 thúng lúa cần 10 chum
+# 🏺 Thợ gốm Trần: nặn xong 10 chum
+# ⚖️ Hội đồng: lúa đã vào chum, làng đủ ăn tới vụ sau
 # ---
-# 🏺 Thợ gốm Bát Tràng: nặn xong chum đựng lúa`,
+# 🏺 Thợ gốm Bát Tràng: nặn xong 3 chum`,
       },
       {
         language: 'typescript',
@@ -908,32 +1166,37 @@ class Villager {
 
 // Concrete Components: do their own work and never call each other
 class Farmer extends Villager {
-  harvest(): void {
-    console.log(\`🌾 \${this.name}: gặt xong 100 thúng lúa\`)
+  baskets = 0
+
+  harvest(baskets: number): void {
+    this.baskets = baskets
+    console.log(\`🌾 \${this.name}: gặt được \${baskets} thúng lúa\`)
     this.notifyCouncil('harvested')
   }
 }
 
 class Merchant extends Villager {
-  buyRice(): void {
-    console.log(\`💰 \${this.name}: thu mua lúa của làng\`)
-    this.notifyCouncil('rice_bought')
-  }
+  baskets = 0
 
-  sellAtMarket(): void {
-    console.log(\`🛒 \${this.name}: chở chum lúa ra chợ phiên\`)
+  buyRice(baskets: number): void {
+    this.baskets = baskets
+    console.log(\`💰 \${this.name}: mua \${baskets} thúng lúa ở làng bên\`)
+    this.notifyCouncil('rice_bought')
   }
 }
 
 class Potter extends Villager {
-  makeJars(): void {
-    console.log(\`🏺 \${this.name}: nặn xong chum đựng lúa\`)
+  makeJars(count: number): void {
+    console.log(\`🏺 \${this.name}: nặn xong \${count} chum\`)
     this.notifyCouncil('jars_ready')
   }
 }
 
 // Concrete Mediator: holds every component and decides who acts next
 class VillageCouncil implements Mediator {
+  private static readonly NEED = 100 // baskets the village eats until the next harvest
+  private static readonly BASKETS_PER_JAR = 10
+
   constructor(
     private farmer: Farmer,
     private merchant: Merchant,
@@ -944,15 +1207,25 @@ class VillageCouncil implements Mediator {
 
   notify(sender: Villager, event: string): void {
     if (sender === this.farmer && event === 'harvested') {
-      console.log('⚖️ Hội đồng: mời thương nhân đến thu mua')
-      this.merchant.buyRice()
+      const shortfall = VillageCouncil.NEED - this.farmer.baskets
+      if (shortfall > 0) {
+        console.log(\`⚖️ Hội đồng: mất mùa, làng còn thiếu \${shortfall} thúng\`)
+        this.merchant.buyRice(shortfall)
+      } else {
+        this.orderJars(this.farmer.baskets)
+      }
     } else if (sender === this.merchant && event === 'rice_bought') {
-      console.log('⚖️ Hội đồng: nhờ thợ gốm nặn chum')
-      this.potter.makeJars()
+      this.orderJars(this.farmer.baskets + this.merchant.baskets)
     } else if (sender === this.potter && event === 'jars_ready') {
-      console.log('⚖️ Hội đồng: cho thương nhân mang hàng ra chợ')
-      this.merchant.sellAtMarket()
+      console.log('⚖️ Hội đồng: lúa đã vào chum, làng đủ ăn tới vụ sau')
     }
+  }
+
+  // The jar order depends on what two other villagers did
+  private orderJars(baskets: number): void {
+    const jars = Math.ceil(baskets / VillageCouncil.BASKETS_PER_JAR)
+    console.log(\`⚖️ Hội đồng: \${baskets} thúng lúa cần \${jars} chum\`)
+    this.potter.makeJars(jars)
   }
 }
 
@@ -962,16 +1235,17 @@ const merchant = new Merchant('Thương nhân Lê')
 const potter = new Potter('Thợ gốm Trần')
 new VillageCouncil(farmer, merchant, potter)
 
-farmer.harvest()
+// A poor season: the harvest falls short of what the village needs
+farmer.harvest(60)
 
 // A component without a mediator still works on its own
 console.log('---')
-new Potter('Thợ gốm Bát Tràng').makeJars()`,
+new Potter('Thợ gốm Bát Tràng').makeJars(3)`,
       },
     ],
     structure_notes: {
-      en: 'Components are classes that contain some business logic. Each component holds a reference to a mediator, declared with the type of the mediator interface, so it doesn\'t know the mediator\'s actual class and can be reused in other programs by linking it to a different mediator. The Mediator interface declares methods of communication with components, usually just a single notification method. Components may pass any context as its arguments, including themselves, but only in a way that doesn\'t couple the receiving component to the sender\'s class. Concrete Mediators encapsulate the relations between components; they often keep references to all the components they manage and sometimes even manage their lifecycle. Components must not be aware of other components: when something important happens to a component, it only notifies the mediator, which can identify the sender and decide which component to trigger in return. From a component\'s point of view everything is a black box: the sender doesn\'t know who will handle its request, and the receiver doesn\'t know who sent it. Here Villager is the base component that holds the Mediator reference, Farmer, Merchant and Potter are the concrete components, Mediator is the interface and VillageCouncil is the concrete mediator. VillageCouncil holds a reference to each of the three concrete components; the diagram draws that as a single "manages" arrow to Villager. The page\'s structure has no separate client class, so the client code at the end of each example only links the components to VillageCouncil and triggers the first event.',
-      vi: 'Component là các lớp chứa logic nghiệp vụ. Mỗi component giữ một tham chiếu tới mediator, được khai báo bằng kiểu của giao diện mediator, nên nó không biết lớp thật của mediator và có thể được dùng lại ở chương trình khác bằng cách nối với một mediator khác. Giao diện Mediator khai báo các phương thức giao tiếp với component, thường chỉ gồm một phương thức thông báo. Component có thể truyền bất kỳ ngữ cảnh nào làm đối số, kể cả chính nó, nhưng chỉ theo cách không khiến component nhận bị phụ thuộc vào lớp của bên gửi. Concrete Mediator gói các quan hệ giữa các component; nó thường giữ tham chiếu tới mọi component mà nó quản lý và đôi khi còn quản lý cả vòng đời của chúng. Component không được biết đến các component khác: khi có chuyện quan trọng xảy ra với một component, nó chỉ báo cho mediator, mediator nhận ra bên gửi và quyết định cần kích hoạt component nào tiếp theo. Từ góc nhìn của component, mọi thứ là một hộp đen: bên gửi không biết ai sẽ xử lý yêu cầu, còn bên nhận không biết ai đã gửi. Ở đây Villager là component cơ sở giữ tham chiếu Mediator, Farmer, Merchant và Potter là các component cụ thể, Mediator là giao diện và VillageCouncil là mediator cụ thể. VillageCouncil giữ tham chiếu tới cả ba component cụ thể; sơ đồ thể hiện điều đó bằng một mũi tên "manages" duy nhất tới Villager. Cấu trúc trên trang gốc không có lớp client riêng, nên phần mã client ở cuối mỗi ví dụ chỉ nối các component với VillageCouncil và kích hoạt sự kiện đầu tiên.',
+      en: 'Components are classes that contain some business logic. Each component holds a reference to a mediator, declared with the type of the mediator interface, so it doesn\'t know the mediator\'s actual class and can be reused in other programs by linking it to a different mediator. The Mediator interface declares methods of communication with components, usually just a single notification method. Components may pass any context as its arguments, including themselves, but only in a way that doesn\'t couple the receiving component to the sender\'s class. Concrete Mediators encapsulate the relations between components; they often keep references to all the components they manage and sometimes even manage their lifecycle. Components must not be aware of other components: when something important happens to a component, it only notifies the mediator, which can identify the sender and decide which component to trigger in return. From a component\'s point of view everything is a black box: the sender doesn\'t know who will handle its request, and the receiver doesn\'t know who sent it. Here Villager is the base component that holds the Mediator reference, Farmer, Merchant and Potter are the concrete components, Mediator is the interface and VillageCouncil is the concrete mediator. VillageCouncil holds a reference to each of the three concrete components; the diagram draws that as a single "manages" arrow to Villager. The pattern needs no separate client class, so the client code at the end of each example only links the components to VillageCouncil and triggers the first event.',
+      vi: 'Component là các lớp chứa logic nghiệp vụ. Mỗi component giữ một tham chiếu tới mediator, được khai báo bằng kiểu của giao diện mediator, nên nó không biết lớp thật của mediator và có thể được dùng lại ở chương trình khác bằng cách nối với một mediator khác. Giao diện Mediator khai báo các phương thức giao tiếp với component, thường chỉ gồm một phương thức thông báo. Component có thể truyền bất kỳ ngữ cảnh nào làm đối số, kể cả chính nó, nhưng chỉ theo cách không khiến component nhận bị phụ thuộc vào lớp của bên gửi. Concrete Mediator gói các quan hệ giữa các component; nó thường giữ tham chiếu tới mọi component mà nó quản lý và đôi khi còn quản lý cả vòng đời của chúng. Component không được biết đến các component khác: khi có chuyện quan trọng xảy ra với một component, nó chỉ báo cho mediator, mediator nhận ra bên gửi và quyết định cần kích hoạt component nào tiếp theo. Từ góc nhìn của component, mọi thứ là một hộp đen: bên gửi không biết ai sẽ xử lý yêu cầu, còn bên nhận không biết ai đã gửi. Ở đây Villager là component cơ sở giữ tham chiếu Mediator, Farmer, Merchant và Potter là các component cụ thể, Mediator là giao diện và VillageCouncil là mediator cụ thể. VillageCouncil giữ tham chiếu tới cả ba component cụ thể; sơ đồ thể hiện điều đó bằng một mũi tên "manages" duy nhất tới Villager. Mẫu này không cần lớp client riêng, nên phần mã client ở cuối mỗi ví dụ chỉ nối các component với VillageCouncil và kích hoạt sự kiện đầu tiên.',
     },
   },
 
@@ -1000,10 +1274,10 @@ new Potter('Thợ gốm Bát Tràng').makeJars()`,
       vi: 'Dùng Memento khi bạn muốn tạo ảnh chụp trạng thái của một đối tượng để có thể khôi phục trạng thái trước đó: mẫu này cho phép sao chép toàn bộ trạng thái của đối tượng, kể cả các trường private, và lưu tách riêng khỏi đối tượng. Phần lớn mọi người nhớ đến mẫu này qua chức năng "hoàn tác", nhưng nó cũng không thể thiếu khi làm việc với giao dịch (transaction), lúc bạn cần quay lui một thao tác khi có lỗi. Dùng khi việc truy cập trực tiếp vào các trường, getter hoặc setter của đối tượng sẽ phá vỡ tính đóng gói của nó: Memento giao cho chính đối tượng trách nhiệm tạo ảnh chụp trạng thái của mình, và không đối tượng nào khác đọc được ảnh chụp đó, nhờ vậy dữ liệu trạng thái của đối tượng gốc được giữ an toàn.',
     },
     vietnamese_example: {
-      title: { en: 'Royal Historian (Sử Quan)', vi: 'Sử Quan - Ghi Chép Lịch Sử' },
+      title: { en: 'Taking Back a Move in Cờ Tướng', vi: 'Xin Đi Lại Một Nước Cờ Tướng' },
       description: {
-        en: 'The Royal Historian (Sử Quan) keeps the kingdom\'s royal chronicle. HungKing is the originator: the population and the treasury are private, and only the king can write them into a record (saveChronicle()) or read them back (restore()). Each record is a ChronicleRecord, an immutable concrete memento that receives the event name, population and treasury once, through its constructor. Historian is the caretaker. Before every major policy it calls record() with the reason, which asks the king for a record and pushes it onto its history; it can list that history through the Chronicle interface, which exposes only the event name (getName()). When a failed war drains the kingdom, undoLast() pops the latest record and hands it back to the king, who restores his own state from it. The historian decides when to record and when to roll back, but never reads or changes the numbers inside a record.',
-        vi: 'Sử Quan của triều đình ghi chép biên niên của vương quốc vào sử sách triều đình. HungKing là originator: dân số và ngân khố là dữ liệu private, chỉ nhà vua mới ghi được chúng vào một bản ghi (saveChronicle()) hoặc đọc lại từ bản ghi (restore()). Mỗi bản ghi là một ChronicleRecord, memento cụ thể bất biến, chỉ nhận tên sự kiện, dân số và ngân khố đúng một lần qua hàm khởi tạo. Historian là caretaker. Trước mỗi chính sách lớn, sử quan gọi record() kèm lý do; phương thức này xin nhà vua một bản ghi rồi đưa vào ngăn xếp lịch sử. Sử quan có thể liệt kê lịch sử qua giao diện Chronicle, giao diện này chỉ cho xem tên sự kiện (getName()). Khi một cuộc chiến thất bại làm vương quốc kiệt quệ, undoLast() lấy bản ghi mới nhất ra và trả lại cho nhà vua để vua tự khôi phục trạng thái của mình. Sử quan quyết định lúc nào ghi chép và lúc nào quay lại, nhưng không bao giờ đọc hay sửa các con số bên trong bản ghi.',
+        en: 'On a Hà Nội sidewalk, two neighbours play cờ tướng (Vietnamese chess) on a board laid across a wooden crate, and a bystander keeps the game in his notebook. ChessBoard is the originator: where every piece stands and whose turn it is are private, and only the board can copy them with save() or put them back with restore(). Each copy is a BoardSnapshot, an immutable concrete memento that receives its label, the squares and the turn once, through its constructor. MoveHistory is the caretaker. Before every move, its play() asks the board for a snapshot, labels it with the move, such as "Nước 3: Pháo 5 tấn 4" (move 3: the cannon on file 5 advances four points), and pushes it onto a stack. It handles snapshots only through the Snapshot interface, which shows nothing but the label (getLabel()). In the sample, Red\'s cannon grabs a soldier, then Red sees that Black\'s horse can now take the cannon and asks "xin đi lại", to take the move back, as friendly sidewalk games often allow. takeBack() pops the last snapshot and hands it to the board, which restores its own squares and turn: the soldier is back and it is Red\'s move again. The bystander decides when to save and when to roll back, but he never reads or changes a position.',
+        vi: 'Trên vỉa hè Hà Nội, hai ông hàng xóm đánh cờ tướng trên bàn cờ đặt trên một thùng gỗ, còn một người đứng xem ghi lại ván cờ vào sổ. ChessBoard là originator: vị trí của từng quân và lượt đi là dữ liệu private, chỉ bàn cờ mới chép được chúng bằng save() hoặc đặt lại bằng restore(). Mỗi bản chép là một BoardSnapshot, memento cụ thể bất biến, chỉ nhận nhãn, vị trí các quân và lượt đi đúng một lần qua hàm khởi tạo. MoveHistory là caretaker. Trước mỗi nước, phương thức play() của nó xin bàn cờ một bản chép, ghi nhãn theo nước đi, ví dụ "Nước 3: Pháo 5 tấn 4", rồi đưa vào một ngăn xếp. Nó chỉ làm việc với các bản chép qua giao diện Snapshot, giao diện này không cho xem gì ngoài nhãn (getLabel()). Trong ví dụ, Pháo đỏ ăn một quân Tốt, rồi bên Đỏ nhận ra Mã đen giờ có thể ăn lại Pháo nên xin đi lại, chuyện thường được châm chước trong những ván cờ vỉa hè giữa bạn bè. takeBack() lấy bản chép mới nhất ra và trả cho bàn cờ để bàn cờ tự khôi phục vị trí các quân và lượt đi: quân Tốt trở về chỗ cũ và lại đến lượt Đỏ. Người xem quyết định lúc nào chép và lúc nào quay lại, nhưng không bao giờ đọc hay sửa thế cờ bên trong.',
       },
     },
     code_examples: [
@@ -1013,184 +1287,223 @@ new Potter('Thợ gốm Bát Tràng').makeJars()`,
         code: `from abc import ABC, abstractmethod
 
 
-def format_number(n: int) -> str:
-    return f"{n:,}".replace(",", ".")
-
-
-# Memento interface: the caretaker sees only metadata, never the state
-class Chronicle(ABC):
+# Memento interface: all the caretaker may read is the label
+class Snapshot(ABC):
     @abstractmethod
-    def get_name(self) -> str: ...
+    def get_label(self) -> str: ...
 
 
-# Concrete Memento: an immutable snapshot, filled once via the constructor
-class ChronicleRecord(Chronicle):
-    def __init__(self, event: str, population: int, treasury: int) -> None:
-        self._event = event
-        self._population = population
-        self._treasury = treasury
+# Concrete Memento: a frozen copy of the board, filled once in the constructor
+class BoardSnapshot(Snapshot):
+    def __init__(self, label: str, squares: dict[str, str], turn: str) -> None:
+        self._label = label
+        self._squares = dict(squares)  # a copy: later moves don't change it
+        self._turn = turn
 
-    def get_name(self) -> str:
-        return self._event
+    def get_label(self) -> str:
+        return self._label
 
     # Meant for the originator only
-    def get_state(self) -> tuple[int, int]:
-        return self._population, self._treasury
+    def get_state(self) -> tuple[dict[str, str], str]:
+        return dict(self._squares), self._turn
 
 
-# Originator: owns the private state, creates and restores snapshots
-class HungKing:
+# Squares: files a–i from Red's left, ranks 0–9 from Red's side
+def opening_position() -> dict[str, str]:
+    squares: dict[str, str] = {}
+    back_rank = ["Xe", "Mã", "Tượng", "Sĩ", "Tướng", "Sĩ", "Tượng", "Mã", "Xe"]
+    for side, back, cannons, soldiers in (("đỏ", 0, 2, 3), ("đen", 9, 7, 6)):
+        for file, piece in zip("abcdefghi", back_rank):
+            squares[f"{file}{back}"] = f"{piece} {side}"
+        for file in "bh":
+            squares[f"{file}{cannons}"] = f"Pháo {side}"
+        for file in "acegi":
+            squares[f"{file}{soldiers}"] = f"Tốt {side}"
+    return squares
+
+
+# Originator: only the board knows where every piece stands and whose turn it is
+class ChessBoard:
     def __init__(self) -> None:
-        self._population = 1_000_000
-        self._treasury = 5_000_000
+        self._squares = opening_position()
+        self._turn = "Đỏ"
 
-    def enact_policy(self, name: str, population: int, treasury: int) -> None:
-        self._population += population
-        self._treasury += treasury
-        print(f"📜 {name}: {self.status()}")
+    # The board only moves pieces; keeping to the rules is up to the players
+    def move(self, notation: str, start: str, end: str) -> None:
+        captured = self._squares.get(end)
+        self._squares[end] = self._squares.pop(start)
+        print(f"{self._turn} đi {notation}" + (f", ăn {captured}" if captured else ""))
+        self._turn = "Đen" if self._turn == "Đỏ" else "Đỏ"
 
     def status(self) -> str:
-        return f"dân {format_number(self._population)}, kho {format_number(self._treasury)} quan"
+        red = sum(piece.endswith("đỏ") for piece in self._squares.values())
+        black = len(self._squares) - red
+        return f"Đỏ {red} quân, Đen {black} quân, lượt {self._turn}"
 
-    def save_chronicle(self, event: str) -> Chronicle:
-        return ChronicleRecord(event, self._population, self._treasury)
+    def save(self, label: str) -> Snapshot:
+        return BoardSnapshot(label, self._squares, self._turn)
 
-    def restore(self, chronicle: Chronicle) -> None:
+    def restore(self, snapshot: Snapshot) -> None:
         # The originator works with the concrete memento class directly
-        if not isinstance(chronicle, ChronicleRecord):
-            raise TypeError("Bản ghi không phải của nhà vua")
-        self._population, self._treasury = chronicle.get_state()
-        print(f'↩️ Khôi phục "{chronicle.get_name()}": {self.status()}')
+        if not isinstance(snapshot, BoardSnapshot):
+            raise TypeError("Không phải thế cờ của bàn này")
+        self._squares, self._turn = snapshot.get_state()
+        print(f'↩️ Rút lại "{snapshot.get_label()}": {self.status()}')
 
 
-# Caretaker: decides when to save and when to restore; keeps a stack
-class Historian:
-    def __init__(self, king: HungKing) -> None:
-        self._king = king
-        self._history: list[Chronicle] = []
+# Caretaker: saves before every move and can take one back,
+# but sees nothing of a snapshot except its label
+class MoveHistory:
+    def __init__(self, board: ChessBoard) -> None:
+        self._board = board
+        self._snapshots: list[Snapshot] = []
 
-    def record(self, event: str) -> None:
-        self._history.append(self._king.save_chronicle(event))
+    def play(self, notation: str, start: str, end: str) -> None:
+        label = f"Nước {len(self._snapshots) + 1}: {notation}"
+        self._snapshots.append(self._board.save(label))
+        self._board.move(notation, start, end)
 
-    def undo_last(self) -> None:
-        if self._history:
-            self._king.restore(self._history.pop())
+    def take_back(self) -> None:
+        if self._snapshots:
+            self._board.restore(self._snapshots.pop())
 
-    def show_history(self) -> None:
-        print("📚 Sử ký: " + " | ".join(c.get_name() for c in self._history))
+    def show_moves(self) -> None:
+        print("📒 Sổ ghi: " + " | ".join(s.get_label() for s in self._snapshots))
 
 
-king = HungKing()
-historian = Historian(king)
-print(f"👑 Hùng Vương thứ Sáu lên ngôi: {king.status()}")
+board = ChessBoard()
+notebook = MoveHistory(board)
 
-historian.record("Trước khi mở rộng canh tác")
-king.enact_policy("Mở rộng canh tác", 200_000, 1_000_000)
+notebook.play("Pháo 2 bình 5", "h2", "e2")
+notebook.play("Mã 8 tấn 7", "h9", "g7")
+# The cannon takes the middle soldier, but the horse on g7 can now take the cannon
+notebook.play("Pháo 5 tấn 4", "e2", "e6")
+print(f"Thế cờ: {board.status()}")
 
-historian.record("Trước cuộc chiến")
-king.enact_policy("Chiến tranh thất bại", -500_000, -3_000_000)
+print('Đỏ: "Cho xin đi lại!"')
+notebook.take_back()
 
-historian.show_history()
-historian.undo_last()
-historian.show_history()
+notebook.play("Mã 2 tấn 3", "h0", "g2")
+notebook.show_moves()
 
 # Output:
-# 👑 Hùng Vương thứ Sáu lên ngôi: dân 1.000.000, kho 5.000.000 quan
-# 📜 Mở rộng canh tác: dân 1.200.000, kho 6.000.000 quan
-# 📜 Chiến tranh thất bại: dân 700.000, kho 3.000.000 quan
-# 📚 Sử ký: Trước khi mở rộng canh tác | Trước cuộc chiến
-# ↩️ Khôi phục "Trước cuộc chiến": dân 1.200.000, kho 6.000.000 quan
-# 📚 Sử ký: Trước khi mở rộng canh tác`,
+# Đỏ đi Pháo 2 bình 5
+# Đen đi Mã 8 tấn 7
+# Đỏ đi Pháo 5 tấn 4, ăn Tốt đen
+# Thế cờ: Đỏ 16 quân, Đen 15 quân, lượt Đen
+# Đỏ: "Cho xin đi lại!"
+# ↩️ Rút lại "Nước 3: Pháo 5 tấn 4": Đỏ 16 quân, Đen 16 quân, lượt Đỏ
+# Đỏ đi Mã 2 tấn 3
+# 📒 Sổ ghi: Nước 1: Pháo 2 bình 5 | Nước 2: Mã 8 tấn 7 | Nước 3: Mã 2 tấn 3`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
-        code: `const formatNumber = (n: number): string => n.toLocaleString('vi-VN')
+        code: `type Side = 'Đỏ' | 'Đen'
 
-// Memento interface: the caretaker sees only metadata, never the state
-interface Chronicle {
-  getName(): string
+// Memento interface: all the caretaker may read is the label
+interface Snapshot {
+  getLabel(): string
 }
 
-// Concrete Memento: an immutable snapshot, filled once via the constructor
-class ChronicleRecord implements Chronicle {
-  constructor(
-    private readonly event: string,
-    private readonly population: number,
-    private readonly treasury: number,
-  ) {}
+// Concrete Memento: a frozen copy of the board, filled once in the constructor
+class BoardSnapshot implements Snapshot {
+  private readonly squares: ReadonlyMap<string, string>
 
-  getName(): string { return this.event }
+  constructor(private readonly label: string, squares: Map<string, string>, private readonly turn: Side) {
+    this.squares = new Map(squares) // a copy: later moves don't change it
+  }
+
+  getLabel(): string { return this.label }
 
   // Meant for the originator only
-  getState(): [number, number] { return [this.population, this.treasury] }
+  getState(): [Map<string, string>, Side] { return [new Map(this.squares), this.turn] }
 }
 
-// Originator: owns the private state, creates and restores snapshots
-class HungKing {
-  private population = 1_000_000
-  private treasury = 5_000_000
+// Squares: files a–i from Red's left, ranks 0–9 from Red's side
+function openingPosition(): Map<string, string> {
+  const squares = new Map<string, string>()
+  const backRank = ['Xe', 'Mã', 'Tượng', 'Sĩ', 'Tướng', 'Sĩ', 'Tượng', 'Mã', 'Xe']
+  for (const [side, back, cannons, soldiers] of [['đỏ', 0, 2, 3], ['đen', 9, 7, 6]] as const) {
+    backRank.forEach((piece, i) => squares.set(\`\${'abcdefghi'[i]}\${back}\`, \`\${piece} \${side}\`))
+    for (const file of 'bh') squares.set(\`\${file}\${cannons}\`, \`Pháo \${side}\`)
+    for (const file of 'acegi') squares.set(\`\${file}\${soldiers}\`, \`Tốt \${side}\`)
+  }
+  return squares
+}
 
-  enactPolicy(name: string, population: number, treasury: number): void {
-    this.population += population
-    this.treasury += treasury
-    console.log(\`📜 \${name}: \${this.status()}\`)
+// Originator: only the board knows where every piece stands and whose turn it is
+class ChessBoard {
+  private squares = openingPosition()
+  private turn: Side = 'Đỏ'
+
+  // The board only moves pieces; keeping to the rules is up to the players
+  move(notation: string, start: string, end: string): void {
+    const captured = this.squares.get(end)
+    this.squares.set(end, this.squares.get(start)!)
+    this.squares.delete(start)
+    console.log(\`\${this.turn} đi \${notation}\${captured ? \`, ăn \${captured}\` : ''}\`)
+    this.turn = this.turn === 'Đỏ' ? 'Đen' : 'Đỏ'
   }
 
   status(): string {
-    return \`dân \${formatNumber(this.population)}, kho \${formatNumber(this.treasury)} quan\`
+    const red = [...this.squares.values()].filter(piece => piece.endsWith('đỏ')).length
+    return \`Đỏ \${red} quân, Đen \${this.squares.size - red} quân, lượt \${this.turn}\`
   }
 
-  saveChronicle(event: string): Chronicle {
-    return new ChronicleRecord(event, this.population, this.treasury)
+  save(label: string): Snapshot {
+    return new BoardSnapshot(label, this.squares, this.turn)
   }
 
-  restore(chronicle: Chronicle): void {
+  restore(snapshot: Snapshot): void {
     // The originator works with the concrete memento class directly
-    if (!(chronicle instanceof ChronicleRecord)) throw new Error('Bản ghi không phải của nhà vua')
-    ;[this.population, this.treasury] = chronicle.getState()
-    console.log(\`↩️ Khôi phục "\${chronicle.getName()}": \${this.status()}\`)
+    if (!(snapshot instanceof BoardSnapshot)) throw new Error('Không phải thế cờ của bàn này')
+    ;[this.squares, this.turn] = snapshot.getState()
+    console.log(\`↩️ Rút lại "\${snapshot.getLabel()}": \${this.status()}\`)
   }
 }
 
-// Caretaker: decides when to save and when to restore; keeps a stack
-class Historian {
-  private history: Chronicle[] = []
+// Caretaker: saves before every move and can take one back,
+// but sees nothing of a snapshot except its label
+class MoveHistory {
+  private snapshots: Snapshot[] = []
 
-  constructor(private king: HungKing) {}
+  constructor(private board: ChessBoard) {}
 
-  record(event: string): void {
-    this.history.push(this.king.saveChronicle(event))
+  play(notation: string, start: string, end: string): void {
+    this.snapshots.push(this.board.save(\`Nước \${this.snapshots.length + 1}: \${notation}\`))
+    this.board.move(notation, start, end)
   }
 
-  undoLast(): void {
-    const chronicle = this.history.pop()
-    if (chronicle) this.king.restore(chronicle)
+  takeBack(): void {
+    const snapshot = this.snapshots.pop()
+    if (snapshot) this.board.restore(snapshot)
   }
 
-  showHistory(): void {
-    console.log('📚 Sử ký: ' + this.history.map(c => c.getName()).join(' | '))
+  showMoves(): void {
+    console.log('📒 Sổ ghi: ' + this.snapshots.map(s => s.getLabel()).join(' | '))
   }
 }
 
-const king = new HungKing()
-const historian = new Historian(king)
-console.log(\`👑 Hùng Vương thứ Sáu lên ngôi: \${king.status()}\`)
+const board = new ChessBoard()
+const notebook = new MoveHistory(board)
 
-historian.record('Trước khi mở rộng canh tác')
-king.enactPolicy('Mở rộng canh tác', 200_000, 1_000_000)
+notebook.play('Pháo 2 bình 5', 'h2', 'e2')
+notebook.play('Mã 8 tấn 7', 'h9', 'g7')
+// The cannon takes the middle soldier, but the horse on g7 can now take the cannon
+notebook.play('Pháo 5 tấn 4', 'e2', 'e6')
+console.log(\`Thế cờ: \${board.status()}\`)
 
-historian.record('Trước cuộc chiến')
-king.enactPolicy('Chiến tranh thất bại', -500_000, -3_000_000)
+console.log('Đỏ: "Cho xin đi lại!"')
+notebook.takeBack()
 
-historian.showHistory()
-historian.undoLast()
-historian.showHistory()`,
+notebook.play('Mã 2 tấn 3', 'h0', 'g2')
+notebook.showMoves()`,
       },
     ],
     structure_notes: {
-      en: 'The Originator produces snapshots of its own state and restores its state from snapshots when needed. The Memento is a value object that acts as a snapshot of the originator\'s state; it is common practice to make it immutable and pass it the data only once, through the constructor. The Caretaker knows when and why to capture the originator\'s state, and when the state should be restored. It can track the originator\'s history as a stack of mementos; when the originator has to travel back in history, the caretaker fetches the topmost memento and passes it to the originator\'s restoration method. The page shows three implementations. In the classic one, based on nested classes (C++, C#, Java), the memento is nested inside the originator, so the originator can access its private fields while the caretaker can only store it. Languages without nested classes can use an intermediate interface: caretakers work with a memento only through an interface that declares metadata methods, while originators use the concrete memento class directly; the downside is that every member of the memento class must be public. The variant with even stricter encapsulation links each memento to the originator that created it and moves the restoration method into the memento, so the caretaker no longer depends on the originator and several originator and memento types can coexist. These examples and the diagram use the intermediate interface: Chronicle is the metadata interface (getName()), ChronicleRecord is the concrete memento, HungKing is the originator and Historian is the caretaker. As the page warns, Python and JavaScript can\'t guarantee that the state inside a memento stays untouched; underscore fields in Python and private readonly fields in TypeScript are a convention and a compile-time check, not hard protection.',
-      vi: 'Originator tạo ảnh chụp trạng thái của chính nó và khôi phục trạng thái từ ảnh chụp khi cần. Memento là một value object đóng vai ảnh chụp trạng thái của originator; thông thường memento được làm bất biến và chỉ nhận dữ liệu một lần qua hàm khởi tạo. Caretaker biết khi nào và vì sao cần chụp trạng thái của originator, cũng như khi nào cần khôi phục. Nó có thể theo dõi lịch sử của originator bằng một ngăn xếp memento; khi originator cần quay ngược thời gian, caretaker lấy memento trên cùng và truyền cho phương thức khôi phục của originator. Trang gốc trình bày ba cách cài đặt. Cách kinh điển dựa trên lớp lồng nhau (C++, C#, Java): memento nằm bên trong originator, nên originator truy cập được các trường private của nó còn caretaker chỉ cất giữ được. Ngôn ngữ không có lớp lồng nhau có thể dùng một giao diện trung gian: caretaker chỉ làm việc với memento qua một giao diện khai báo các phương thức siêu dữ liệu, còn originator dùng trực tiếp lớp memento cụ thể; nhược điểm là mọi thành viên của lớp memento phải để public. Cách đóng gói chặt chẽ hơn nữa gắn mỗi memento với originator đã tạo ra nó và chuyển phương thức khôi phục vào memento, nhờ đó caretaker không còn phụ thuộc vào originator và có thể có nhiều loại originator và memento cùng lúc. Các ví dụ và sơ đồ ở đây dùng cách giao diện trung gian: Chronicle là giao diện siêu dữ liệu (getName()), ChronicleRecord là memento cụ thể, HungKing là originator và Historian là caretaker. Như trang gốc lưu ý, Python và JavaScript không thể đảm bảo trạng thái bên trong memento không bị đụng tới; trường có dấu gạch dưới trong Python và trường private readonly trong TypeScript chỉ là quy ước và kiểm tra lúc biên dịch, không phải lớp bảo vệ thật sự.',
+      en: 'Three roles take part. The Originator is the object whose state may need to come back later; it is the only class that writes a memento and the only one that reads one. The Memento is a record of the originator\'s state at one moment, set once and never changed afterwards. The Caretaker keeps mementos and decides when to take one and when to hand one back, but never looks inside. The Gang of Four describe a memento as having two faces: a wide one for the originator, which may read everything, and a narrow one for every other object, which shows only what is safe to share, such as a label. Languages build those faces in different ways. In C++ the memento can declare the originator a friend, and in Java or C# it can be a nested class of the originator. TypeScript and Python have neither, so these examples use an interface for the narrow face: MoveHistory sees each snapshot only as a Snapshot with getLabel(), while ChessBoard checks that it received a BoardSnapshot before calling getState(). Neither language can stop determined code from reaching the fields, because private and a leading underscore are a compile-time check and a naming convention. Mind the cost when mementos are taken often. Copying a 32-piece board before every move is cheap, but a memento of a large object may need to store only what changed since the previous one.',
+      vi: 'Có ba vai trò. Originator là đối tượng mà trạng thái có thể cần được lấy lại về sau; nó là lớp duy nhất ghi ra memento và cũng là lớp duy nhất đọc memento. Memento là bản ghi trạng thái của originator tại một thời điểm, được gán một lần và không bao giờ thay đổi sau đó. Caretaker cất giữ các memento, quyết định lúc nào lấy một bản và lúc nào trả lại, nhưng không bao giờ nhìn vào bên trong. Nhóm tác giả Gang of Four mô tả memento có hai mặt: mặt rộng dành cho originator, được đọc mọi thứ, và mặt hẹp dành cho mọi đối tượng khác, chỉ cho thấy những gì an toàn để chia sẻ, chẳng hạn một cái nhãn. Mỗi ngôn ngữ dựng hai mặt đó theo cách riêng. Trong C++, memento có thể khai báo originator là friend; trong Java hay C#, memento có thể là lớp lồng bên trong originator. TypeScript và Python không có cả hai cơ chế này, nên các ví dụ ở đây dùng một giao diện cho mặt hẹp: MoveHistory chỉ thấy mỗi bản chép như một Snapshot có getLabel(), còn ChessBoard kiểm tra rằng mình nhận được một BoardSnapshot rồi mới gọi getState(). Cả hai ngôn ngữ đều không ngăn được đoạn mã cố tình chạm vào các trường, vì private và dấu gạch dưới ở đầu tên chỉ là kiểm tra lúc biên dịch và quy ước đặt tên. Hãy để ý chi phí khi memento được tạo thường xuyên. Chép một bàn cờ 32 quân trước mỗi nước đi thì rẻ, nhưng memento của một đối tượng lớn có thể chỉ nên lưu phần đã thay đổi so với bản trước.',
     },
   },
 
@@ -1438,7 +1751,7 @@ bronzeDrum.strike('lễ hội Đền Hùng!')`,
       vi: 'Dùng State khi bạn có một đối tượng hành xử khác nhau tùy theo trạng thái hiện tại, số trạng thái rất lớn và mã riêng của từng trạng thái thay đổi thường xuyên: tách toàn bộ mã đó vào các lớp riêng giúp bạn thêm trạng thái mới hoặc sửa trạng thái cũ một cách độc lập, nhờ đó giảm chi phí bảo trì. Dùng khi một lớp bị lấp đầy bởi các khối điều kiện khổng lồ thay đổi hành vi theo giá trị hiện tại của các trường: mỗi nhánh điều kiện trở thành phương thức của lớp trạng thái tương ứng, đồng thời bạn có thể dọn khỏi lớp chính các trường tạm và phương thức phụ trợ chỉ phục vụ mã theo trạng thái. Dùng khi có nhiều mã lặp lại giữa các trạng thái và cách chuyển tương tự nhau trong một máy trạng thái dựa trên điều kiện: bạn có thể xây dựng hệ thống phân cấp lớp trạng thái và giảm trùng lặp bằng cách đưa mã chung vào các lớp cơ sở trừu tượng.',
     },
     vietnamese_example: {
-      title: { en: 'Rice Paddy Water Levels (Đồng Lúa)', vi: 'Ruộng Lúa - Các Giai Đoạn Sinh Trưởng' },
+      title: { en: 'A Rice Paddy Through the Seasons', vi: 'Ruộng Lúa - Các Giai Đoạn Sinh Trưởng' },
       description: {
         en: 'A Vietnamese rice paddy goes through distinct stages: Cày Bừa (plowing), Cấy Lúa (transplanting), Đang Lớn (growing), Trổ Bông (flowering) and Thu Hoạch (harvesting). In the code, RicePaddy is the Context: the farmer always calls the same three methods, water(), fertilize() and harvest(), and the paddy delegates each call to its current stage object. RiceStage is the State: it declares those three methods and holds a backreference paddy to the paddy, set by the context\'s setter changeStage(). Plowing, Transplanting, Growing, Flowering and Harvesting are Concrete States. The same action means different things in each: harvesting during Cày Bừa is refused, fertilizing while the rice flowers is refused, and watering at harvest time is a mistake because the field must be dry. The states also drive the transitions themselves through the backreference: fertilize() in Plowing moves the paddy to Transplanting, harvest() in Flowering moves it to Harvesting, and finishing the harvest starts a new season with Plowing. RicePaddy contains no conditionals about the stage.',
         vi: 'Ruộng lúa Việt Nam trải qua các giai đoạn rõ rệt: Cày Bừa, Cấy Lúa, Đang Lớn, Trổ Bông và Thu Hoạch. Trong mã, RicePaddy là Context: người nông dân luôn gọi cùng ba phương thức water(), fertilize() và harvest(), còn ruộng ủy quyền mỗi lời gọi cho đối tượng giai đoạn hiện tại. RiceStage là State: nó khai báo ba phương thức đó và giữ tham chiếu ngược paddy tới thửa ruộng, được gán qua setter changeStage() của context. Plowing, Transplanting, Growing, Flowering và Harvesting là các Concrete State. Cùng một hành động mang ý nghĩa khác nhau ở mỗi giai đoạn: gặt lúa lúc đang cày bừa bị từ chối, bón phân khi lúa trổ bông bị từ chối, còn tưới nước lúc thu hoạch là sai vì ruộng cần khô. Chính các trạng thái tự thực hiện việc chuyển giai đoạn qua tham chiếu ngược: fertilize() ở Plowing chuyển ruộng sang Transplanting, harvest() ở Flowering chuyển sang Harvesting, và gặt xong thì bắt đầu vụ mới với Plowing. RicePaddy không chứa câu điều kiện nào về giai đoạn.',
@@ -1863,10 +2176,10 @@ for (const [situation, opponent] of battles) {
       vi: 'Dùng Template Method khi bạn muốn cho client mở rộng chỉ một số bước cụ thể của thuật toán, chứ không phải toàn bộ thuật toán hay cấu trúc của nó: mẫu này biến một thuật toán nguyên khối thành chuỗi các bước riêng lẻ mà lớp con dễ dàng mở rộng, trong khi cấu trúc do lớp cha định nghĩa vẫn được giữ nguyên. Dùng khi bạn có nhiều lớp chứa các thuật toán gần như giống hệt nhau với vài khác biệt nhỏ, khiến mỗi lần thuật toán thay đổi bạn có thể phải sửa tất cả các lớp: khi thuật toán đã thành phương thức khuôn mẫu, bạn có thể đưa các bước có cài đặt giống nhau lên lớp cha để loại bỏ trùng lặp, còn phần mã khác nhau vẫn nằm ở lớp con.',
     },
     vietnamese_example: {
-      title: { en: 'Cooking Traditional Vietnamese Soup', vi: 'Nấu Canh Truyền Thống Việt Nam' },
+      title: { en: 'Cooking Vietnamese Soup Dishes', vi: 'Nấu Các Món Nước Việt Nam' },
       description: {
-        en: 'Every Vietnamese soup (canh) is cooked in the same order: prepare the broth, add the main ingredients, season, put it in the bowl, and garnish. The abstract class SoupRecipe fixes that order in its template method cook(). The broth and the ingredients differ for every dish, so prepareBroth() and addIngredients() are abstract steps. Seasoning with fish sauce (season()) and sprinkling spring onions (garnish()) are optional steps with a default that most dishes share. beforeLadle() is a hook with an empty body, called just before the soup is ladled into the bowl. GourdBoneSoup (gourd and pork-bone soup) implements only the abstract steps and keeps every default. SourFishSoup (sour fish soup) also overrides garnish() with sawtooth herb and chili. HueBeefNoodleSoup overrides season() to add Huế shrimp paste (mắm ruốc) uses the hook to blanch the noodles into the bowl before the broth goes in, and overrides garnish() to add fresh herbs and chili sa tế. The cooking order never changes; the client just calls cook() on any SoupRecipe.',
-        vi: 'Món canh Việt nào cũng được nấu theo cùng một trình tự: chuẩn bị nước dùng, cho nguyên liệu chính, nêm nếm, múc ra tô, rồi trang trí. Lớp trừu tượng SoupRecipe cố định trình tự đó trong phương thức khuôn mẫu cook(). Nước dùng và nguyên liệu khác nhau theo từng món, nên prepareBroth() và addIngredients() là bước trừu tượng. Nêm nước mắm (season()) và rắc hành lá (garnish()) là bước tùy chọn có cài đặt mặc định mà phần lớn các món dùng chung. beforeLadle() là hook có thân rỗng, được gọi ngay trước khi múc canh ra tô. GourdBoneSoup chỉ triển khai các bước trừu tượng và giữ nguyên mọi mặc định. SourFishSoup ghi đè thêm garnish() để rắc ngò gai và ớt đỏ. HueBeefNoodleSoup ghi đè season() để thêm mắm ruốc Huế, dùng hook để trụng bún vào tô trước khi chan nước dùng, và ghi đè garnish() để thêm rau sống và sa tế. Trình tự nấu không bao giờ thay đổi; client chỉ việc gọi cook() trên bất kỳ SoupRecipe nào.',
+        en: 'Every Vietnamese soup dish (món nước) is cooked in the same order: prepare the broth, add the main ingredients, season, put it in the bowl, and garnish. The abstract class SoupRecipe fixes that order in its template method cook(). The broth and the ingredients differ for every dish, so prepareBroth() and addIngredients() are abstract steps. Seasoning with fish sauce (season()) and sprinkling spring onions (garnish()) are optional steps with a default that most dishes share. beforeLadle() is a hook with an empty body, called just before the soup is ladled into the bowl. GourdBoneSoup (gourd and pork-bone soup) implements only the abstract steps and keeps every default. SourFishSoup (sour fish soup) also overrides garnish() with sawtooth herb and chili. HueBeefNoodleSoup overrides season() to add Huế shrimp paste (mắm ruốc), uses the hook to blanch the noodles into the bowl before the broth goes in, and overrides garnish() to add fresh herbs and chili sa tế. The cooking order never changes; the client just calls cook() on any SoupRecipe.',
+        vi: 'Món nước Việt nào cũng được nấu theo cùng một trình tự: chuẩn bị nước dùng, cho nguyên liệu chính, nêm nếm, múc ra tô, rồi trang trí. Lớp trừu tượng SoupRecipe cố định trình tự đó trong phương thức khuôn mẫu cook(). Nước dùng và nguyên liệu khác nhau theo từng món, nên prepareBroth() và addIngredients() là bước trừu tượng. Nêm nước mắm (season()) và rắc hành lá (garnish()) là bước tùy chọn có cài đặt mặc định mà phần lớn các món dùng chung. beforeLadle() là hook có thân rỗng, được gọi ngay trước khi múc canh ra tô. GourdBoneSoup chỉ triển khai các bước trừu tượng và giữ nguyên mọi mặc định. SourFishSoup ghi đè thêm garnish() để rắc ngò gai và ớt đỏ. HueBeefNoodleSoup ghi đè season() để thêm mắm ruốc Huế, dùng hook để trụng bún vào tô trước khi chan nước dùng, và ghi đè garnish() để thêm rau sống và sa tế. Trình tự nấu không bao giờ thay đổi; client chỉ việc gọi cook() trên bất kỳ SoupRecipe nào.',
       },
     },
     code_examples: [

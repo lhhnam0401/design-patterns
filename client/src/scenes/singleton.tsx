@@ -2,8 +2,9 @@ import { Gate, Hall, Terrace } from './kit/architecture'
 import { Person } from './kit/figures'
 import { band } from './kit/geometry'
 import { Cloud, Grass, Ground, Hills, Moon, Path, Stars, Tree, Bamboo } from './kit/nature'
+import { sansWidth } from './kit/metrics'
 import { Caption } from './kit/overlay'
-import { C, INK } from './kit/palette'
+import { C, INK, SCENE_COLORS } from './kit/palette'
 import { Banner, BronzeDrum, Lantern, Scroll } from './kit/props'
 import type { SceneArtProps, SceneDefinition } from './types'
 
@@ -25,7 +26,8 @@ const singleton: SceneDefinition = {
     { nodeId: 'sing', method: 'getInstance', d: 'M766,350 C690,330 600,336 518,336' },
   ],
   untagged: [],
-  Art: function SingletonArt({ lang }: SceneArtProps) {
+  Art: function SingletonArt({ lang, compact }: SceneArtProps) {
+  const noSecond = lang === 'vi' ? 'không có triều đình thứ hai' : 'no second court'
   return (
     <g>
       <Stars seed={11} count={55} maxY={200} />
@@ -37,13 +39,10 @@ const singleton: SceneDefinition = {
       {/* A second court can't exist: its faded outline is crossed out */}
       <Hills y={288} amp={22} color="#21142f" seed={8} step={140} />
       <Hall cx={850} y={236} w={110} h={30} roofH={26} doors={2} glow={false} dim />
-      <g stroke="#ef4444" strokeWidth={5} strokeLinecap="round" opacity={0.85}>
+      <g stroke={C.lacquer} strokeWidth={5} strokeLinecap="round" opacity={0.85}>
         <line x1={792} y1={168} x2={908} y2={238} />
         <line x1={908} y1={168} x2={792} y2={238} />
       </g>
-      <Caption x={850} y={258} size={11} fill="#fca5a5">
-        {lang === 'vi' ? 'không có triều đình thứ hai' : 'no second court'}
-      </Caption>
 
       {/* The one palace on its hill */}
       <path d={band([[250, 340], [360, 258], [480, 226], [600, 258], [710, 340]], 440)} fill="#2b1b13" />
@@ -59,6 +58,11 @@ const singleton: SceneDefinition = {
 
       <Bamboo x={8} y={350} h={200} seed={3} count={4} />
       <Tree x={925} y={352} s={0.95} />
+      {/* Drawn after the tree so the label stays readable over it */}
+      {!compact && (
+        <rect x={850 - sansWidth(noSecond, 11) / 2 - 7} y={246} width={sansWidth(noSecond, 11) + 14} height={17} rx={2} fill={SCENE_COLORS.paperLight} stroke={C.lacquerDark} strokeWidth={0.8} />
+      )}
+      <Caption x={850} y={258} size={11} fill={C.lacquerDark}>{noSecond}</Caption>
 
       <Banner x={392} y={348} h={118} color={C.lacquer} />
       <Banner x={568} y={348} h={118} color={C.lacquer} />

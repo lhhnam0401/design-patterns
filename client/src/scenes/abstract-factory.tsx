@@ -8,6 +8,39 @@ import type { SceneArtProps, SceneDefinition } from './types'
 
 const TABLE_TOP = 344
 
+/** Thịt đông: a set slab of jellied pork, cut into squares, on a plate. */
+function jelliedPork(x: number, y: number) {
+  return (
+    <g>
+      <ellipse cx={x} cy={y + 3} rx={29} ry={8.7} fill="#e8e2d0" stroke={INK} strokeWidth={1.5} />
+      <rect x={x - 19} y={y - 13} width={38} height={14} rx={2} fill="#e9d9c4" stroke={INK} strokeWidth={1.3} />
+      <line x1={x - 6} y1={y - 13} x2={x - 6} y2={y + 1} stroke={INK} strokeOpacity={0.45} />
+      <line x1={x + 7} y1={y - 13} x2={x + 7} y2={y + 1} stroke={INK} strokeOpacity={0.45} />
+      {[[-13, -8], [1, -5], [13, -9], [-11, -3]].map(([dx, dy], i) => (
+        <circle key={i} cx={x + dx} cy={y + dy} r={2} fill="#b98a68" stroke={INK} strokeWidth={0.6} />
+      ))}
+      <path d={`M${x - 16},${y - 11} l8,0`} stroke="#fffaf0" strokeWidth={1.2} />
+    </g>
+  )
+}
+
+/** Thịt kho tàu: braised pork belly with halved eggs in a bowl. */
+function braisedPorkWithEggs(x: number, y: number) {
+  return (
+    <g>
+      <path d={`M${x - 26},${y - 8} Q${x - 24},${y + 8} ${x},${y + 9} Q${x + 24},${y + 8} ${x + 26},${y - 8} Z`} fill="#e8e2d0" stroke={INK} strokeWidth={1.5} />
+      <ellipse cx={x} cy={y - 8} rx={26} ry={5} fill="#a8642f" stroke={INK} strokeWidth={1.3} />
+      {[-14, 13].map(dx => (
+        <g key={dx}>
+          <ellipse cx={x + dx} cy={y - 10} rx={7} ry={4.5} fill="#f4ead2" stroke={INK} strokeWidth={1} />
+          <circle cx={x + dx} cy={y - 10} r={2.6} fill="#d99a2b" />
+        </g>
+      ))}
+      <rect x={x - 5} y={y - 14} width={9} height={6} rx={1.5} fill="#7d4527" stroke={INK} strokeWidth={0.9} />
+    </g>
+  )
+}
+
 const abstractFactory: SceneDefinition = {
   slug: 'abstract-factory',
   title: { en: 'Abstract Factory: matching Tết feast trays', vi: 'Abstract Factory: mâm cỗ Tết đồng bộ theo vùng' },
@@ -17,14 +50,14 @@ const abstractFactory: SceneDefinition = {
     { nodeId: 'facN', caption: { en: 'Northern kitchen', vi: 'bếp miền Bắc' }, at: [118, 96], to: [160, 146] },
     { nodeId: 'facS', caption: { en: 'Southern kitchen', vi: 'bếp miền Nam' }, at: [842, 96], to: [800, 146] },
     { nodeId: 'riceCakeI', caption: { en: 'a rice cake', vi: 'một loại bánh' }, at: [370, 204], to: [410, 158] },
-    { nodeId: 'porkRollI', caption: { en: 'a pork roll', vi: 'một loại giò chả' }, at: [480, 204], to: [480, 158] },
+    { nodeId: 'meatDishI', caption: { en: 'a meat dish', vi: 'một món thịt' }, at: [480, 204], to: [480, 158] },
     { nodeId: 'pickleI', caption: { en: 'a pickle', vi: 'một loại dưa' }, at: [592, 204], to: [550, 158] },
     { nodeId: 'client', method: 'prepare', caption: { en: 'the host sets the tray', vi: 'gia chủ bày mâm' }, at: [610, 272], to: [500, 290] },
     { nodeId: 'cakeN', caption: { en: 'bánh chưng', vi: 'bánh chưng' }, at: [142, 410], to: [182, 330] },
-    { nodeId: 'rollN', caption: { en: 'giò lụa', vi: 'giò lụa' }, at: [262, 410], to: [265, 334] },
+    { nodeId: 'meatN', caption: { en: 'thịt đông', vi: 'thịt đông' }, at: [262, 410], to: [265, 334] },
     { nodeId: 'pickN', caption: { en: 'dưa hành', vi: 'dưa hành' }, at: [382, 410], to: [350, 334] },
     { nodeId: 'cakeS', caption: { en: 'bánh tét', vi: 'bánh tét' }, at: [575, 410], to: [612, 330] },
-    { nodeId: 'rollS', caption: { en: 'chả lụa', vi: 'chả lụa' }, at: [705, 410], to: [695, 334] },
+    { nodeId: 'meatS', caption: { en: 'thịt kho tàu', vi: 'thịt kho tàu' }, at: [705, 410], to: [695, 334] },
     { nodeId: 'pickS', caption: { en: 'dưa kiệu', vi: 'dưa kiệu' }, at: [845, 410], to: [780, 334] },
   ],
   calls: [
@@ -74,12 +107,12 @@ const abstractFactory: SceneDefinition = {
 
         {/* Northern tray */}
         <SquareCake x={182} y={TABLE_TOP - 2} size={34} />
-        <Dish x={265} y={TABLE_TOP - 8} w={58} food="#efe2c8" kind="roll" />
+        {jelliedPork(265, TABLE_TOP - 8)}
         <Dish x={350} y={TABLE_TOP - 8} w={52} food="#f1f5f9" kind="pickles" />
 
         {/* Southern tray */}
         <LogCake x={612} y={TABLE_TOP - 2} w={62} h={24} />
-        <Dish x={695} y={TABLE_TOP - 8} w={58} food="#d6a76b" kind="slices" />
+        {braisedPorkWithEggs(695, TABLE_TOP - 8)}
         <Dish x={780} y={TABLE_TOP - 8} w={52} food="#f5e6b0" kind="pickles" />
       </g>
     )

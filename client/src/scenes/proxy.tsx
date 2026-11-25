@@ -13,7 +13,7 @@ const proxy: SceneDefinition = {
   tags: [
     { nodeId: 'client', method: 'submitPetition', caption: { en: 'petitioners at court', vi: 'dân chúng dâng đơn' }, at: [156, 236], to: [168, 318] },
     { nodeId: 'iface', caption: { en: 'all they ever deal with', vi: 'thứ duy nhất dân thấy' }, at: [470, 178], to: [470, 264] },
-    { nodeId: 'proxy', method: 'grantAudience', caption: { en: 'screens, caches, wakes the court', vi: 'sàng lọc, nhớ chiếu, mới mời vua' }, at: [612, 410], to: [598, 362] },
+    { nodeId: 'proxy', method: 'grantAudience', caption: { en: 'checks the list, then wakes the court', vi: 'xét danh sách, rồi mới mời vua' }, at: [612, 410], to: [598, 362] },
     { nodeId: 'real', caption: { en: 'woken only when needed', vi: 'chỉ được mời khi cần' }, at: [826, 120], to: [810, 222] },
   ],
   calls: [
@@ -36,7 +36,7 @@ const proxy: SceneDefinition = {
         <Hall cx={820} y={340} w={220} h={92} roofH={60} glow={false} />
         <rect x={790} y={300} width={60} height={30} fill={C.lacquerDark} stroke={INK} strokeWidth={1.5} opacity={0.6} />
         <Person x={820} y={312} s={0.9} robe="#ca8a04" hat="crown" pose="hold" dim />
-        <Caption x={820} y={360} size={11} fill="#fde68a">{lang === 'vi' ? 'Zzz… chưa được mời' : 'Zzz… not yet woken'}</Caption>
+        <Caption x={820} y={360} size={11} fill={C.goldDark}>{lang === 'vi' ? 'Zzz… chưa được mời' : 'Zzz… not yet woken'}</Caption>
 
         <Gate cx={470} y={372} w={210} h={108} />
         <Lantern x={410} y={300} r={9} cord={10} />
@@ -55,7 +55,7 @@ const proxy: SceneDefinition = {
           </Person>
         ))}
 
-        {/* The mandarin's desk with his ledger of past decrees */}
+        {/* The mandarin's desk with the list of officials allowed an audience */}
         <Person x={598} y={404} s={1.1} robe="#1e3a8a" hat="official" pose="reach" />
         <Table x={624} y={418} w={110} h={30} color={C.wood} />
         <rect x={640} y={370} width={64} height={12} fill={C.paper} stroke={INK} strokeWidth={1.4} />

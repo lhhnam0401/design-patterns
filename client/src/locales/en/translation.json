@@ -69,10 +69,7 @@
     "selected": "Selected patterns",
     "view_collection": "View collection",
     "view_all": "View all patterns",
-    "patterns": "patterns",
-    "total_patterns": "22 Design Patterns",
-    "categories": "3 Categories",
-    "languages": "2 Languages"
+    "patterns": "patterns"
   },
   "common": {
     "archive": "Design pattern archive",

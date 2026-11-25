@@ -48,7 +48,7 @@ test('primary routes have no serious automated accessibility violations', async 
   }
 })
 
-const sceneCases = ['adapter', 'iterator', 'flyweight', 'state']
+const sceneCases = ['adapter', 'iterator', 'flyweight', 'state', 'memento', 'interpreter']
 
 test('archival illustrations hold together in card and detail contexts', async ({ page }, testInfo) => {
   test.skip(!['mobile-360', 'desktop-1280'].includes(testInfo.project.name), 'representative scene review widths')

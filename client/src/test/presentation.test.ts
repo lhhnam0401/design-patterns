@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { allPatterns } from '../data'
+import { allPatterns, patternsByCategory } from '../data'
 import { categoryFolio, isCategory, patternFolio } from '../utils/presentation'
 
 describe('editorial folios', () => {
@@ -14,6 +14,14 @@ describe('editorial folios', () => {
   it('creates stable category-prefixed pattern numbers', () => {
     expect(patternFolio(allPatterns[0])).toBe('C–01')
     expect(patternFolio(allPatterns.at(-1)!)).toMatch(/^B–\d{2}$/)
+  })
+
+  it('covers all 23 Gang of Four patterns, with Interpreter right after Command', () => {
+    expect(allPatterns).toHaveLength(23)
+    expect(patternsByCategory.behavioral).toHaveLength(11)
+    const behavioral = patternsByCategory.behavioral.map(p => p.slug)
+    expect(behavioral.indexOf('interpreter')).toBe(behavioral.indexOf('command') + 1)
+    expect(patternFolio(allPatterns.find(p => p.slug === 'visitor')!)).toBe('B–11')
   })
 
   it('validates route category parameters at runtime', () => {

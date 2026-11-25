@@ -10,6 +10,7 @@ import decorator from './decorator'
 import facade from './facade'
 import factoryMethod from './factory-method'
 import flyweight from './flyweight'
+import interpreter from './interpreter'
 import iterator from './iterator'
 import mediator from './mediator'
 import memento from './memento'
@@ -37,6 +38,7 @@ const definitions: SceneDefinition[] = [
   proxy,
   chain,
   command,
+  interpreter,
   iterator,
   mediator,
   memento,

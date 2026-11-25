@@ -44,7 +44,7 @@ function stepIcon(i: number, x: number, y: number) {
 
 const templateMethod: SceneDefinition = {
   slug: 'template-method',
-  title: { en: 'Template Method: one cooking order for every soup', vi: 'Template Method: một trình tự nấu cho mọi món canh' },
+  title: { en: 'Template Method: one cooking order for every soup', vi: 'Template Method: một trình tự nấu cho mọi món nước' },
   sky: 'interior',
   tags: [
     { nodeId: 'abstract', method: 'cook', caption: { en: 'the fixed cooking order', vi: 'trình tự nấu cố định' }, at: [480, 30], to: [480, 60] },

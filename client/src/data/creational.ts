@@ -26,10 +26,10 @@ export const creationalPatterns: Omit<Pattern, 'diagram'>[] = [
       vi: 'Dùng Factory Method khi bạn không biết trước chính xác loại và phụ thuộc của các đối tượng mà mã cần làm việc cùng: mã khởi tạo được tách khỏi mã sử dụng sản phẩm, nên thêm loại sản phẩm mới chỉ cần thêm một lớp creator con. Dùng khi muốn người dùng thư viện hoặc framework của bạn mở rộng các thành phần bên trong: họ kế thừa thành phần đó và ghi đè phương thức nhà máy (ví dụ UIWithRoundButtons ghi đè createButton() để trả về RoundButton). Dùng khi muốn tiết kiệm tài nguyên bằng cách tái sử dụng đối tượng có sẵn như kết nối cơ sở dữ liệu: hàm khởi tạo luôn phải trả về đối tượng mới, còn phương thức nhà máy có thể trả về đối tượng có sẵn từ cache hoặc pool.',
     },
     vietnamese_example: {
-      title: { en: 'Bánh Chưng & Bánh Tét Workshop', vi: 'Xưởng Làm Bánh Chưng & Bánh Tét' },
+      title: { en: 'Wrapping Tết Cakes at Home', vi: 'Gói Bánh Chưng, Bánh Tét Ngày Tết' },
       description: {
-        en: 'Before Tết (Vietnamese New Year), every workshop follows the same routine: wrap the cakes, boil them, and place them on the ancestral altar. That routine is the core business logic of the base RiceCakeFactory class, and it works only with the abstract RiceCake interface (wrap() and boil()). The one step that differs by region is which cake gets made, so it is pulled into the factory method makeRiceCake(). The Northern workshop (NorthernFactory) overrides it to return a ChungCake, the square Bánh Chưng wrapped in lá dong; the Southern workshop (SouthernFactory) returns a TetCake, the cylindrical Bánh Tét wrapped in banana leaves. Adding a new region means adding one creator subclass, without touching the Tết routine.',
-        vi: 'Trước Tết, xưởng nào cũng làm theo cùng một quy trình: gói bánh, luộc bánh, rồi bày lên bàn thờ tổ tiên. Quy trình đó là logic nghiệp vụ chính của lớp cơ sở RiceCakeFactory, và nó chỉ làm việc với giao diện trừu tượng RiceCake (wrap() và boil()). Bước duy nhất khác nhau giữa các vùng là làm loại bánh nào, nên bước này được tách ra thành phương thức nhà máy makeRiceCake(). Xưởng miền Bắc (NorthernFactory) ghi đè để trả về ChungCake, tức Bánh Chưng vuông gói lá dong; xưởng miền Nam (SouthernFactory) trả về TetCake, tức Bánh Tét hình trụ gói lá chuối. Thêm một vùng mới chỉ cần thêm một lớp creator con, không phải sửa quy trình đón Tết.',
+        en: 'Before Tết (Vietnamese New Year), every household follows the same routine: wrap the cakes, boil them, and place them on the ancestral altar. That routine is the core business logic of the base TetHousehold class, and it works only with the abstract RiceCake interface (wrap() and boil()). The one step that differs by region is which cake the family makes, so it is pulled into the factory method makeRiceCake(). A Northern family (NorthernHousehold) overrides it to return a ChungCake, the square Bánh Chưng wrapped in lá dong; a Southern family (SouthernHousehold) returns a TetCake, the cylindrical Bánh Tét wrapped in banana leaves. Adding a new region means adding one creator subclass, without touching the Tết routine.',
+        vi: 'Trước Tết, nhà nào cũng làm theo cùng một quy trình: gói bánh, luộc bánh, rồi bày lên bàn thờ tổ tiên. Quy trình đó là logic nghiệp vụ chính của lớp cơ sở TetHousehold, và nó chỉ làm việc với giao diện trừu tượng RiceCake (wrap() và boil()). Bước duy nhất khác nhau giữa các vùng là gia đình làm loại bánh nào, nên bước này được tách ra thành phương thức nhà máy makeRiceCake(). Gia đình miền Bắc (NorthernHousehold) ghi đè để trả về ChungCake, tức Bánh Chưng vuông gói lá dong; gia đình miền Nam (SouthernHousehold) trả về TetCake, tức Bánh Tét hình trụ gói lá chuối. Thêm một vùng mới chỉ cần thêm một lớp creator con, không phải sửa quy trình đón Tết.',
       },
     },
     code_examples: [
@@ -66,7 +66,7 @@ class TetCake(RiceCake):
 
 
 # Creator: declares the factory method and holds the core business logic
-class RiceCakeFactory(ABC):
+class TetHousehold(ABC):
     # Factory method: the return type is the Product interface
     @abstractmethod
     def make_rice_cake(self) -> RiceCake: ...
@@ -79,28 +79,28 @@ class RiceCakeFactory(ABC):
 
 
 # Concrete Creators override the factory method to change the product type
-class NorthernFactory(RiceCakeFactory):
+class NorthernHousehold(TetHousehold):
     def make_rice_cake(self) -> RiceCake:
         return ChungCake()
 
 
-class SouthernFactory(RiceCakeFactory):
+class SouthernHousehold(TetHousehold):
     def make_rice_cake(self) -> RiceCake:
         return TetCake()
 
 
 # The application picks a concrete creator from configuration
-def create_factory(region: str) -> RiceCakeFactory:
+def create_household(region: str) -> TetHousehold:
     if region == "north":
-        return NorthernFactory()
+        return NorthernHousehold()
     if region == "south":
-        return SouthernFactory()
+        return SouthernHousehold()
     raise ValueError(f"Unknown region: {region}")
 
 
 # Client code works with the creator only through the base class
 for region in ["north", "south"]:
-    print(create_factory(region).prepare_for_new_year())
+    print(create_household(region).prepare_for_new_year())
 
 # Output:
 # Gói Bánh Chưng vuông bằng lá dong → Luộc Bánh Chưng 10-12 tiếng → Bày lên bàn thờ tổ tiên 🎋
@@ -127,7 +127,7 @@ class TetCake implements RiceCake {
 }
 
 // Creator: declares the factory method and holds the core business logic
-abstract class RiceCakeFactory {
+abstract class TetHousehold {
   // Factory method: the return type is the Product interface
   abstract makeRiceCake(): RiceCake
 
@@ -140,26 +140,26 @@ abstract class RiceCakeFactory {
 }
 
 // Concrete Creators override the factory method to change the product type
-class NorthernFactory extends RiceCakeFactory {
+class NorthernHousehold extends TetHousehold {
   makeRiceCake(): RiceCake { return new ChungCake() }
 }
 
-class SouthernFactory extends RiceCakeFactory {
+class SouthernHousehold extends TetHousehold {
   makeRiceCake(): RiceCake { return new TetCake() }
 }
 
 // The application picks a concrete creator from configuration
-function createFactory(region: 'north' | 'south'): RiceCakeFactory {
+function createHousehold(region: 'north' | 'south'): TetHousehold {
   switch (region) {
-    case 'north': return new NorthernFactory()
-    case 'south': return new SouthernFactory()
+    case 'north': return new NorthernHousehold()
+    case 'south': return new SouthernHousehold()
     default: throw new Error('Unknown region: ' + region)
   }
 }
 
 // Client code works with the creator only through the base class
 for (const region of ['north', 'south'] as const) {
-  console.log(createFactory(region).prepareForNewYear())
+  console.log(createHousehold(region).prepareForNewYear())
 }`,
       },
     ],
@@ -195,8 +195,8 @@ for (const region of ['north', 'south'] as const) {
     vietnamese_example: {
       title: { en: 'Traditional Tết Feast Set', vi: 'Bộ Mâm Cỗ Tết Truyền Thống' },
       description: {
-        en: 'A Tết feast (mâm cỗ) is a product family of three dish types: bánh, giò and dưa. Each dish type comes in a Northern and a Southern variant: Bánh Chưng + Giò Lụa + Dưa Hành (ChungCake, SilkPorkRoll, PickledOnion) in the North, Bánh Tét + Chả Lụa + Dưa Kiệu (TetCake, SteamedPorkRoll, PickledRakkyo) in the South. The dishes on one tray must come from the same region. The FeastFactory interface declares makeRiceCake(), makePorkRoll() and makePickle(), and each regional factory (NorthernFactory, SouthernFactory) creates only its own region\'s dishes. The Feast client prepares the tray using only the abstract RiceCake, PorkRoll and Pickle types, so it can never end up with a Bánh Chưng next to a Dưa Kiệu. Adding a Central region means adding one new factory and its three dishes, without changing Feast.',
-        vi: 'Mâm cỗ Tết là một họ sản phẩm gồm ba loại món: bánh, giò và dưa. Mỗi loại món có một biến thể miền Bắc và một biến thể miền Nam: Bánh Chưng + Giò Lụa + Dưa Hành (ChungCake, SilkPorkRoll, PickledOnion) ở miền Bắc, Bánh Tét + Chả Lụa + Dưa Kiệu (TetCake, SteamedPorkRoll, PickledRakkyo) ở miền Nam. Các món trên cùng một mâm phải cùng một vùng. Giao diện FeastFactory khai báo makeRiceCake(), makePorkRoll() và makePickle(), và mỗi factory vùng miền (NorthernFactory, SouthernFactory) chỉ tạo các món của vùng mình. Client Feast bày mâm chỉ thông qua các kiểu trừu tượng RiceCake, PorkRoll và Pickle, nên không bao giờ có chuyện Bánh Chưng nằm cạnh Dưa Kiệu. Thêm miền Trung chỉ cần thêm một factory mới cùng ba món của nó, không phải sửa Feast.',
+        en: 'A Tết feast (mâm cỗ) is a product family of three dish types: a rice cake, a meat dish and a pickle. Each type comes in a Northern and a Southern variant: Bánh Chưng, Thịt Đông (jellied pork) and Dưa Hành (pickled shallots) in the North (ChungCake, JelliedPork, PickledOnion); Bánh Tét, Thịt Kho Tàu (pork and eggs braised in coconut water) and Dưa Kiệu (pickled leeks) in the South (TetCake, BraisedPorkWithEggs, PickledLeek). The dishes on one tray must come from the same region. The FeastFactory interface declares makeRiceCake(), makeMeatDish() and makePickle(), and each regional kitchen (NorthernFactory, SouthernFactory) creates only its own region\'s dishes. The Feast client prepares the tray using only the abstract RiceCake, MeatDish and Pickle types, so it can never end up with a Bánh Chưng next to a Dưa Kiệu. Adding a Central region means adding one new factory and its three dishes, without changing Feast.',
+        vi: 'Mâm cỗ Tết là một họ sản phẩm gồm ba loại món: bánh, món thịt và dưa. Mỗi loại món có một biến thể miền Bắc và một biến thể miền Nam: Bánh Chưng, Thịt Đông và Dưa Hành ở miền Bắc (ChungCake, JelliedPork, PickledOnion); Bánh Tét, Thịt Kho Tàu và Dưa Kiệu ở miền Nam (TetCake, BraisedPorkWithEggs, PickledLeek). Các món trên cùng một mâm phải cùng một vùng. Giao diện FeastFactory khai báo makeRiceCake(), makeMeatDish() và makePickle(), và mỗi bếp vùng miền (NorthernFactory, SouthernFactory) chỉ tạo các món của vùng mình. Client Feast bày mâm chỉ thông qua các kiểu trừu tượng RiceCake, MeatDish và Pickle, nên không bao giờ có chuyện Bánh Chưng nằm cạnh Dưa Kiệu. Thêm miền Trung chỉ cần thêm một factory mới cùng ba món của nó, không phải sửa Feast.',
       },
     },
     code_examples: [
@@ -212,7 +212,7 @@ class RiceCake(ABC):
     def serve(self) -> str: ...
 
 
-class PorkRoll(ABC):
+class MeatDish(ABC):
     @abstractmethod
     def serve(self) -> str: ...
 
@@ -231,8 +231,8 @@ class Pickle(ABC):
 class ChungCake(RiceCake):
     def serve(self) -> str: return "🟫 Bánh Chưng"
 
-class SilkPorkRoll(PorkRoll):
-    def serve(self) -> str: return "🥩 Giò Lụa"
+class JelliedPork(MeatDish):
+    def serve(self) -> str: return "🧊 Thịt Đông"
 
 class PickledOnion(Pickle):
     def serve(self) -> str: return "🧅 Dưa Hành"
@@ -244,10 +244,10 @@ class PickledOnion(Pickle):
 class TetCake(RiceCake):
     def serve(self) -> str: return "🟤 Bánh Tét"
 
-class SteamedPorkRoll(PorkRoll):
-    def serve(self) -> str: return "🥩 Chả Lụa"
+class BraisedPorkWithEggs(MeatDish):
+    def serve(self) -> str: return "🥚 Thịt Kho Tàu"
 
-class PickledRakkyo(Pickle):
+class PickledLeek(Pickle):
     def serve(self) -> str: return "🫙 Dưa Kiệu"
     def eat_with(self, cake: RiceCake) -> str:
         return f"{self.serve()} ăn kèm {cake.serve()}"
@@ -260,7 +260,7 @@ class FeastFactory(ABC):
     def make_rice_cake(self) -> RiceCake: ...
 
     @abstractmethod
-    def make_pork_roll(self) -> PorkRoll: ...
+    def make_meat_dish(self) -> MeatDish: ...
 
     @abstractmethod
     def make_pickle(self) -> Pickle: ...
@@ -270,14 +270,14 @@ class FeastFactory(ABC):
 # so the products it returns always match
 class NorthernFactory(FeastFactory):
     def make_rice_cake(self) -> RiceCake: return ChungCake()
-    def make_pork_roll(self) -> PorkRoll: return SilkPorkRoll()
+    def make_meat_dish(self) -> MeatDish: return JelliedPork()
     def make_pickle(self) -> Pickle: return PickledOnion()
 
 
 class SouthernFactory(FeastFactory):
     def make_rice_cake(self) -> RiceCake: return TetCake()
-    def make_pork_roll(self) -> PorkRoll: return SteamedPorkRoll()
-    def make_pickle(self) -> Pickle: return PickledRakkyo()
+    def make_meat_dish(self) -> MeatDish: return BraisedPorkWithEggs()
+    def make_pickle(self) -> Pickle: return PickledLeek()
 
 
 # Client: works only with the abstract types
@@ -287,9 +287,9 @@ class Feast:
 
     def prepare(self) -> str:
         cake = self.factory.make_rice_cake()
-        pork_roll = self.factory.make_pork_roll()
+        meat = self.factory.make_meat_dish()
         pickle = self.factory.make_pickle()
-        return f"Mâm cỗ: {cake.serve()} + {pork_roll.serve()} | {pickle.eat_with(cake)}"
+        return f"Mâm cỗ: {cake.serve()} + {meat.serve()} | {pickle.eat_with(cake)}"
 
 
 # The application picks the factory from configuration at startup
@@ -305,15 +305,15 @@ for region in ["north", "south"]:
     print(Feast(create_factory(region)).prepare())
 
 # Output:
-# Mâm cỗ: 🟫 Bánh Chưng + 🥩 Giò Lụa | 🧅 Dưa Hành ăn kèm 🟫 Bánh Chưng
-# Mâm cỗ: 🟤 Bánh Tét + 🥩 Chả Lụa | 🫙 Dưa Kiệu ăn kèm 🟤 Bánh Tét`,
+# Mâm cỗ: 🟫 Bánh Chưng + 🧊 Thịt Đông | 🧅 Dưa Hành ăn kèm 🟫 Bánh Chưng
+# Mâm cỗ: 🟤 Bánh Tét + 🥚 Thịt Kho Tàu | 🫙 Dưa Kiệu ăn kèm 🟤 Bánh Tét`,
       },
       {
         language: 'typescript',
         label: 'TypeScript',
         code: `// Abstract Products: one interface per product type in the family
 interface RiceCake { serve(): string }
-interface PorkRoll { serve(): string }
+interface MeatDish { serve(): string }
 interface Pickle {
   serve(): string
   // Products of a family can work together. The argument is the
@@ -323,7 +323,7 @@ interface Pickle {
 
 // Concrete Products, Northern variant
 class ChungCake implements RiceCake { serve() { return '🟫 Bánh Chưng' } }
-class SilkPorkRoll implements PorkRoll { serve() { return '🥩 Giò Lụa' } }
+class JelliedPork implements MeatDish { serve() { return '🧊 Thịt Đông' } }
 class PickledOnion implements Pickle {
   serve() { return '🧅 Dưa Hành' }
   eatWith(cake: RiceCake) { return \`\${this.serve()} ăn kèm \${cake.serve()}\` }
@@ -331,8 +331,8 @@ class PickledOnion implements Pickle {
 
 // Concrete Products, Southern variant
 class TetCake implements RiceCake { serve() { return '🟤 Bánh Tét' } }
-class SteamedPorkRoll implements PorkRoll { serve() { return '🥩 Chả Lụa' } }
-class PickledRakkyo implements Pickle {
+class BraisedPorkWithEggs implements MeatDish { serve() { return '🥚 Thịt Kho Tàu' } }
+class PickledLeek implements Pickle {
   serve() { return '🫙 Dưa Kiệu' }
   eatWith(cake: RiceCake) { return \`\${this.serve()} ăn kèm \${cake.serve()}\` }
 }
@@ -341,7 +341,7 @@ class PickledRakkyo implements Pickle {
 // each returning the abstract product
 interface FeastFactory {
   makeRiceCake(): RiceCake
-  makePorkRoll(): PorkRoll
+  makeMeatDish(): MeatDish
   makePickle(): Pickle
 }
 
@@ -349,14 +349,14 @@ interface FeastFactory {
 // so the products it returns always match
 class NorthernFactory implements FeastFactory {
   makeRiceCake(): RiceCake { return new ChungCake() }
-  makePorkRoll(): PorkRoll { return new SilkPorkRoll() }
+  makeMeatDish(): MeatDish { return new JelliedPork() }
   makePickle(): Pickle { return new PickledOnion() }
 }
 
 class SouthernFactory implements FeastFactory {
   makeRiceCake(): RiceCake { return new TetCake() }
-  makePorkRoll(): PorkRoll { return new SteamedPorkRoll() }
-  makePickle(): Pickle { return new PickledRakkyo() }
+  makeMeatDish(): MeatDish { return new BraisedPorkWithEggs() }
+  makePickle(): Pickle { return new PickledLeek() }
 }
 
 // Client: works only with the abstract types
@@ -365,9 +365,9 @@ class Feast {
 
   prepare(): string {
     const cake = this.factory.makeRiceCake()
-    const porkRoll = this.factory.makePorkRoll()
+    const meat = this.factory.makeMeatDish()
     const pickle = this.factory.makePickle()
-    return \`Mâm cỗ: \${cake.serve()} + \${porkRoll.serve()} | \${pickle.eatWith(cake)}\`
+    return \`Mâm cỗ: \${cake.serve()} + \${meat.serve()} | \${pickle.eatWith(cake)}\`
   }
 }
 
@@ -673,10 +673,10 @@ console.log(houseBuilder.getProduct().describe())`,
       vi: 'Dùng Prototype khi mã của bạn không nên phụ thuộc vào lớp cụ thể của các đối tượng cần sao chép. Điều này rất hay gặp khi mã làm việc với các đối tượng do mã bên thứ ba truyền vào qua một giao diện nào đó: lớp cụ thể của chúng không được biết, và dù muốn bạn cũng không thể phụ thuộc vào chúng. Mẫu này cung cấp cho mã client một giao diện chung để làm việc với mọi đối tượng hỗ trợ nhân bản, nhờ đó mã client không phụ thuộc vào lớp cụ thể của các đối tượng mà nó nhân bản. Dùng khi muốn giảm số lớp con chỉ khác nhau ở cách khởi tạo đối tượng. Nếu một lớp phức tạp cần cấu hình công phu trước khi dùng và có vài cấu hình phổ biến nằm rải rác trong ứng dụng, việc đưa mỗi cấu hình vào một lớp con riêng sẽ hết trùng lặp nhưng để lại rất nhiều lớp con hình thức. Với Prototype, bạn giữ sẵn một tập đối tượng được cấu hình theo nhiều cách, và thay vì khởi tạo lớp con ứng với một cấu hình, client chỉ cần tìm nguyên mẫu phù hợp rồi nhân bản nó.',
     },
     vietnamese_example: {
-      title: { en: 'Woodblock Printing (Tranh Đông Hồ)', vi: 'In Tranh Đông Hồ Bằng Bản Khắc Gỗ' },
+      title: { en: 'Copying Đông Hồ Master Prints', vi: 'Nhân Bản Tranh Mẫu Đông Hồ' },
       description: {
-        en: 'Tranh Đông Hồ are folk woodblock prints from Bắc Ninh province, printed on giấy điệp (dó paper coated with powdered seashell). A craftsman carves a woodblock once; after that, nobody redraws the painting, they press a new print from the block. In the code, DongHoPainting is the Prototype: it holds the title, the list of colours and a private paper field, and declares clone(). RoosterPainting (the rooster painting with its Đại Cát caption) and MouseWeddingPainting (Đám Cưới Chuột, the mouse wedding) are Concrete Prototypes. Each clone() calls its own class\'s copy constructor, which lets the parent copy its fields first, including the private one, and then copies the subclass\'s own field. The workshop\'s block store, WoodblockRegistry, is the Prototype Registry: the client asks for "ga" or "chuot" and gets a fresh copy without knowing its class. Each print can then be coloured differently without changing the original, because the colour list is copied, not shared.',
-        vi: 'Tranh Đông Hồ là tranh khắc gỗ dân gian của tỉnh Bắc Ninh, in trên giấy điệp (giấy dó quét bột vỏ sò điệp). Nghệ nhân chỉ khắc bản gỗ một lần; sau đó không ai vẽ lại bức tranh, mà chỉ ấn bản khắc để in ra tờ mới. Trong mã, DongHoPainting là Prototype: nó giữ tên tranh, danh sách màu và một trường riêng tư về loại giấy, đồng thời khai báo clone(). RoosterPainting (tranh gà trống có chữ Đại Cát) và MouseWeddingPainting (tranh Đám Cưới Chuột) là các Concrete Prototype. Mỗi clone() gọi hàm khởi tạo sao chép của chính lớp đó, hàm này để lớp cha chép các trường của nó trước, kể cả trường riêng tư, rồi mới chép trường riêng của lớp con. Kho bản khắc của xưởng, WoodblockRegistry, là Prototype Registry: client xin "ga" hoặc "chuot" và nhận về một bản sao mới mà không cần biết lớp của nó. Sau đó mỗi bản in có thể tô màu khác nhau mà không ảnh hưởng tới bản gốc, vì danh sách màu được chép ra chứ không dùng chung.',
+        en: 'Tranh Đông Hồ are folk woodblock prints from Bắc Ninh province, printed on giấy điệp (dó paper coated with powdered seashell). A craftsman carves each design into a woodblock once, which is why copies are cheap: nobody redraws the painting. The workshop keeps one finished master print of every design, and a new order is a copy of that master, recoloured as the buyer likes. In the code, DongHoPainting is the Prototype: it holds the title, the list of colours and a private paper field, and declares clone(). RoosterPainting (the rooster painting with its Đại Cát caption) and MouseWeddingPainting (Đám Cưới Chuột, the mouse wedding) are Concrete Prototypes. Each clone() calls its own class\'s copy constructor, which lets the parent copy its fields first, including the private one, and then copies the subclass\'s own field. The workshop\'s shelf of master prints, MasterPrintRegistry, is the Prototype Registry: the client asks for "ga" or "chuot" and gets a fresh copy without knowing its class. Each print can then be coloured differently without changing the original, because the colour list is copied, not shared.',
+        vi: 'Tranh Đông Hồ là tranh khắc gỗ dân gian của tỉnh Bắc Ninh, in trên giấy điệp (giấy dó quét bột vỏ sò điệp). Nghệ nhân chỉ khắc mỗi mẫu tranh vào bản gỗ một lần, nên in thêm bản rất rẻ: không ai phải vẽ lại bức tranh. Xưởng giữ sẵn một tờ tranh mẫu hoàn chỉnh cho mỗi mẫu, và mỗi đơn hàng mới là một bản sao của tờ mẫu đó, tô màu theo ý người mua. Trong mã, DongHoPainting là Prototype: nó giữ tên tranh, danh sách màu và một trường riêng tư về loại giấy, đồng thời khai báo clone(). RoosterPainting (tranh gà trống có chữ Đại Cát) và MouseWeddingPainting (tranh Đám Cưới Chuột) là các Concrete Prototype. Mỗi clone() gọi hàm khởi tạo sao chép của chính lớp đó, hàm này để lớp cha chép các trường của nó trước, kể cả trường riêng tư, rồi mới chép trường riêng của lớp con. Kệ tranh mẫu của xưởng, MasterPrintRegistry, là Prototype Registry: client xin "ga" hoặc "chuot" và nhận về một bản sao mới mà không cần biết lớp của nó. Sau đó mỗi bản in có thể tô màu khác nhau mà không ảnh hưởng tới bản gốc, vì danh sách màu được chép ra chứ không dùng chung.',
       },
     },
     code_examples: [
@@ -734,8 +734,8 @@ class MouseWeddingPainting(DongHoPainting):
         return f"🐭 {super().describe()} | {self.mouse_count} con chuột"
 
 
-# Prototype Registry: a name -> prototype map of pre-built woodblocks
-class WoodblockRegistry:
+# Prototype Registry: a name -> prototype map of master prints
+class MasterPrintRegistry:
     def __init__(self) -> None:
         self._items: dict[str, DongHoPainting] = {}
 
@@ -752,7 +752,7 @@ rooster.title, rooster.colors, rooster.caption = "Gà Trống", ["đỏ son"], "
 mouse = MouseWeddingPainting()
 mouse.title, mouse.colors, mouse.mouse_count = "Đám Cưới Chuột", ["vàng nghệ", "đen than"], 12
 
-registry = WoodblockRegistry()
+registry = MasterPrintRegistry()
 registry.add("ga", rooster)
 registry.add("chuot", mouse)
 
@@ -830,15 +830,15 @@ class MouseWeddingPainting extends DongHoPainting {
   describe() { return \`🐭 \${super.describe()} | \${this.mouseCount} con chuột\` }
 }
 
-// Prototype Registry: a name -> prototype map of pre-built woodblocks
-class WoodblockRegistry {
+// Prototype Registry: a name -> prototype map of master prints
+class MasterPrintRegistry {
   private items = new Map<string, DongHoPainting>()
 
   add(key: string, prototype: DongHoPainting) { this.items.set(key, prototype) }
 
   get(key: string): DongHoPainting {
     const prototype = this.items.get(key)
-    if (!prototype) throw new Error('Không có bản khắc: ' + key)
+    if (!prototype) throw new Error('Không có bản mẫu: ' + key)
     return prototype.clone()
   }
 }
@@ -853,7 +853,7 @@ mouse.title = 'Đám Cưới Chuột'
 mouse.colors = ['vàng nghệ', 'đen than']
 mouse.mouseCount = 12
 
-const registry = new WoodblockRegistry()
+const registry = new MasterPrintRegistry()
 registry.add('ga', rooster)
 registry.add('chuot', mouse)
 
@@ -871,8 +871,8 @@ console.log(copies.map(t => t.constructor.name).join(', '), copies[0] !== rooste
       },
     ],
     structure_notes: {
-      en: 'The Prototype (DongHoPainting) declares the cloning methods; in most cases it is a single clone(). Here it is an abstract base class, like Shape in the page\'s pseudocode, so it also holds the shared fields and the prototype constructor that copies them, including the private paper field (paper) that only the class itself can see. Concrete Prototypes (RoosterPainting, MouseWeddingPainting) implement clone() by calling their own prototype constructor, which first lets the parent copy its fields and then copies the subclass\'s own field. Besides copying data, a clone method may also handle edge cases such as cloning linked objects or untangling recursive dependencies; here it copies the colour list so that a clone never shares it with the original. The Client can produce a copy of any object that follows the prototype interface. In the registry implementation, the Prototype Registry (WoodblockRegistry) provides easy access to frequently used prototypes by storing pre-built objects that are ready to be copied. The simplest registry is a name → prototype hash map, as here; if you need better search criteria than a name, you can build a more elaborate one. The page\'s Structure also shows a subclass of a concrete prototype; the diagram leaves it out because RoosterPainting and MouseWeddingPainting already show the same chained copying through the parent constructor.',
-      vi: 'Prototype (DongHoPainting) khai báo các phương thức nhân bản; trong hầu hết trường hợp chỉ có một phương thức clone(). Ở đây nó là một lớp cơ sở trừu tượng, giống lớp Shape trong mã giả của trang gốc, nên nó còn giữ các trường dùng chung và hàm khởi tạo nguyên mẫu để chép các trường đó, kể cả trường riêng tư về loại giấy (paper) mà chỉ bản thân lớp mới thấy được. Concrete Prototype (RoosterPainting, MouseWeddingPainting) triển khai clone() bằng cách gọi hàm khởi tạo nguyên mẫu của chính lớp mình, hàm này để lớp cha chép các trường của nó trước rồi mới chép trường riêng của lớp con. Ngoài việc chép dữ liệu, phương thức clone còn có thể xử lý các trường hợp đặc biệt như nhân bản các đối tượng liên kết hoặc gỡ các phụ thuộc vòng; ở đây nó chép danh sách màu để bản sao không bao giờ dùng chung danh sách với bản gốc. Client có thể tạo bản sao của bất kỳ đối tượng nào tuân theo giao diện prototype. Trong cách triển khai có registry, Prototype Registry (WoodblockRegistry) giúp truy cập nhanh các nguyên mẫu hay dùng bằng cách lưu sẵn các đối tượng chờ được sao chép. Registry đơn giản nhất là một bảng băm tên → nguyên mẫu, như ở đây; nếu cần tiêu chí tìm kiếm tốt hơn tên gọi, bạn có thể xây một registry phức tạp hơn. Phần Structure của trang gốc còn có một lớp con của concrete prototype; sơ đồ bỏ qua lớp này vì RoosterPainting và MouseWeddingPainting đã thể hiện cùng cách sao chép nối tiếp qua hàm khởi tạo của lớp cha.',
+      en: 'The Prototype (DongHoPainting) declares the cloning methods; in most cases it is a single clone(). Here it is an abstract base class, so it also holds the shared fields and the prototype constructor that copies them, including the private paper field (paper) that only the class itself can see. Concrete Prototypes (RoosterPainting, MouseWeddingPainting) implement clone() by calling their own prototype constructor, which first lets the parent copy its fields and then copies the subclass\'s own field. Besides copying data, a clone method may also handle edge cases such as cloning linked objects or untangling recursive dependencies; here it copies the colour list so that a clone never shares it with the original. The Client can produce a copy of any object that follows the prototype interface. In the registry implementation, the Prototype Registry (MasterPrintRegistry) provides easy access to frequently used prototypes by storing pre-built objects that are ready to be copied. The simplest registry is a name → prototype hash map, as here; if you need better search criteria than a name, you can build a more elaborate one. A subclass of a concrete prototype would clone the same way, by letting its parent\'s copy constructor run first; the diagram leaves that level out because RoosterPainting and MouseWeddingPainting already show the chained copying.',
+      vi: 'Prototype (DongHoPainting) khai báo các phương thức nhân bản; trong hầu hết trường hợp chỉ có một phương thức clone(). Ở đây nó là một lớp cơ sở trừu tượng, nên nó còn giữ các trường dùng chung và hàm khởi tạo nguyên mẫu để chép các trường đó, kể cả trường riêng tư về loại giấy (paper) mà chỉ bản thân lớp mới thấy được. Concrete Prototype (RoosterPainting, MouseWeddingPainting) triển khai clone() bằng cách gọi hàm khởi tạo nguyên mẫu của chính lớp mình, hàm này để lớp cha chép các trường của nó trước rồi mới chép trường riêng của lớp con. Ngoài việc chép dữ liệu, phương thức clone còn có thể xử lý các trường hợp đặc biệt như nhân bản các đối tượng liên kết hoặc gỡ các phụ thuộc vòng; ở đây nó chép danh sách màu để bản sao không bao giờ dùng chung danh sách với bản gốc. Client có thể tạo bản sao của bất kỳ đối tượng nào tuân theo giao diện prototype. Trong cách triển khai có registry, Prototype Registry (MasterPrintRegistry) giúp truy cập nhanh các nguyên mẫu hay dùng bằng cách lưu sẵn các đối tượng chờ được sao chép. Registry đơn giản nhất là một bảng băm tên → nguyên mẫu, như ở đây; nếu cần tiêu chí tìm kiếm tốt hơn tên gọi, bạn có thể xây một registry phức tạp hơn. Một lớp con của concrete prototype cũng nhân bản theo cách đó, bằng cách để hàm khởi tạo sao chép của lớp cha chạy trước; sơ đồ bỏ qua tầng này vì RoosterPainting và MouseWeddingPainting đã thể hiện cách sao chép nối tiếp qua lớp cha.',
     },
   },
 
@@ -892,18 +892,18 @@ console.log(copies.map(t => t.constructor.name).join(', '), copies[0] !== rooste
       vi: 'Singleton giải quyết cùng lúc hai vấn đề, và vì thế vi phạm Nguyên tắc Đơn trách nhiệm. Thứ nhất, nó đảm bảo một lớp chỉ có duy nhất một thể hiện, thường là để kiểm soát truy cập tới một tài nguyên dùng chung như cơ sở dữ liệu hay một tệp: nếu bạn đã tạo một đối tượng và sau đó yêu cầu tạo đối tượng mới, bạn sẽ nhận lại chính đối tượng đã tạo. Hàm khởi tạo thông thường không làm được điều này, vì theo thiết kế, mỗi lời gọi hàm khởi tạo luôn phải trả về một đối tượng mới. Thứ hai, nó cung cấp một điểm truy cập toàn cục tới thể hiện đó. Biến toàn cục chứa các đối tượng quan trọng tuy tiện nhưng không an toàn, vì bất kỳ đoạn mã nào cũng có thể ghi đè lên chúng và làm ứng dụng gặp sự cố. Singleton cho phép truy cập đối tượng từ bất cứ đâu giống như biến toàn cục, nhưng bảo vệ thể hiện đó khỏi bị mã khác ghi đè. Bạn cũng không muốn đoạn mã giải quyết vấn đề thứ nhất nằm rải rác khắp chương trình; tốt hơn là gom nó vào một lớp. Ngày nay mẫu này phổ biến đến mức người ta gọi một thứ là singleton ngay cả khi nó chỉ giải quyết một trong hai vấn đề trên.',
     },
     solution: {
-      en: 'All implementations of Singleton share two steps. Make the default constructor private, so that other objects cannot use the new operator with the Singleton class. Then create a static creation method that acts as a constructor: under the hood it calls the private constructor to create an object and saves it in a static field, and all following calls return the cached object. Any code that has access to the Singleton class can call this static method, and it always gets the same object. In a multithreaded program the creation method needs special care so that several threads do not create the instance at the same time; the page\'s pseudocode takes a lock and checks the field again once it holds the lock.',
-      vi: 'Mọi cách triển khai Singleton đều có chung hai bước. Đặt hàm khởi tạo mặc định ở chế độ riêng tư, để đối tượng khác không thể dùng toán tử new với lớp Singleton. Sau đó tạo một phương thức tạo tĩnh đóng vai trò hàm khởi tạo: bên trong, nó gọi hàm khởi tạo riêng tư để tạo đối tượng và lưu đối tượng đó vào một trường tĩnh, và mọi lời gọi sau đều trả về đối tượng đã lưu. Bất kỳ đoạn mã nào truy cập được lớp Singleton đều gọi được phương thức tĩnh này và luôn nhận về cùng một đối tượng. Trong chương trình đa luồng, phương thức tạo cần được xử lý cẩn thận để nhiều luồng không cùng lúc tạo ra thể hiện; mã giả của trang gốc lấy khóa (lock) rồi kiểm tra lại trường đó một lần nữa sau khi đã giữ khóa.',
+      en: 'All implementations of Singleton share two steps. Make the default constructor private, so that other objects cannot use the new operator with the Singleton class. Then create a static creation method that acts as a constructor: under the hood it calls the private constructor to create an object and saves it in a static field, and all following calls return the cached object. Any code that has access to the Singleton class can call this static method, and it always gets the same object. In a multithreaded program the creation method needs special care so that several threads do not create the instance at the same time; a common fix takes a lock and checks the field again once it holds the lock (double-checked locking).',
+      vi: 'Mọi cách triển khai Singleton đều có chung hai bước. Đặt hàm khởi tạo mặc định ở chế độ riêng tư, để đối tượng khác không thể dùng toán tử new với lớp Singleton. Sau đó tạo một phương thức tạo tĩnh đóng vai trò hàm khởi tạo: bên trong, nó gọi hàm khởi tạo riêng tư để tạo đối tượng và lưu đối tượng đó vào một trường tĩnh, và mọi lời gọi sau đều trả về đối tượng đã lưu. Bất kỳ đoạn mã nào truy cập được lớp Singleton đều gọi được phương thức tĩnh này và luôn nhận về cùng một đối tượng. Trong chương trình đa luồng, phương thức tạo cần được xử lý cẩn thận để nhiều luồng không cùng lúc tạo ra thể hiện; cách làm phổ biến là lấy khóa (lock) rồi kiểm tra lại trường đó một lần nữa sau khi đã giữ khóa (double-checked locking).',
     },
     applicability: {
       en: 'Use Singleton when a class in your program should have just a single instance available to all clients, for example a single database object shared by different parts of the program: the pattern disables every other way of creating objects of the class except the special creation method, which either creates a new object or returns the existing one if it has already been created. Use it when you need stricter control over global variables: unlike global variables, Singleton guarantees that there is just one instance of a class, and nothing except the Singleton class itself can replace the cached instance. You can always relax this limit and allow any number of Singleton instances; the only code that needs to change is the body of the getInstance method.',
       vi: 'Dùng Singleton khi một lớp trong chương trình chỉ nên có duy nhất một thể hiện dùng chung cho mọi client, ví dụ một đối tượng cơ sở dữ liệu được nhiều phần của chương trình dùng chung: mẫu này chặn mọi cách tạo đối tượng của lớp, trừ phương thức tạo đặc biệt, phương thức này hoặc tạo đối tượng mới, hoặc trả về đối tượng có sẵn nếu đã được tạo trước đó. Dùng khi cần kiểm soát biến toàn cục chặt chẽ hơn: khác với biến toàn cục, Singleton đảm bảo lớp chỉ có đúng một thể hiện, và ngoài chính lớp Singleton, không gì có thể thay thế thể hiện đã lưu. Bạn luôn có thể nới lỏng giới hạn này và cho phép tạo bao nhiêu thể hiện Singleton tùy ý; chỉ cần sửa phần thân của phương thức getInstance.',
     },
     vietnamese_example: {
-      title: { en: 'The King of Hùng (Vua Hùng)', vi: 'Vua Hùng - Một Vị Vua Duy Nhất' },
+      title: { en: 'The Royal Court of Văn Lang', vi: 'Triều Đình Văn Lang' },
       description: {
-        en: 'In Vietnamese legend, the Hùng Kings ruled Văn Lang, the first Vietnamese state, from a single royal court. The army (quân), the people (dân) and the officials (quan) all deal with that same court, and nobody can set up a second one. RoyalCourt is the Singleton: its constructor is private, and the only way in is RoyalCourt.getInstance(), which creates the court on its first call (the "Lập triều đình" message prints once) and returns the cached object on every later call. Its business method issueDecree() numbers each decree it issues; because every caller shares the one court, the numbering carries on from one caller to the next. As in the page\'s government analogy, no matter who is asking, "the court of Văn Lang" always means the same group in charge. The Python version also starts eight threads at once and shows they still get a single court, thanks to the lock and the second check inside get_instance().',
-        vi: 'Theo truyền thuyết, các vua Hùng trị vì nước Văn Lang, nhà nước đầu tiên của người Việt, từ một triều đình duy nhất. Quân, dân và quan đều làm việc với cùng một triều đình ấy, và không ai có thể lập ra triều đình thứ hai. RoyalCourt là Singleton: hàm khởi tạo của nó là riêng tư, và cách duy nhất để tiếp cận là RoyalCourt.getInstance(), phương thức này tạo triều đình ở lần gọi đầu tiên (dòng "Lập triều đình" chỉ in ra một lần) và trả về đối tượng đã lưu ở mọi lần gọi sau. Phương thức nghiệp vụ issueDecree() đánh số từng tờ chiếu được ban ra; vì mọi nơi gọi đều dùng chung một triều đình, số thứ tự cứ thế nối tiếp từ nơi này sang nơi khác. Giống ví dụ về chính phủ trên trang gốc, dù ai hỏi thì "triều đình Văn Lang" vẫn luôn chỉ cùng một bộ máy cầm quyền. Bản Python còn khởi chạy cùng lúc tám luồng và cho thấy chúng vẫn chỉ nhận được một triều đình, nhờ khóa và lần kiểm tra thứ hai bên trong get_instance().',
+        en: 'In Vietnamese legend, the Hùng Kings ruled Văn Lang, the first Vietnamese state, from a single royal court. The army (quân), the people (dân) and the officials (quan) all deal with that same court, and nobody can set up a second one. RoyalCourt is the Singleton: its constructor is private, and the only way in is RoyalCourt.getInstance(), which creates the court on its first call (the "Lập triều đình" message prints once) and returns the cached object on every later call. Its business method issueDecree() numbers each decree it issues; because every caller shares the one court, the numbering carries on from one caller to the next. The Python version also starts eight threads at once and shows they still get a single court, thanks to the lock and the second check inside get_instance().',
+        vi: 'Theo truyền thuyết, các vua Hùng trị vì nước Văn Lang, nhà nước đầu tiên của người Việt, từ một triều đình duy nhất. Quân, dân và quan đều làm việc với cùng một triều đình ấy, và không ai có thể lập ra triều đình thứ hai. RoyalCourt là Singleton: hàm khởi tạo của nó là riêng tư, và cách duy nhất để tiếp cận là RoyalCourt.getInstance(), phương thức này tạo triều đình ở lần gọi đầu tiên (dòng "Lập triều đình" chỉ in ra một lần) và trả về đối tượng đã lưu ở mọi lần gọi sau. Phương thức nghiệp vụ issueDecree() đánh số từng tờ chiếu được ban ra; vì mọi nơi gọi đều dùng chung một triều đình, số thứ tự cứ thế nối tiếp từ nơi này sang nơi khác. Bản Python còn khởi chạy cùng lúc tám luồng và cho thấy chúng vẫn chỉ nhận được một triều đình, nhờ khóa và lần kiểm tra thứ hai bên trong get_instance().',
       },
     },
     code_examples: [

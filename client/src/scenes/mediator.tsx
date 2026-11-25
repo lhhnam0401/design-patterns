@@ -13,15 +13,14 @@ const mediator: SceneDefinition = {
     { nodeId: 'cmed', method: 'notify', caption: { en: 'decides who acts next', vi: 'quyết định ai làm tiếp' }, at: [480, 44], to: [480, 226] },
     { nodeId: 'med', caption: { en: 'the only channel', vi: 'đầu mối duy nhất' }, at: [290, 96], to: [376, 196] },
     { nodeId: 'comp', method: 'notifyCouncil', caption: { en: 'every villager only reports', vi: 'dân làng chỉ việc báo lên' }, at: [112, 176], to: [126, 300] },
-    { nodeId: 'c1', method: 'harvest', caption: { en: 'the rice farmer', vi: 'người nông dân' }, at: [100, 412], to: [126, 368] },
-    { nodeId: 'c3', method: 'makeJars', caption: { en: 'Bát Tràng potter', vi: 'thợ gốm Bát Tràng' }, at: [274, 412], to: [356, 372] },
-    { nodeId: 'c2', method: 'sellAtMarket', caption: { en: 'the rice merchant', vi: 'thương nhân buôn lúa' }, at: [850, 220], to: [842, 300] },
+    { nodeId: 'c1', method: 'harvest', caption: { en: 'a poor harvest', vi: 'vụ này mất mùa' }, at: [100, 412], to: [126, 368] },
+    { nodeId: 'c3', method: 'makeJars', caption: { en: 'jars to fit the rice', vi: 'chum vừa đủ số lúa' }, at: [274, 412], to: [356, 372] },
+    { nodeId: 'c2', method: 'buyRice', caption: { en: 'buys the shortfall', vi: 'mua phần lúa thiếu' }, at: [850, 220], to: [842, 300] },
   ],
   calls: [
     { nodeId: 'comp', method: 'notifyCouncil', d: 'M166,330 C250,300 330,290 404,284', at: [268, 296] },
     { nodeId: 'c3', method: 'makeJars', d: 'M440,312 C420,330 404,342 390,352', at: [356, 322] },
     { nodeId: 'c2', method: 'buyRice', d: 'M556,282 C640,288 720,298 792,318', at: [680, 278] },
-    { nodeId: 'c2', method: 'sellAtMarket', d: 'M556,304 C650,326 730,342 796,350', at: [712, 352] },
   ],
   untagged: [],
   Art: function MediatorArt() {
@@ -43,8 +42,8 @@ const mediator: SceneDefinition = {
           <Person key={x} x={x} y={306} s={0.86} robe={['#7c2d12', '#1e3a8a', '#4b5563'][i]} hat="khanXep" pose="hold" />
         ))}
 
-        {/* Farmer with sheaves beside a golden paddy */}
-        <Paddy x={20} y={372} w={210} h={60} gold height={14} />
+        {/* Farmer with a few sheaves beside a thin, poor crop */}
+        <Paddy x={20} y={372} w={210} h={60} gold rows={2} height={8} />
         <Person x={126} y={398} s={1.05} robe="#6b4226" pants="#3a2a1d" hat="nonLa" long={false} pose="hold">
           {[-6, -2, 2, 6].map(dx => <path key={dx} d={`M${dx * 0.4},-46 Q${dx},-62 ${dx * 1.8},-76`} stroke={C.gold} strokeWidth={2} fill="none" />)}
         </Person>
