@@ -23,13 +23,13 @@ const memento: SceneDefinition = {
   Art: function MementoArt({ lang }: SceneArtProps) {
     return (
       <g>
-        <rect width={W} height={360} fill="#2b170d" />
+        <rect width={W} height={360} fill="#ded0ba" />
         {Array.from({ length: 16 }, (_, i) => (
-          <line key={i} x1={i * 62 + 14} y1={0} x2={i * 62 + 14} y2={360} stroke="#1a0d07" strokeWidth={3} />
+          <line key={i} x1={i * 62 + 14} y1={0} x2={i * 62 + 14} y2={360} stroke="#8b755e" strokeWidth={1} opacity={0.28} />
         ))}
         {[24, 936].map(x => <rect key={x} x={x - 8} y={0} width={16} height={360} fill={C.lacquer} stroke={INK} strokeWidth={2} />)}
-        <rect y={358} width={W} height={82} fill="#5a3a22" />
-        {[374, 398, 424].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#3e2615" strokeWidth={2} />)}
+        <rect y={358} width={W} height={82} fill="#c6b090" />
+        {[374, 398, 424].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#8b755e" strokeWidth={1} opacity={0.5} />)}
         <Lantern x={320} y={90} r={12} cord={60} />
         <Lantern x={640} y={90} r={12} cord={60} color="#f2a03b" />
 

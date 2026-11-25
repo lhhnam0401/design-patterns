@@ -68,9 +68,9 @@ const builder: SceneDefinition = {
         <Sun x={720} y={250} r={40} />
         <Cloud x={300} y={80} s={1.1} color="#fde68a" />
         <Cloud x={690} y={130} s={0.9} color="#fde68a" />
-        <Hills y={250} amp={40} color="#4b2e55" seed={12} />
-        <Hills y={282} amp={22} color="#3a2338" seed={15} step={90} />
-        <Ground y={296} color="#3a2616" edge="#4d331d" />
+        <Hills y={250} amp={40} color="#b8ad9d" seed={12} />
+        <Hills y={282} amp={22} color="#a89b89" seed={15} step={90} />
+        <Ground y={296} color="#c5b08d" edge="#8d765a" />
         <Bamboo x={905} y={300} h={190} seed={6} count={4} />
 
         {/* ① foundation */}

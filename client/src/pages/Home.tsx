@@ -1,162 +1,89 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, Code2, Globe2, BookMarked } from 'lucide-react'
-import { patternsByCategory } from '../data'
-import PatternCard from '../components/PatternCard'
-import type { Category, Pattern } from '../types/pattern'
-
-const categoryEntries = Object.entries(patternsByCategory) as [Category, Pattern[]][]
-
-const categoryConfig = {
-  creational: {
-    emoji: '🏗️',
-    color: 'from-emerald-600 to-teal-600',
-    border: 'border-emerald-500/30',
-    bg: 'bg-emerald-500/10',
-    text: 'text-emerald-400',
-  },
-  structural: {
-    emoji: '🔗',
-    color: 'from-blue-600 to-cyan-600',
-    border: 'border-blue-500/30',
-    bg: 'bg-blue-500/10',
-    text: 'text-blue-400',
-  },
-  behavioral: {
-    emoji: '⚡',
-    color: 'from-purple-600 to-pink-600',
-    border: 'border-purple-500/30',
-    bg: 'bg-purple-500/10',
-    text: 'text-purple-400',
-  },
-}
+import PatternCollection from '../components/PatternCollection'
+import { allPatterns, patternsByCategory } from '../data'
+import PatternScene from '../scenes/PatternScene'
+import { CATEGORY_ORDER, categoryFolio } from '../utils/presentation'
 
 export default function Home() {
   const { t, i18n } = useTranslation()
-  const lang = i18n.language as 'en' | 'vi'
+  const lang = i18n.language === 'vi' ? 'vi' : 'en'
+  const featurePattern = patternsByCategory.creational[1] ?? allPatterns[0]
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 via-slate-900 to-purple-900/20" />
-        <div className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20% 50%, rgba(245,158,11,0.08) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(139,92,246,0.08) 0%, transparent 50%)`
-          }}
-        />
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10
-              border border-amber-500/20 text-amber-400 text-sm font-medium mb-6">
-              <span>🇻🇳</span>
-              <span>{lang === 'vi' ? 'Văn Hóa Truyền Thống Việt Nam' : 'Vietnamese Cultural Examples'}</span>
-            </div>
-
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-              {lang === 'vi' ? (
-                <>Mẫu <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Thiết Kế</span></>
-              ) : (
-                <>Design <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Patterns</span></>
-              )}
-            </h1>
-
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              {t('site.description')}
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-700/50">
-                <BookMarked className="w-4 h-4 text-amber-400" />
-                <span className="text-slate-300 text-sm">{t('home.total_patterns')}</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-700/50">
-                <Code2 className="w-4 h-4 text-blue-400" />
-                <span className="text-slate-300 text-sm">{t('home.categories')}</span>
-              </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 border border-slate-700/50">
-                <Globe2 className="w-4 h-4 text-green-400" />
-                <span className="text-slate-300 text-sm">{t('home.languages')}</span>
-              </div>
-            </div>
+    <div>
+      <section className="paper-texture border-b border-line" aria-labelledby="home-title">
+        <div className="mx-auto grid max-w-[100rem] gap-10 px-5 py-12 sm:px-8 sm:py-16 lg:grid-cols-12 lg:items-center lg:px-12 lg:py-24">
+          <div className="lg:col-span-7">
+            <p className="eyebrow text-accent">{t('home.archive')}</p>
+            <h1 id="home-title" className="display-title mt-5 max-w-[10ch] text-ink">{t('site.title')}</h1>
+            <p className="mt-7 max-w-[56ch] text-xl leading-[1.6] text-ink-muted">{t('home.intro', { count: allPatterns.length })}</p>
+            <p className="mt-5 border-l-2 border-accent pl-4 text-sm leading-relaxed text-ink-muted">{t('home.catalogue_note')}</p>
           </div>
 
-          {/* Category overview cards */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {categoryEntries.map(
-              ([cat, patterns]) => {
-                const cfg = categoryConfig[cat]
-                return (
-                  <Link
-                    key={cat}
-                    to={`/category/${cat}`}
-                    className={`group p-6 rounded-2xl border ${cfg.border} ${cfg.bg}
-                      hover:scale-[1.02] transition-all duration-200`}
-                  >
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${cfg.color}
-                      flex items-center justify-center text-2xl mb-4 shadow-lg`}>
-                      {cfg.emoji}
-                    </div>
-                    <h2 className={`text-lg font-bold ${cfg.text} mb-1`}>
-                      {t(`categories.${cat}`)}
-                    </h2>
-                    <p className="text-slate-500 text-sm mb-3">
-                      {t(`categories.${cat}_desc`)}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-600 text-xs">
-                        {patterns.length} {lang === 'vi' ? 'mẫu' : 'patterns'}
-                      </span>
-                      <ArrowRight className={`w-4 h-4 ${cfg.text} group-hover:translate-x-1 transition-transform`} />
-                    </div>
-                  </Link>
-                )
-              }
-            )}
-          </div>
+          <figure className="lg:col-span-5">
+            <div className="overflow-hidden rounded-lg border border-line bg-scene-paper">
+              <PatternScene pattern={featurePattern} lang={lang} variant="feature" />
+            </div>
+            <figcaption className="mt-3 flex items-start justify-between gap-4 text-xs text-ink-muted">
+              <span>{featurePattern.vietnamese_example.title[lang]}</span>
+              <span className="shrink-0 tabular-nums">{allPatterns.length} {t('home.patterns')}</span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
-      {/* Patterns preview - first 3 of each */}
-      {categoryEntries.map(
-        ([cat, patterns]) => {
-          const cfg = categoryConfig[cat]
-          return (
-            <section key={cat} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-slate-800/50">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{cfg.emoji}</span>
-                  <div>
-                    <h2 className="text-xl font-bold text-white">{t(`categories.${cat}`)}</h2>
-                    <p className="text-slate-500 text-sm">{t(`categories.${cat}_desc`)}</p>
-                  </div>
+      <section className="mx-auto max-w-[100rem] px-5 py-14 sm:px-8 lg:px-12 lg:py-20" aria-labelledby="collections-title">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <p className="eyebrow text-ink-muted">01—03</p>
+            <h2 id="collections-title" className="section-title mt-3 max-w-[12ch] text-ink">{t('home.collections')}</h2>
+          </div>
+          <ol className="border-t border-line lg:col-span-8">
+            {CATEGORY_ORDER.map(category => {
+              const patterns = patternsByCategory[category]
+              return (
+                <li key={category} className="border-b border-line">
+                  <Link
+                    to={`/category/${category}`}
+                    className="group grid min-h-32 gap-4 py-6 transition-colors duration-200 ease-out hover:bg-surface sm:grid-cols-[4rem_1fr_auto] sm:items-center sm:px-4"
+                  >
+                    <span className="font-display text-[2rem] tabular-nums text-accent">{categoryFolio(category)}</span>
+                    <span>
+                      <strong className="block font-display text-2xl font-semibold tracking-[-0.02em] text-ink group-hover:text-accent">{t(`categories.${category}`)}</strong>
+                      <span className="mt-2 block max-w-[55ch] text-sm leading-relaxed text-ink-muted">{t(`categories.${category}_desc`)}</span>
+                    </span>
+                    <span className="flex items-center justify-between gap-4 text-sm text-ink-muted sm:block sm:text-right">
+                      <span className="block tabular-nums">{patterns.length} {t('home.patterns')}</span>
+                      <span className="mt-2 block text-ink underline decoration-line-strong underline-offset-4">{t('home.view_collection')}</span>
+                    </span>
+                  </Link>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+      </section>
+
+      {CATEGORY_ORDER.map((category, categoryIndex) => {
+        const patterns = patternsByCategory[category]
+        return (
+          <section key={category} className="border-t border-line bg-surface" aria-labelledby={`${category}-selection`}>
+            <div className="mx-auto max-w-[100rem] px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
+              <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                <div>
+                  <p className="eyebrow text-accent">{String(categoryIndex + 1).padStart(2, '0')} / {t('home.selected')}</p>
+                  <h2 id={`${category}-selection`} className="section-title mt-3 text-ink">{t(`categories.${category}`)}</h2>
                 </div>
-                <Link
-                  to={`/category/${cat}`}
-                  className={`flex items-center gap-1.5 text-sm ${cfg.text} hover:underline`}
-                >
-                  {lang === 'vi' ? 'Xem tất cả' : 'View all'} <ArrowRight className="w-3.5 h-3.5" />
+                <Link to={`/category/${category}`} className="text-link min-h-11 self-start py-2 text-sm font-semibold text-ink sm:self-auto">
+                  {t('home.view_all')}
                 </Link>
               </div>
-
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {patterns.slice(0, 3).map(p => (
-                  <PatternCard key={p.id} pattern={p} />
-                ))}
-              </div>
-            </section>
-          )
-        }
-      )}
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800 py-8 mt-8">
-        <div className="max-w-7xl mx-auto px-4 text-center text-slate-600 text-sm">
-          <p>🇻🇳 {lang === 'vi' ? 'Được truyền cảm hứng từ văn hóa truyền thống Việt Nam' : 'Inspired by Vietnamese traditional culture'} &nbsp;·&nbsp; Gang of Four Design Patterns</p>
-        </div>
-      </footer>
+              <PatternCollection ariaLabel={t(`categories.${category}`)} patterns={patterns.slice(0, 3)} compact />
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }

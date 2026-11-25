@@ -3,6 +3,7 @@ import type { LocalizedText } from '../types/pattern'
 import type { SkyName } from './kit/palette'
 
 export type Lang = 'en' | 'vi'
+export type SceneVariant = 'thumbnail' | 'feature' | 'detail'
 export type Point = readonly [number, number]
 
 /**

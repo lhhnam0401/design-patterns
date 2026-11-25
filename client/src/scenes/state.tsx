@@ -1,8 +1,7 @@
 import { Person } from './kit/figures'
-import { url, useSceneIds } from './kit/ids'
 import { Hills, Paddy, Sun } from './kit/nature'
 import { Caption } from './kit/overlay'
-import { C, INK } from './kit/palette'
+import { C, INK, SCENE_COLORS } from './kit/palette'
 import type { SceneArtProps, SceneDefinition } from './types'
 
 const XS = [100, 290, 480, 670, 860]
@@ -24,15 +23,15 @@ function buffalo(x: number, y: number) {
   )
 }
 
-function panel(i: number, glowId: string) {
+function panel(i: number) {
   const x = XS[i] - PW / 2
   const y = TOP
   const inner = { x: x + 10, y: y + 50, w: PW - 20, h: 34 }
   return (
     <g key={i}>
-      {i === CURRENT && <rect x={x - 10} y={y - 10} width={PW + 20} height={PH + 20} rx={16} fill={glowId} opacity={0.6} />}
-      <rect x={x} y={y} width={PW} height={PH} rx={10} fill="#1e2a44" stroke={i === CURRENT ? C.gold : INK} strokeWidth={i === CURRENT ? 3 : 2} />
-      <rect x={x + 4} y={y + 4} width={PW - 8} height={44} rx={7} fill={['#8fb3d9', '#9cc3e6', '#a7c7e7', '#f2c37a', '#f2b45a'][i]} />
+      {i === CURRENT && <rect x={x - 8} y={y - 8} width={PW + 16} height={PH + 16} rx={6} fill="none" stroke={SCENE_COLORS.vermilion} strokeWidth={2} strokeDasharray="4 3" />}
+      <rect x={x} y={y} width={PW} height={PH} rx={3} fill={SCENE_COLORS.paperLight} stroke={i === CURRENT ? SCENE_COLORS.vermilion : INK} strokeWidth={i === CURRENT ? 3 : 1.5} />
+      <rect x={x + 4} y={y + 4} width={PW - 8} height={44} rx={1} fill={['#c6d2ca', '#ccd7ce', '#d5d8b7', '#dbc082', '#cda967'][i]} />
       {i === 0 && (
         <g>
           <rect x={inner.x} y={inner.y} width={inner.w} height={inner.h} fill="#5b3a22" stroke={INK} strokeWidth={1.5} />
@@ -88,21 +87,20 @@ const state: SceneDefinition = {
   ],
   untagged: [],
   Art: function StateArt({ lang }: SceneArtProps) {
-    const ids = useSceneIds()
     return (
       <g>
         <Sun x={170} y={300} r={36} />
-        <Hills y={300} amp={30} color="#4b2e55" seed={4} />
-        <Hills y={330} amp={16} color="#3a2338" seed={9} step={80} />
-        <rect x={0} y={340} width={960} height={100} fill="#2e2a1a" />
-        {XS.map((_, i) => panel(i, url(ids.lamp)))}
+        <Hills y={300} amp={30} color="#b8a992" seed={4} />
+        <Hills y={330} amp={16} color="#9f927e" seed={9} step={80} />
+        <rect x={0} y={340} width={960} height={100} fill="#c5b292" />
+        {XS.map((_, i) => panel(i))}
 
         {/* The paddy (context) and the farmer (client) */}
         <Paddy x={410} y={290} w={140} h={56} gold height={14} />
         <Person x={548} y={350} s={1.05} robe="#6b4226" pants="#3a2a1d" hat="nonLa" long={false} pose="hold">
           <path d="M-8,-54 q12,-10 20,4" stroke="#d1d5db" strokeWidth={3} fill="none" />
         </Person>
-        <Caption x={480} y={428} size={11} fill="#fde68a">{lang === 'vi' ? 'một vụ mới bắt đầu lại' : 'a new season starts again'}</Caption>
+        <Caption x={480} y={428} size={11} fill={INK}>{lang === 'vi' ? 'một vụ mới bắt đầu lại' : 'a new season starts again'}</Caption>
       </g>
     )
   },

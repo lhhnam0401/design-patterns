@@ -27,8 +27,8 @@ const proxy: SceneDefinition = {
         <Stars seed={9} count={40} maxY={140} />
         <Moon x={120} y={70} r={20} />
         <Cloud x={600} y={70} s={1} />
-        <Hills y={250} amp={30} color="#2c1b47" seed={5} />
-        <Ground y={300} color="#2a1a12" edge="#3a2418" />
+        <Hills y={250} amp={30} color="#b2a69a" seed={5} />
+        <Ground y={300} color="#c3b095" edge="#89735f" />
         <Wall x={250} y={372} w={120} h={46} />
         <Wall x={570} y={372} w={130} h={46} />
 

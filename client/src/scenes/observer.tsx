@@ -47,7 +47,7 @@ const observer: SceneDefinition = {
         <Scroll x={584} y={190} w={48} h={50} lines={3} seal={false} />
         <Person x={690} y={262} s={0.92} robe="#4b5563" hat="khanXep" pose="reach" flip />
 
-        <Ground y={350} color="#1f1710" edge="#2c2016" />
+        <Ground y={350} color="#c1ae94" edge="#89745f" />
         <Paddy x={10} y={360} w={230} h={64} height={12} />
         <Bamboo x={240} y={360} h={140} seed={8} count={3} />
         <Hall cx={780} y={360} w={120} h={38} roofH={28} doors={2} glow={false} />

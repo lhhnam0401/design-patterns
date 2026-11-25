@@ -1,177 +1,163 @@
-import { useParams, Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Lightbulb, AlertCircle, CheckCircle2, Zap, GitBranch, ImageIcon } from 'lucide-react'
-import { getPattern, patternsByCategory } from '../data'
 import CodeBlock from '../components/CodeBlock'
+import PatternCollection from '../components/PatternCollection'
 import PatternDiagram from '../components/PatternDiagram'
-import PatternCard from '../components/PatternCard'
+import { getPattern, patternsByCategory } from '../data'
 import PatternScene from '../scenes/PatternScene'
+import SceneLegend from '../scenes/SceneLegend'
+import { sceneFor } from '../scenes/registry'
+import { patternFolio } from '../utils/presentation'
+import NotFound from './NotFound'
 
 const complexityLabel = ['', 'Simple', 'Medium', 'Complex']
 const complexityLabelVi = ['', 'Đơn giản', 'Trung bình', 'Phức tạp']
 
-function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+function ArticleSection({ id, number, title, children }: { id: string; number: string; title: string; children: ReactNode }) {
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-slate-400">{icon}</span>
-        <h2 className="text-sm font-semibold text-white uppercase tracking-wide">{title}</h2>
+    <section id={id} className="scroll-mt-24 border-t border-line pt-7">
+      <div className="grid gap-4 sm:grid-cols-[3rem_1fr]">
+        <span className="eyebrow tabular-nums text-accent" aria-hidden="true">{number}</span>
+        <div>
+          <h2 className="section-title text-ink">{title}</h2>
+          <div className="prose-copy mt-4 text-ink-muted">{children}</div>
+        </div>
       </div>
-      <div className="text-slate-400 text-sm leading-relaxed pl-6">{children}</div>
-    </div>
-  )
-}
-
-function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <div className="flex items-center gap-2 mb-3">
-      <span className="text-slate-500">{icon}</span>
-      <h2 className="text-sm font-semibold text-white uppercase tracking-wide">{label}</h2>
-    </div>
+    </section>
   )
 }
 
 export default function PatternDetail() {
   const { slug } = useParams<{ slug: string }>()
   const { t, i18n } = useTranslation()
-  const lang = i18n.language as 'en' | 'vi'
-
+  const lang = i18n.language === 'vi' ? 'vi' : 'en'
   const pattern = getPattern(slug ?? '')
-  if (!pattern) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <p className="text-slate-400">Pattern not found</p>
-      </div>
-    )
-  }
+
+  if (!pattern) return <NotFound />
+
+  const scene = sceneFor(pattern.slug)
 
   const siblings = patternsByCategory[pattern.category]
-    .filter(p => p.slug !== pattern.slug)
+    .filter(item => item.slug !== pattern.slug)
     .slice(0, 3)
-
   const complexityText = lang === 'vi'
     ? complexityLabelVi[pattern.complexity]
     : complexityLabel[pattern.complexity]
 
-  const categoryColor = {
-    creational: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    structural: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
-    behavioral: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-  }[pattern.category]
+  const contents = [
+    ['intent', t('pattern.intent')],
+    ['problem', t('pattern.problem')],
+    ['solution', t('pattern.solution')],
+    ['applicability', t('pattern.applicability')],
+    ['example', t('pattern.example')],
+    ['structure', t('pattern.structure')],
+    ['code', t('pattern.code_example')],
+  ]
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <article>
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto max-w-[100rem] px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
+          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-muted">
+            <Link to="/" className="text-link">{t('nav.home')}</Link>
+            <span aria-hidden="true">/</span>
+            <Link to={`/category/${pattern.category}`} className="text-link">{t(`categories.${pattern.category}`)}</Link>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page" className="text-ink">{pattern.name[lang]}</span>
+          </nav>
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-slate-500 mb-8">
-          <Link to="/" className="hover:text-white transition-colors">
-            {lang === 'vi' ? 'Trang chủ' : 'Home'}
-          </Link>
-          <span>/</span>
-          <Link to={`/category/${pattern.category}`} className="hover:text-white transition-colors capitalize">
-            {t(`categories.${pattern.category}`)}
-          </Link>
-          <span>/</span>
-          <span className="text-slate-300">{pattern.name[lang]}</span>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-
-          {/* ── Main ── */}
-          <div className="lg:col-span-2 space-y-8 min-w-0">
-
-            {/* Header */}
-            <div>
-              <div className="flex flex-wrap items-center gap-3 mb-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${categoryColor}`}>
-                  {t(`categories.${pattern.category}`)}
-                </span>
-                <span className="px-3 py-1 rounded-full text-xs bg-slate-800 border border-slate-700 text-slate-400">
-                  {t('pattern.complexity')}: {complexityText}
-                </span>
-              </div>
-              <h1 className="text-4xl font-bold text-white mb-1">{pattern.name[lang]}</h1>
-              {lang === 'vi' && <p className="text-slate-500 text-lg">{pattern.name.en}</p>}
+          <div className="mt-10 grid gap-8 border-t border-line pt-8 lg:grid-cols-12">
+            <p className="font-display text-[clamp(3.5rem,9vw,6rem)] leading-none tabular-nums text-accent lg:col-span-3" aria-hidden="true">
+              {patternFolio(pattern)}
+            </p>
+            <div className="lg:col-span-7 lg:col-start-5">
+              <p className="eyebrow text-support">{t(`categories.${pattern.category}`)}</p>
+              <h1 className="page-title mt-4 text-ink">{pattern.name[lang]}</h1>
+              {lang === 'vi' && <p className="mt-2 text-xl text-ink-muted">{pattern.name.en}</p>}
               {pattern.also_known_as && pattern.also_known_as.length > 0 && (
-                <p className="text-slate-600 text-sm mt-2">
-                  {t('pattern.also_known_as')}: {pattern.also_known_as.map(a => a[lang]).join(', ')}
+                <p className="mt-5 text-sm leading-relaxed text-ink-muted">
+                  <span className="font-semibold text-ink">{t('pattern.also_known_as')}:</span>{' '}
+                  {pattern.also_known_as.map(item => item[lang]).join(', ')}
                 </p>
               )}
-            </div>
-
-            {/* ── Cultural illustration image ── */}
-            <div>
-              <SectionHeader icon={<ImageIcon className="w-4 h-4" />} label={t('pattern.example')} />
-              <div className="rounded-xl overflow-x-auto border border-amber-500/20 bg-slate-950">
-                <div className="min-w-[640px]">
-                  <PatternScene pattern={pattern} lang={lang} />
+              <dl className="mt-6 flex flex-wrap gap-x-10 gap-y-3 border-t border-line pt-4 text-sm">
+                <div>
+                  <dt className="text-ink-muted">{t('pattern.complexity')}</dt>
+                  <dd className="font-semibold text-ink">{complexityText}</dd>
                 </div>
-              </div>
-              <div className="mt-3 px-1">
-                <p className="text-amber-400 font-semibold text-sm mb-1">
-                  {pattern.vietnamese_example.title[lang]}
-                </p>
-                <p className="text-slate-400 text-sm leading-relaxed">
-                  {pattern.vietnamese_example.description[lang]}
-                </p>
-              </div>
-            </div>
-
-            {/* ── UML Structure Diagram ── */}
-            <div>
-              <SectionHeader icon={<GitBranch className="w-4 h-4" />} label={t('pattern.structure')} />
-              <PatternDiagram key={pattern.slug} diagram={pattern.diagram} />
-              <p className="text-slate-500 text-xs mt-2 px-1">{pattern.structure_notes[lang]}</p>
-            </div>
-
-            {/* Intent / Problem / Solution / Applicability */}
-            <div className="space-y-6 p-6 rounded-xl bg-slate-900/50 border border-slate-800">
-              <Section icon={<Lightbulb className="w-4 h-4" />} title={t('pattern.intent')}>
-                {pattern.intent[lang]}
-              </Section>
-              <div className="border-t border-slate-800" />
-              <Section icon={<AlertCircle className="w-4 h-4" />} title={t('pattern.problem')}>
-                {pattern.problem[lang]}
-              </Section>
-              <div className="border-t border-slate-800" />
-              <Section icon={<CheckCircle2 className="w-4 h-4" />} title={t('pattern.solution')}>
-                {pattern.solution[lang]}
-              </Section>
-              <div className="border-t border-slate-800" />
-              <Section icon={<Zap className="w-4 h-4" />} title={t('pattern.applicability')}>
-                {pattern.applicability[lang]}
-              </Section>
-            </div>
-
-            {/* Code examples */}
-            <div>
-              <SectionHeader icon={<span className="text-xs font-mono text-slate-500">{'{}'}</span>} label={t('pattern.code_example')} />
-              <CodeBlock examples={pattern.code_examples} />
+                <div>
+                  <dt className="text-ink-muted">{t('pattern.popularity')}</dt>
+                  <dd className="font-semibold tabular-nums text-ink">{pattern.popularity}/3</dd>
+                </div>
+              </dl>
             </div>
           </div>
+        </div>
+      </header>
 
-          {/* ── Sidebar ── */}
-          <div className="space-y-6">
-            <div className="sticky top-24 space-y-4">
-              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">
-                {lang === 'vi' ? 'Xem thêm' : 'More Patterns'}
-              </h3>
-              {siblings.map(p => (
-                <PatternCard key={p.id} pattern={p} />
+      <div className="mx-auto grid min-w-0 grid-cols-[minmax(0,1fr)] gap-12 px-5 py-12 sm:px-8 lg:max-w-[100rem] lg:grid-cols-12 lg:px-12 lg:py-20">
+        <aside className="lg:col-span-3 lg:col-start-10 lg:row-start-1" aria-label={t('pattern.contents')}>
+          <div className="border-t border-line pt-4 lg:sticky lg:top-24">
+            <h2 className="eyebrow text-ink-muted">{t('pattern.contents')}</h2>
+            <ol className="mt-4">
+              {contents.map(([id, label], index) => (
+                <li key={id} className="border-b border-line">
+                  <a href={`#${id}`} className="flex min-h-11 items-center gap-3 py-2 text-sm text-ink transition-colors duration-200 ease-out hover:text-accent">
+                    <span className="text-xs tabular-nums text-ink-muted">{String(index + 1).padStart(2, '0')}</span>
+                    <span>{label}</span>
+                  </a>
+                </li>
               ))}
-              <Link
-                to={`/category/${pattern.category}`}
-                className="mt-2 flex items-center gap-2 text-sm text-slate-500 hover:text-white transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {t('pattern.back')}
-              </Link>
-            </div>
+            </ol>
+          </div>
+        </aside>
+
+        <div className="min-w-0 space-y-12 lg:col-span-8 lg:row-start-1">
+          <div aria-label={t('pattern.overview')} className="space-y-10">
+            <ArticleSection id="intent" number="01" title={t('pattern.intent')}>{pattern.intent[lang]}</ArticleSection>
+            <ArticleSection id="problem" number="02" title={t('pattern.problem')}>{pattern.problem[lang]}</ArticleSection>
+            <ArticleSection id="solution" number="03" title={t('pattern.solution')}>{pattern.solution[lang]}</ArticleSection>
+            <ArticleSection id="applicability" number="04" title={t('pattern.applicability')}>{pattern.applicability[lang]}</ArticleSection>
           </div>
 
+          <section id="example" className="scroll-mt-24 border-t border-line pt-7">
+            <p className="eyebrow text-accent">05 / {t('pattern.example')}</p>
+            <h2 className="section-title mt-3 text-ink">{pattern.vietnamese_example.title[lang]}</h2>
+            <figure className="mt-6 w-full max-w-full overflow-hidden rounded-lg border border-line bg-scene-paper">
+              <PatternScene pattern={pattern} lang={lang} variant="detail" />
+            </figure>
+            {scene && <SceneLegend definition={scene} diagram={pattern.diagram} lang={lang} />}
+            <p className="prose-copy mt-5 text-ink-muted">{pattern.vietnamese_example.description[lang]}</p>
+          </section>
+
+          <section id="structure" className="scroll-mt-24 border-t border-line pt-7">
+            <p className="eyebrow text-accent">06</p>
+            <h2 className="section-title mt-3 text-ink">{t('pattern.structure')}</h2>
+            <div className="mt-6"><PatternDiagram key={pattern.slug} diagram={pattern.diagram} /></div>
+            <p className="prose-copy mt-4 text-sm text-ink-muted">{pattern.structure_notes[lang]}</p>
+          </section>
+
+          <section id="code" className="scroll-mt-24 border-t border-line pt-7">
+            <p className="eyebrow text-accent">07</p>
+            <h2 className="section-title mt-3 text-ink">{t('pattern.code_example')}</h2>
+            <div className="mt-6"><CodeBlock examples={pattern.code_examples} /></div>
+          </section>
         </div>
       </div>
-    </div>
+
+      <section className="border-t border-line bg-surface" aria-labelledby="related-title">
+        <div className="mx-auto max-w-[100rem] px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
+          <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <p className="eyebrow text-accent">{t(`categories.${pattern.category}`)}</p>
+              <h2 id="related-title" className="section-title mt-3 text-ink">{t('pattern.related')}</h2>
+            </div>
+            <Link to={`/category/${pattern.category}`} className="text-link min-h-11 py-2 text-sm font-semibold text-ink">{t('pattern.back')}</Link>
+          </div>
+          <PatternCollection ariaLabel={t('pattern.related')} patterns={siblings} compact />
+        </div>
+      </section>
+    </article>
   )
 }

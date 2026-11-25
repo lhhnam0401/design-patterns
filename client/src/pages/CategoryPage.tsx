@@ -1,60 +1,45 @@
-import { useParams, Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft } from 'lucide-react'
+import PatternCollection from '../components/PatternCollection'
 import { patternsByCategory } from '../data'
-import PatternCard from '../components/PatternCard'
-import type { Category } from '../types/pattern'
-
-const categoryEmoji: Record<Category, string> = {
-  creational: '🏗️',
-  structural: '🔗',
-  behavioral: '⚡',
-}
+import { categoryFolio, isCategory } from '../utils/presentation'
+import NotFound from './NotFound'
 
 export default function CategoryPage() {
   const { category } = useParams<{ category: string }>()
   const { t, i18n } = useTranslation()
-  const lang = i18n.language as 'en' | 'vi'
+  const lang = i18n.language === 'vi' ? 'vi' : 'en'
 
-  const cat = category as Category
-  const patterns = patternsByCategory[cat] ?? []
+  if (!isCategory(category)) return <NotFound />
 
-  if (!patterns.length) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <p className="text-slate-400">Category not found</p>
-      </div>
-    )
-  }
+  const patterns = patternsByCategory[category]
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('pattern.back')}
-        </Link>
-
-        <div className="mb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-4xl">{categoryEmoji[cat]}</span>
-            <h1 className="text-3xl font-bold text-white">{t(`categories.${cat}`)}</h1>
+    <div>
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto max-w-[100rem] px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
+          <Link to="/" className="text-link inline-flex min-h-11 items-center text-sm font-semibold text-ink">
+            {t('pattern.back')}
+          </Link>
+          <div className="mt-8 grid gap-8 border-t border-line pt-8 lg:grid-cols-12">
+            <p className="font-display text-[clamp(4rem,10vw,7rem)] leading-none tabular-nums text-accent lg:col-span-3" aria-hidden="true">
+              {categoryFolio(category)}
+            </p>
+            <div className="lg:col-span-7 lg:col-start-5">
+              <p className="eyebrow text-ink-muted">{t('common.archive')}</p>
+              <h1 className="page-title mt-4 text-ink">{t(`categories.${category}`)}</h1>
+              <p className="prose-copy mt-5 text-ink-muted">{t(`categories.${category}_desc`)}</p>
+              <p className="mt-5 text-sm font-semibold tabular-nums text-support">
+                {patterns.length} {lang === 'vi' ? 'mẫu thiết kế' : patterns.length === 1 ? 'pattern' : 'patterns'}
+              </p>
+            </div>
           </div>
-          <p className="text-slate-400">{t(`categories.${cat}_desc`)}</p>
-          <p className="text-slate-600 text-sm mt-1">
-            {patterns.length} {lang === 'vi' ? 'mẫu thiết kế' : 'patterns'}
-          </p>
         </div>
+      </header>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {patterns.map(p => (
-            <PatternCard key={p.id} pattern={p} />
-          ))}
-        </div>
-      </div>
+      <section className="mx-auto max-w-[100rem] px-5 py-12 sm:px-8 lg:px-12 lg:py-16" aria-label={t(`categories.${category}`)}>
+        <PatternCollection ariaLabel={t(`categories.${category}`)} patterns={patterns} />
+      </section>
     </div>
   )
 }

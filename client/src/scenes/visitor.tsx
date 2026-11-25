@@ -30,10 +30,10 @@ const visitor: SceneDefinition = {
       <g>
         <Sun x={880} y={120} r={30} />
         <Cloud x={420} y={60} s={1} color="#fde68a" />
-        <Hills y={220} amp={30} color="#4b2e55" seed={13} />
+        <Hills y={220} amp={30} color="#b5aa9a" seed={13} />
         <LanternString x0={170} x1={880} y={150} sag={10} count={8} r={8} />
-        <Ground y={296} color="#4a3a2a" edge="#5b4834" />
-        <rect y={300} width={960} height={140} fill="#6b5640" opacity={0.4} />
+        <Ground y={296} color="#c2af95" edge="#8c755f" />
+        <rect y={300} width={960} height={140} fill="#ad987d" opacity={0.4} />
 
         <Gate cx={80} y={330} w={140} h={84} />
 

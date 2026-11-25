@@ -1,104 +1,92 @@
 import { useId, type ReactNode } from 'react'
+import type { SceneVariant } from '../types'
 import { SceneIdsContext, url, type SceneIds } from './ids'
-import { H, SKIES, TONES, W, type SkyName, type Tone } from './palette'
+import { SceneVariantProvider } from './mode'
+import { H, SCENE_COLORS, SKIES, TONES, W, type SkyName, type Tone } from './palette'
 
 interface Props {
   title: string
   sky: SkyName
-  compact: boolean
-  /** The illustration, drawn under the paper grain and vignette. */
+  variant: SceneVariant
   art: ReactNode
-  /** Tags and call arrows, drawn on top of everything. */
   overlay?: ReactNode
 }
 
-/** The 960×440 canvas shared by every scene: sky, lighting, paper grain and vignette. */
-export default function SceneFrame({ title, sky, compact, art, overlay }: Props) {
-  const p = 's' + useId().replace(/[^a-zA-Z0-9_-]/g, '')
+/** The shared 960×440 archival paper canvas used by every cultural scene. */
+export default function SceneFrame({ title, sky, variant, art, overlay }: Props) {
+  const prefix = 's' + useId().replace(/[^a-zA-Z0-9_-]/g, '')
   const ids: SceneIds = {
-    sky: `${p}-sky`,
-    lamp: `${p}-lamp`,
-    glow: `${p}-glow`,
-    shadow: `${p}-shadow`,
-    grain: `${p}-grain`,
-    vignette: `${p}-vignette`,
-    water: `${p}-water`,
+    grain: `${prefix}-grain`,
+    print: `${prefix}-print`,
     arrow: Object.fromEntries(
-      (Object.keys(TONES) as Tone[]).map(t => [t, `${p}-arrow-${t}`]),
+      (Object.keys(TONES) as Tone[]).map(tone => [tone, `${prefix}-arrow-${tone}`]),
     ) as Record<Tone, string>,
   }
-  const stops = SKIES[sky]
+  const thumbnail = variant === 'thumbnail'
 
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       width="100%"
-      height={compact ? '100%' : undefined}
-      preserveAspectRatio={compact ? 'xMidYMid slice' : 'xMidYMid meet'}
-      role="img"
-      aria-label={title}
-      style={{ display: 'block' }}
+      height={thumbnail ? '100%' : undefined}
+      preserveAspectRatio={thumbnail ? 'xMidYMid slice' : 'xMidYMid meet'}
+      role={thumbnail ? undefined : 'img'}
+      aria-label={thumbnail ? undefined : title}
+      aria-hidden={thumbnail ? true : undefined}
+      focusable="false"
+      data-scene-frame="paper-print"
+      data-scene-variant={variant}
+      style={{ display: 'block', maxWidth: '100%' }}
     >
-      <title>{title}</title>
+      {!thumbnail && <title>{title}</title>}
       <defs>
-        <linearGradient id={ids.sky} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={stops[0]} />
-          <stop offset="0.45" stopColor={stops[1]} />
-          <stop offset="0.78" stopColor={stops[2]} />
-          <stop offset="1" stopColor={stops[3]} />
-        </linearGradient>
-        <radialGradient id={ids.lamp}>
-          <stop offset="0" stopColor="#ffe3a3" stopOpacity="0.95" />
-          <stop offset="0.35" stopColor="#ffb054" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#ff8a3c" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id={ids.water} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#24406e" />
-          <stop offset="1" stopColor="#081227" />
-        </linearGradient>
-        <radialGradient id={ids.vignette} cx="0.5" cy="0.45" r="0.75">
-          <stop offset="0.55" stopColor="#000" stopOpacity="0" />
-          <stop offset="1" stopColor="#000" stopOpacity="0.6" />
-        </radialGradient>
-        <filter id={ids.glow} x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
+        <filter id={ids.print} colorInterpolationFilters="sRGB">
+          <feColorMatrix type="saturate" values="0.72" />
+          <feComponentTransfer>
+            <feFuncR type="gamma" amplitude="0.92" exponent="0.52" offset="0.04" />
+            <feFuncG type="gamma" amplitude="0.92" exponent="0.52" offset="0.04" />
+            <feFuncB type="gamma" amplitude="0.88" exponent="0.55" offset="0.04" />
+          </feComponentTransfer>
         </filter>
-        <filter id={ids.shadow} x="-20%" y="-20%" width="140%" height="150%">
-          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#000" floodOpacity="0.5" />
-        </filter>
-        {!compact && (
+        {!thumbnail && (
           <filter id={ids.grain} x="0" y="0" width="100%" height="100%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch" />
-            <feColorMatrix type="matrix" values="0 0 0 0 0.96  0 0 0 0 0.88  0 0 0 0 0.72  0 0 0 0.55 -0.12" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="2" stitchTiles="stitch" />
+            <feColorMatrix type="matrix" values="0 0 0 0 0.16  0 0 0 0 0.14  0 0 0 0 0.11  0 0 0 0.18 0" />
           </filter>
         )}
-        {(Object.keys(TONES) as Tone[]).map(t => (
+        {(Object.keys(TONES) as Tone[]).map(tone => (
           <marker
-            key={t}
-            id={ids.arrow[t]}
+            key={tone}
+            id={ids.arrow[tone]}
             viewBox="0 0 10 10"
             refX="8"
             refY="5"
-            markerWidth="11"
-            markerHeight="11"
+            markerWidth="10"
+            markerHeight="10"
             markerUnits="userSpaceOnUse"
             orient="auto-start-reverse"
           >
-            <path d="M0,0 L10,5 L0,10 Z" fill={TONES[t]} />
+            <path d="M0,1 L9,5 L0,9 Z" fill={TONES[tone]} stroke={SCENE_COLORS.paperLight} strokeWidth="0.8" />
           </marker>
         ))}
       </defs>
 
       <SceneIdsContext.Provider value={ids}>
-        <rect width={W} height={H} fill={url(ids.sky)} />
-        {art}
-        {!compact && <rect width={W} height={H} filter={url(ids.grain)} opacity={0.22} style={{ mixBlendMode: 'soft-light' }} />}
-        <rect width={W} height={H} fill={url(ids.vignette)} />
-        {overlay}
+        <SceneVariantProvider value={variant}>
+          <rect width={W} height={H} fill={SKIES[sky]} />
+          <g data-scene-art="true" filter={url(ids.print)}>{art}</g>
+          <rect
+            width={W}
+            height={H}
+            fill={SCENE_COLORS.paperLight}
+            opacity={thumbnail ? 0.16 : 0.1}
+            style={{ mixBlendMode: 'screen' }}
+            pointerEvents="none"
+            data-scene-wash="true"
+          />
+          {!thumbnail && <rect width={W} height={H} filter={url(ids.grain)} opacity="0.12" pointerEvents="none" />}
+          {overlay}
+        </SceneVariantProvider>
       </SceneIdsContext.Provider>
     </svg>
   )

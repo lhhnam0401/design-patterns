@@ -1,8 +1,7 @@
 import { Person } from './kit/figures'
-import { url, useSceneIds } from './kit/ids'
 import { Bamboo, Moon } from './kit/nature'
 import { Caption } from './kit/overlay'
-import { C, INK, W } from './kit/palette'
+import { C, INK, SCENE_COLORS, W } from './kit/palette'
 import { Lantern, Table } from './kit/props'
 import type { SceneArtProps, SceneDefinition } from './types'
 
@@ -25,15 +24,14 @@ const adapter: SceneDefinition = {
   ],
   untagged: [],
   Art: function AdapterArt({ lang }: SceneArtProps) {
-    const ids = useSceneIds()
     return (
       <g>
-        <rect width={W} height={340} fill="#2b170d" />
+        <rect width={W} height={340} fill={SCENE_COLORS.paperShade} />
         {Array.from({ length: 16 }, (_, i) => (
-          <line key={i} x1={i * 62 + 10} y1={0} x2={i * 62 + 10} y2={340} stroke="#1a0d07" strokeWidth={3} />
+          <line key={i} x1={i * 62 + 10} y1={0} x2={i * 62 + 10} y2={340} stroke={SCENE_COLORS.inkMuted} strokeWidth={1} opacity={0.24} />
         ))}
         {/* Moon window looking onto the garden */}
-        <circle cx={480} cy={130} r={78} fill="#0b1533" stroke={C.woodDark} strokeWidth={10} />
+        <circle cx={480} cy={130} r={78} fill="#cfd8cf" stroke={C.woodDark} strokeWidth={10} />
         <circle cx={480} cy={130} r={78} fill="none" stroke={INK} strokeWidth={2} />
         <Moon x={510} y={100} r={14} />
         <g opacity={0.8}><Bamboo x={430} y={208} h={120} seed={5} count={3} color="#24452a" /></g>
@@ -41,8 +39,8 @@ const adapter: SceneDefinition = {
         <Lantern x={300} y={80} r={12} cord={50} />
         <Lantern x={660} y={80} r={12} cord={50} color="#f2a03b" />
 
-        <rect y={338} width={W} height={102} fill="#5a3a22" />
-        {[352, 374, 402].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#3e2615" strokeWidth={2} />)}
+        <rect y={338} width={W} height={102} fill="#c8b49a" />
+        {[352, 374, 402].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke={SCENE_COLORS.inkMuted} strokeWidth={1} opacity={0.45} />)}
         <rect x={0} y={330} width={W} height={10} fill={C.woodDark} stroke={INK} strokeWidth={1.5} />
 
         {/* The musician and her 16-string zither */}
@@ -69,8 +67,8 @@ const adapter: SceneDefinition = {
         <rect x={410} y={268} width={140} height={58} rx={4} fill="none" stroke={C.gold} strokeWidth={1.4} />
         {NOTES[lang].map((n, i) => (
           <g key={n}>
-            <circle cx={424 + i * 28} cy={288} r={6} fill="#fde68a" opacity={i === 2 ? 1 : 0.55} stroke={INK} strokeWidth={1} />
-            {i === 2 && <circle cx={424 + i * 28} cy={288} r={14} fill={url(ids.lamp)} />}
+            <circle cx={424 + i * 28} cy={288} r={6} fill={C.paper} opacity={i === 2 ? 1 : 0.7} stroke={INK} strokeWidth={1} />
+            {i === 2 && <circle cx={424 + i * 28} cy={288} r={11} fill="none" stroke={C.gold} strokeWidth={1.5} strokeDasharray="2 2" />}
             <Caption x={424 + i * 28} y={314} size={9} fill={C.gold} weight={600}>{n}</Caption>
           </g>
         ))}
@@ -82,19 +80,19 @@ const adapter: SceneDefinition = {
         <rect x={680} y={292} width={22} height={36} rx={3} fill="#b7791f" stroke={INK} strokeWidth={1.8} />
         <circle cx={691} cy={304} r={4} fill={INK} />
         <circle cx={691} cy={318} r={4} fill={INK} />
-        <rect x={730} y={228} width={150} height={92} rx={6} fill="#0f172a" stroke={INK} strokeWidth={2.5} />
-        <rect x={738} y={236} width={134} height={72} rx={3} fill="#111c35" />
-        <path d={'M742,276 ' + Array.from({ length: 26 }, (_, i) => `L${746 + i * 5},${276 + Math.sin(i * 1.3) * (6 + (i % 5) * 3)}`).join(' ')} stroke="#4ade80" strokeWidth={1.5} fill="none" />
-        {[0, 1, 2, 3, 4].map(i => <rect key={i} x={748 + i * 24} y={292 - i * 3} width={18} height={4} rx={2} fill="#fbbf24" />)}
-        <rect x={790} y={320} width={30} height={8} fill="#1f2937" stroke={INK} strokeWidth={1.2} />
-        <circle cx={760} cy={250} r={4} fill="#ef4444" />
+        <rect x={730} y={228} width={150} height={92} rx={4} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={2.5} />
+        <rect x={738} y={236} width={134} height={72} rx={2} fill={SCENE_COLORS.paperShade} />
+        <path d={'M742,276 ' + Array.from({ length: 26 }, (_, i) => `L${746 + i * 5},${276 + Math.sin(i * 1.3) * (6 + (i % 5) * 3)}`).join(' ')} stroke={SCENE_COLORS.jade} strokeWidth={1.8} fill="none" />
+        {[0, 1, 2, 3, 4].map(i => <rect key={i} x={748 + i * 24} y={292 - i * 3} width={18} height={4} rx={1} fill={SCENE_COLORS.ochre} />)}
+        <rect x={790} y={320} width={30} height={8} fill={SCENE_COLORS.inkMuted} stroke={INK} strokeWidth={1.2} />
+        <circle cx={760} cy={250} r={4} fill={SCENE_COLORS.vermilion} />
 
         {/* A MIDI keyboard plugged into the same port */}
         <line x1={572} y1={366} x2={566} y2={400} stroke={INK} strokeWidth={4} />
         <line x1={660} y1={366} x2={666} y2={400} stroke={INK} strokeWidth={4} />
-        <rect x={556} y={348} width={120} height={22} rx={3} fill="#1f2937" stroke={INK} strokeWidth={2} />
+        <rect x={556} y={348} width={120} height={22} rx={3} fill={SCENE_COLORS.inkMuted} stroke={INK} strokeWidth={2} />
         {Array.from({ length: 14 }, (_, i) => (
-          <rect key={i} x={560 + i * 8} y={356} width={7} height={12} fill="#f8fafc" stroke={INK} strokeWidth={0.6} />
+          <rect key={i} x={560 + i * 8} y={356} width={7} height={12} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={0.6} />
         ))}
         {[0, 1, 3, 4, 5, 7, 8, 10, 11, 12].map(i => <rect key={`k${i}`} x={565 + i * 8} y={356} width={4} height={7} fill={INK} />)}
         <path d="M676,356 C690,350 692,340 691,322" stroke="#9ca3af" strokeWidth={2} fill="none" />

@@ -33,26 +33,26 @@ const decorator: SceneDefinition = {
         <Stars seed={13} count={40} maxY={140} />
         <LanternString x0={-10} x1={970} y={8} sag={26} count={8} />
         {/* Street front: shop houses */}
-        <rect x={0} y={96} width={W} height={300} fill="#1c1626" />
+        <rect x={0} y={96} width={W} height={300} fill="#d8cbbb" />
         {[0, 1, 2, 3, 4, 5].map(i => (
           <g key={i}>
-            <rect x={i * 165 + 8} y={120} width={150} height={260} fill={i % 2 ? '#2a1f33' : '#251b2e'} stroke={INK} strokeWidth={2} />
-            <rect x={i * 165 + 34} y={150} width={40} height={50} fill="#f4b44a" opacity={0.25} stroke={INK} />
-            <rect x={i * 165 + 92} y={150} width={40} height={50} fill="#f4b44a" opacity={0.18} stroke={INK} />
+            <rect x={i * 165 + 8} y={120} width={150} height={260} fill={i % 2 ? '#c9b9a7' : '#d4c5b3'} stroke={INK} strokeWidth={2} />
+            <rect x={i * 165 + 34} y={150} width={40} height={50} fill="#efe5d2" stroke={INK} />
+            <rect x={i * 165 + 92} y={150} width={40} height={50} fill="#e2d3bb" stroke={INK} />
           </g>
         ))}
-        <Ground y={380} color="#2a2422" edge="#3b3330" />
+        <Ground y={380} color="#bca78c" edge="#806e5c" />
 
         {/* The stall: a broth pot and a price board */}
         <Pot x={70} y={392} w={86} />
-        <rect x={14} y={204} width={110} height={88} rx={4} fill="#14281c" stroke={C.woodDark} strokeWidth={5} />
+        <rect x={14} y={204} width={110} height={88} rx={2} fill="#f1e8d8" stroke={C.woodDark} strokeWidth={3} />
         <Caption x={69} y={226} size={13} fill={C.gold}>{lang === 'vi' ? 'Phở bò' : 'Beef phở'}</Caption>
         {['40.000', '+20.000', '+10.000', '+5.000'].map((p, i) => (
           <Caption key={p} x={69} y={244 + i * 13} size={10} fill="#e2e8f0" weight={500}>{p}</Caption>
         ))}
 
         {/* The bowl in cross-section: plain soup at the bottom, each topping a layer above */}
-        <ellipse cx={520} cy={398} rx={90} ry={10} fill="#000" opacity={0.4} />
+        <ellipse cx={520} cy={398} rx={90} ry={8} fill={INK} opacity={0.14} />
         <path d={BOWL} fill="#f1ede4" stroke={INK} strokeWidth={3} />
         <path d="M352,226 L688,226 Q682,372 520,388 Q358,372 352,226 Z" fill="#c2782f" stroke={INK} strokeWidth={1.5} />
         {Array.from({ length: 7 }, (_, i) => (
@@ -73,11 +73,11 @@ const decorator: SceneDefinition = {
         ))}
         {/* spring onion */}
         {Array.from({ length: 22 }, (_, i) => (
-          <rect key={i} x={366 + i * 14 + r() * 6} y={208 + r() * 6} width={7} height={3.5} rx={1.5} fill="#4ade80" stroke={INK} strokeWidth={0.6} />
+          <rect key={i} x={366 + i * 14 + r() * 6} y={208 + r() * 6} width={7} height={3.5} rx={1.5} fill="#56785f" stroke={INK} strokeWidth={0.6} />
         ))}
         <path d="M340,200 L700,200" stroke={INK} strokeWidth={3} />
         {[-30, 0, 30].map(dx => (
-          <path key={dx} d={`M${520 + dx},188 q-10,-16 0,-32 q10,-16 0,-32`} stroke="#f6ead2" strokeOpacity={0.3} strokeWidth={4} fill="none" strokeLinecap="round" />
+          <path key={dx} d={`M${520 + dx},188 q-10,-16 0,-32 q10,-16 0,-32`} stroke="#6c6459" strokeOpacity={0.4} strokeWidth={2} fill="none" strokeLinecap="round" />
         ))}
 
         {/* The customer's table and bill */}

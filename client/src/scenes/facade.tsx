@@ -41,7 +41,7 @@ const facade: SceneDefinition = {
         {/* red double-happiness banner over the door */}
         <rect x={462} y={186} width={36} height={22} fill="#dc2626" stroke={C.gold} strokeWidth={1.4} />
         <path d="M470,191 h20 M470,197 h20 M470,203 h20 M476,188 v18 M484,188 v18" stroke={C.gold} strokeWidth={1.4} />
-        <Ground y={258} color="#2d1a14" edge="#3f2620" />
+        <Ground y={258} color="#c1ac91" edge="#846d59" />
 
         {/* Dressing screen with the bride's red áo dài */}
         {[176, 204, 232].map((x, i) => (

@@ -33,7 +33,7 @@ const HANDS: Record<Pose, [[number, number], [number, number]]> = {
 
 /** A woodblock-style figure. `x, y` is the point between the feet. */
 export function Person({
-  x, y, s = 1, robe = '#7a3b1e', pants = '#2b2118', sash = C.gold, hat = 'none', hatColor,
+  x, y, s = 1, robe = '#8d5038', pants = '#5d5549', sash = C.gold, hat = 'none', hatColor,
   pose = 'stand', long = true, armor = false, flip = false, dim = false, children,
 }: PersonProps) {
   const [lh, rh] = HANDS[pose]
@@ -52,7 +52,7 @@ export function Person({
 
   return (
     <g transform={`translate(${x},${y}) scale(${flip ? -s : s},${s})`} opacity={dim ? 0.38 : 1}>
-      <ellipse cx={0} cy={2} rx={18} ry={4} fill="#000" opacity={0.3} />
+      <ellipse cx={0} cy={2} rx={18} ry={3} fill={INK} opacity={0.16} />
       <rect x={-8} y={hem - 2} width={7} height={-hem} fill={pants} stroke={INK} strokeWidth={1.5} />
       <rect x={1} y={hem - 2} width={7} height={-hem} fill={pants} stroke={INK} strokeWidth={1.5} />
       <ellipse cx={-5} cy={0} rx={5} ry={2.6} fill={INK} />

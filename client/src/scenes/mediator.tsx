@@ -34,8 +34,8 @@ const mediator: SceneDefinition = {
         <Hall cx={480} y={262} w={280} h={72} roofH={54} />
         <Lantern x={360} y={196} r={9} cord={8} />
         <Lantern x={600} y={196} r={9} cord={8} />
-        <Ground y={258} color="#3d2a1b" edge="#4d3524" />
-        <rect x={250} y={258} width={460} height={60} fill="#5b4330" opacity={0.6} />
+        <Ground y={258} color="#c2ad91" edge="#89715b" />
+        <rect x={250} y={258} width={460} height={60} fill="#aa9478" opacity={0.6} />
 
         {/* The council: three elders on a red mat */}
         <path d="M400,300 L560,300 L580,316 L380,316 Z" fill="#b91c1c" stroke={INK} strokeWidth={1.5} />

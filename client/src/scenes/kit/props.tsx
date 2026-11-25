@@ -1,19 +1,17 @@
 import type { ReactNode } from 'react'
 import { lerp } from './geometry'
-import { url, useSceneIds } from './ids'
-import { C, INK } from './palette'
+import { C, INK, SCENE_COLORS } from './palette'
 
 /** Round silk lantern with a warm glow. `x, y` is the lantern's centre. */
 export function Lantern({ x, y, r = 14, color = '#d62828', cord = 0, glow = true, shape = 'round' }: {
   x: number; y: number; r?: number; color?: string; cord?: number; glow?: boolean; shape?: 'round' | 'tall' | 'star'
 }) {
-  const ids = useSceneIds()
   const rx = shape === 'tall' ? r * 0.75 : r
   const ry = shape === 'tall' ? r * 1.3 : r * 0.95
   return (
     <g>
       {cord > 0 && <line x1={x} y1={y - ry - cord} x2={x} y2={y - ry} stroke={INK} strokeWidth={1.2} />}
-      {glow && <circle cx={x} cy={y} r={r * 3} fill={url(ids.lamp)} opacity={0.75} />}
+      {glow && <circle cx={x} cy={y} r={r * 1.45} fill="none" stroke={SCENE_COLORS.ochre} strokeWidth={1} strokeDasharray="2 3" opacity={0.55} />}
       {shape === 'star' ? (
         <path
           d={Array.from({ length: 10 }, (_, i) => {
@@ -153,16 +151,14 @@ export function Jar({ x, y, s = 1, color = '#a0623a', glaze = '#d7b98a' }: { x: 
 
 /** Cooking pot over a small fire. `y` is the ground line. */
 export function Pot({ x, y, w = 70, color = '#2f2a28', fire = true, steam = true }: { x: number; y: number; w?: number; color?: string; fire?: boolean; steam?: boolean }) {
-  const ids = useSceneIds()
   const h = w * 0.55
   const top = y - 18 - h
   return (
     <g>
       {fire && (
         <g>
-          <circle cx={x} cy={y - 10} r={w * 0.6} fill={url(ids.lamp)} opacity={0.8} />
-          <path d={`M${x - 18},${y} Q${x - 14},${y - 22} ${x - 6},${y - 14} Q${x - 2},${y - 30} ${x + 4},${y - 14} Q${x + 12},${y - 24} ${x + 18},${y} Z`} fill="#f97316" stroke={INK} strokeWidth={1.2} />
-          <path d={`M${x - 8},${y} Q${x - 4},${y - 12} ${x},${y - 8} Q${x + 4},${y - 14} ${x + 8},${y} Z`} fill="#fde047" />
+          <path d={`M${x - 18},${y} Q${x - 14},${y - 22} ${x - 6},${y - 14} Q${x - 2},${y - 30} ${x + 4},${y - 14} Q${x + 12},${y - 24} ${x + 18},${y} Z`} fill={SCENE_COLORS.vermilion} stroke={INK} strokeWidth={1.2} />
+          <path d={`M${x - 8},${y} Q${x - 4},${y - 12} ${x},${y - 8} Q${x + 4},${y - 14} ${x + 8},${y} Z`} fill="#c79443" stroke={INK} strokeWidth={0.7} />
           <rect x={x - 24} y={y - 4} width={48} height={5} rx={2} fill={C.woodDark} stroke={INK} />
         </g>
       )}
@@ -170,7 +166,7 @@ export function Pot({ x, y, w = 70, color = '#2f2a28', fire = true, steam = true
       <ellipse cx={x} cy={top} rx={w / 2 + 3} ry={6} fill="#4a403b" stroke={INK} strokeWidth={2} />
       <ellipse cx={x} cy={top} rx={w / 2 - 3} ry={3.5} fill="#7a5a2a" />
       {steam && [-14, 0, 14].map(dx => (
-        <path key={dx} d={`M${x + dx},${top - 6} q-8,-12 0,-24 q8,-12 0,-24`} stroke="#f6ead2" strokeOpacity={0.35} strokeWidth={3} fill="none" strokeLinecap="round" />
+        <path key={dx} d={`M${x + dx},${top - 6} q-8,-12 0,-24 q8,-12 0,-24`} stroke={SCENE_COLORS.inkMuted} strokeOpacity={0.45} strokeWidth={2} fill="none" strokeLinecap="round" />
       ))}
     </g>
   )

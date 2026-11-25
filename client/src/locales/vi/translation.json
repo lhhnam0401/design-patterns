@@ -2,14 +2,19 @@
   "site": {
     "title": "Mẫu Thiết Kế",
     "subtitle": "Học các mẫu thiết kế Gang of Four qua ví dụ văn hóa truyền thống Việt Nam",
-    "description": "23 mẫu thiết kế kinh điển được giải thích bằng đoạn mã và minh họa qua nền văn hóa truyền thống phong phú của Việt Nam"
+    "description": "Các mẫu thiết kế kinh điển được giải thích bằng đoạn mã và minh họa qua nền văn hóa truyền thống phong phú của Việt Nam"
   },
   "nav": {
     "home": "Trang chủ",
     "creational": "Khởi tạo",
     "structural": "Cấu trúc",
     "behavioral": "Hành vi",
-    "all_patterns": "Tất cả mẫu"
+    "all_patterns": "Tất cả mẫu",
+    "primary": "Điều hướng chính",
+    "mobile": "Danh mục trên di động",
+    "open": "Mở điều hướng",
+    "close": "Đóng điều hướng",
+    "switch_language": "Chuyển ngôn ngữ"
   },
   "categories": {
     "creational": "Mẫu Khởi Tạo",
@@ -32,6 +37,12 @@
     "popularity": "Mức độ phổ biến",
     "also_known_as": "Còn gọi là",
     "applicability": "Khi nào sử dụng",
+    "contents": "Trong trang này",
+    "related": "Tiếp tục khám phá",
+    "overview": "Tổng quan mẫu",
+    "copy": "Sao chép mã",
+    "copied": "Đã sao chép mã",
+    "copy_error": "Không thể sao chép mã",
     "diagram": {
       "label": "Sơ đồ lớp UML",
       "instructions": "Kéo nền để di chuyển sơ đồ, kéo một hộp để dời nó. Phím: + và - để phóng to, thu nhỏ; 0 để vừa khung nhìn; phím mũi tên để di chuyển.",
@@ -51,9 +62,33 @@
     "vi": "Tiếng Việt"
   },
   "home": {
-    "explore": "Khám phá các mẫu",
-    "total_patterns": "23 Mẫu thiết kế",
+    "archive": "Kho tư liệu minh họa về thiết kế phần mềm",
+    "intro": "Tìm hiểu {{count}} mẫu trong kho tư liệu qua mã nguồn, sơ đồ cấu trúc và những câu chuyện từ văn hóa Việt Nam.",
+    "catalogue_note": "Tài liệu song ngữ dành cho sinh viên và lập trình viên.",
+    "collections": "Khám phá các bộ sưu tập",
+    "selected": "Mẫu tiêu biểu",
+    "view_collection": "Xem bộ sưu tập",
+    "view_all": "Xem tất cả mẫu",
+    "patterns": "mẫu",
+    "total_patterns": "22 Mẫu thiết kế",
     "categories": "3 Nhóm",
     "languages": "2 Ngôn ngữ"
+  },
+  "common": {
+    "archive": "Kho mẫu thiết kế",
+    "skip": "Chuyển đến nội dung",
+    "loading": "Đang tải kho tư liệu",
+    "empty_title": "Chưa có mẫu thiết kế",
+    "empty_body": "Bộ sưu tập này đang chờ mẫu thiết kế đầu tiên."
+  },
+  "not_found": {
+    "title": "Trang này nằm ngoài kho tư liệu",
+    "body": "Bộ sưu tập hoặc mẫu thiết kế có thể đã chuyển, hoặc địa chỉ chưa đầy đủ.",
+    "back": "Trở về kho tư liệu"
+  },
+  "footer": {
+    "label": "Thông tin trang web",
+    "collections": "Bộ sưu tập",
+    "note": "Tài liệu học tập song ngữ kết nối kiến trúc phần mềm với các ví dụ văn hóa Việt Nam."
   }
 }

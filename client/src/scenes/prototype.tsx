@@ -85,13 +85,13 @@ const prototype: SceneDefinition = {
     return (
       <g>
         {/* Workshop wall and floor */}
-        <rect width={W} height={360} fill="#2b170d" />
+        <rect width={W} height={360} fill="#ded0ba" />
         {Array.from({ length: 16 }, (_, i) => (
-          <line key={i} x1={i * 62 + 20} y1={0} x2={i * 62 + 20} y2={360} stroke="#1a0d07" strokeWidth={3} />
+          <line key={i} x1={i * 62 + 20} y1={0} x2={i * 62 + 20} y2={360} stroke="#8b755e" strokeWidth={1} opacity={0.28} />
         ))}
         <rect x={0} y={60} width={W} height={10} fill={C.woodDark} stroke={INK} strokeWidth={1.5} />
-        <rect y={358} width={W} height={82} fill="#5a3a22" />
-        {[372, 392, 416].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#3e2615" strokeWidth={2} />)}
+        <rect y={358} width={W} height={82} fill="#c6b090" />
+        {[372, 392, 416].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#8b755e" strokeWidth={1} opacity={0.5} />)}
 
         <Board x={360} y={18} w={240} h={30}>
           <Caption x={480} y={38} size={13} fill={C.gold}>{lang === 'vi' ? 'Làng tranh Đông Hồ' : 'Đông Hồ print village'}</Caption>

@@ -1,68 +1,96 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import { Copy, Check } from 'lucide-react'
+import { Check, Copy, TriangleAlert } from 'lucide-react'
 import type { CodeExample } from '../types/pattern'
 
 interface Props {
   examples: CodeExample[]
 }
 
+type CopyStatus = 'success' | 'error' | null
+
 export default function CodeBlock({ examples }: Props) {
+  const { t } = useTranslation()
   const [active, setActive] = useState(0)
-  const [copied, setCopied] = useState(false)
+  const [status, setStatus] = useState<CopyStatus>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  if (examples.length === 0) return null
+  const example = examples[active] ?? examples[0]
 
   const copy = async () => {
-    await navigator.clipboard.writeText(examples[active].code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    clearTimeout(timerRef.current)
+    try {
+      await navigator.clipboard.writeText(example.code)
+      setStatus('success')
+    } catch {
+      setStatus('error')
+    }
+    timerRef.current = setTimeout(() => setStatus(null), 2500)
   }
 
   return (
-    <div className="rounded-xl overflow-hidden border border-slate-700/50">
-      <div className="flex items-center justify-between bg-slate-800 px-4 py-2 border-b border-slate-700/50">
-        <div className="flex gap-1">
-          {examples.map((ex, i) => (
+    <div className="overflow-hidden rounded-lg border border-line-strong bg-inverse-surface text-inverse-ink">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-inverse-raised bg-inverse-raised px-3 py-2 sm:px-4">
+        <div className="flex flex-wrap gap-1" role="tablist" aria-label={t('pattern.code_example')}>
+          {examples.map((item, index) => (
             <button
-              key={i}
-              onClick={() => setActive(i)}
-              className={`px-3 py-1 rounded text-sm font-mono font-medium transition-colors ${
-                active === i
-                  ? 'bg-amber-500/20 text-amber-400'
-                  : 'text-slate-400 hover:text-white'
+              key={`${item.language}-${index}`}
+              type="button"
+              role="tab"
+              id={`code-tab-${index}`}
+              aria-selected={active === index}
+              aria-controls={`code-panel-${index}`}
+              onClick={() => { setActive(index); setStatus(null) }}
+              className={`min-h-10 border-b-2 px-3 py-2 font-mono text-sm transition-colors duration-200 ease-out ${
+                active === index
+                  ? 'border-accent text-inverse-ink'
+                  : 'border-transparent text-inverse-muted hover:text-inverse-ink'
               }`}
             >
-              {ex.label ?? ex.language}
+              {item.label ?? item.language}
             </button>
           ))}
         </div>
         <button
+          type="button"
           onClick={copy}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs text-slate-400
-            hover:text-white hover:bg-slate-700 transition-colors"
+          aria-label={t('pattern.copy')}
+          className="inline-flex min-h-10 items-center gap-2 border border-inverse-muted px-3 py-2 text-xs font-semibold text-inverse-ink transition-colors duration-200 ease-out hover:bg-inverse-surface"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-          {copied ? 'Copied!' : 'Copy'}
+          {status === 'success' ? <Check className="h-4 w-4" aria-hidden="true" /> : status === 'error' ? <TriangleAlert className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
+          {status === 'success' ? t('pattern.copied') : status === 'error' ? t('pattern.copy_error') : t('pattern.copy')}
         </button>
       </div>
-      <SyntaxHighlighter
-        language={examples[active].language}
-        style={vscDarkPlus}
-        customStyle={{
-          margin: 0,
-          borderRadius: 0,
-          fontSize: '0.8rem',
-          lineHeight: '1.6',
-          background: '#0d1117',
-          padding: '1.25rem',
-          maxHeight: '480px',
-          overflow: 'auto',
-        }}
-        showLineNumbers
-        wrapLines
+      <div
+        role="tabpanel"
+        id={`code-panel-${active}`}
+        aria-labelledby={`code-tab-${active}`}
       >
-        {examples[active].code}
-      </SyntaxHighlighter>
+        <SyntaxHighlighter
+          language={example.language}
+          style={vscDarkPlus}
+          customStyle={{
+            margin: 0,
+            borderRadius: 0,
+            fontSize: '0.8rem',
+            lineHeight: '1.6',
+            background: 'var(--inverse-surface)',
+            padding: '1.25rem',
+            maxHeight: '34rem',
+            overflow: 'auto',
+          }}
+          showLineNumbers
+          wrapLines
+        >
+          {example.code}
+        </SyntaxHighlighter>
+      </div>
+      {status && <p className="sr-only" role="status" aria-live="polite">{status === 'success' ? t('pattern.copied') : t('pattern.copy_error')}</p>}
     </div>
   )
 }

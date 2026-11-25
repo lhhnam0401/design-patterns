@@ -2,88 +2,50 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Pattern } from '../types/pattern'
 import PatternScene from '../scenes/PatternScene'
-
-const categoryColors = {
-  creational: 'border-emerald-500/30 hover:border-emerald-400/60',
-  structural: 'border-blue-500/30 hover:border-blue-400/60',
-  behavioral: 'border-purple-500/30 hover:border-purple-400/60',
-}
-
-const categoryBadge = {
-  creational: 'bg-emerald-500/20 text-emerald-400',
-  structural: 'bg-blue-500/20 text-blue-400',
-  behavioral: 'bg-purple-500/20 text-purple-400',
-}
-
-const dotColor = {
-  creational: 'bg-emerald-400',
-  structural: 'bg-blue-400',
-  behavioral: 'bg-purple-400',
-}
-
-function Stars({ count, max = 3, color }: { count: number; max?: number; color: string }) {
-  return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: max }).map((_, i) => (
-        <div key={i} className={`w-2 h-2 rounded-full ${i < count ? color : 'bg-slate-700'}`} />
-      ))}
-    </div>
-  )
-}
+import { patternFolio } from '../utils/presentation'
 
 interface Props {
   pattern: Pattern
+  compact?: boolean
 }
 
-export default function PatternCard({ pattern }: Props) {
+export default function PatternCard({ pattern, compact = false }: Props) {
   const { i18n, t } = useTranslation()
-  const lang = i18n.language as 'en' | 'vi'
-  const colorClass = categoryColors[pattern.category]
-  const badgeClass = categoryBadge[pattern.category]
-  const dotClass = dotColor[pattern.category]
+  const lang = i18n.language === 'vi' ? 'vi' : 'en'
 
   return (
-    <Link
-      to={`/pattern/${pattern.slug}`}
-      className={`block rounded-xl border bg-slate-900 ${colorClass}
-        hover:scale-[1.02] transition-all duration-200 hover:shadow-xl hover:shadow-black/40
-        overflow-hidden group`}
-    >
-      {/* Cultural image thumbnail */}
-      <div className="h-28 overflow-hidden opacity-90 group-hover:opacity-100 transition-opacity">
-        <PatternScene pattern={pattern} lang={lang} compact />
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badgeClass}`}>
-            {pattern.category}
-          </span>
+    <article className="group h-full bg-surface transition-colors duration-200 ease-out hover:bg-surface-shift">
+      <Link to={`/pattern/${pattern.slug}`} className="flex h-full flex-col text-ink">
+        <div className={`${compact ? 'aspect-[12/5]' : 'aspect-[16/7]'} overflow-hidden border-b border-line bg-scene-paper`}>
+          <PatternScene pattern={pattern} lang={lang} variant="thumbnail" />
         </div>
-
-        <h3 className="text-white font-bold text-base mb-0.5 group-hover:text-amber-400 transition-colors line-clamp-1">
-          {pattern.name[lang]}
-        </h3>
-        {lang === 'vi' && (
-          <p className="text-slate-600 text-xs mb-1">{pattern.name.en}</p>
-        )}
-
-        <p className="text-slate-400 text-xs leading-relaxed line-clamp-2 mb-3">
-          {pattern.intent[lang]}
-        </p>
-
-        <div className="flex items-center gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <span>{t('pattern.complexity')}</span>
-            <Stars count={pattern.complexity} color={dotClass} />
+        <div className="flex flex-1 flex-col p-5 sm:p-6">
+          <div className="mb-5 flex items-start justify-between gap-4">
+            <span className="eyebrow tabular-nums text-accent">{patternFolio(pattern)}</span>
+            <span className="text-right text-xs font-semibold uppercase tracking-[0.08em] text-ink-muted">
+              {t(`categories.${pattern.category}`)}
+            </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span>{t('pattern.popularity')}</span>
-            <Stars count={pattern.popularity} color="bg-amber-400" />
-          </div>
+
+          <h3 className="font-display text-[2rem] font-semibold leading-[1.05] tracking-[-0.025em] text-ink transition-colors duration-200 ease-out group-hover:text-accent">
+            {pattern.name[lang]}
+          </h3>
+          {lang === 'vi' && <p className="mt-1 text-sm text-ink-muted">{pattern.name.en}</p>}
+
+          <p className="mt-4 flex-1 text-sm leading-[1.65] text-ink-muted">{pattern.intent[lang]}</p>
+
+          <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-4 text-xs">
+            <div>
+              <dt className="text-ink-muted">{t('pattern.complexity')}</dt>
+              <dd className="mt-1 font-semibold tabular-nums text-ink">{pattern.complexity}/3</dd>
+            </div>
+            <div>
+              <dt className="text-ink-muted">{t('pattern.popularity')}</dt>
+              <dd className="mt-1 font-semibold tabular-nums text-ink">{pattern.popularity}/3</dd>
+            </div>
+          </dl>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </article>
   )
 }

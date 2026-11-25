@@ -2,14 +2,19 @@
   "site": {
     "title": "Design Patterns",
     "subtitle": "Learn Gang of Four design patterns with Vietnamese cultural examples",
-    "description": "23 classic design patterns explained with code snippets and illustrated through Vietnam's rich traditional culture"
+    "description": "Classic design patterns explained with code snippets and illustrated through Vietnam's rich traditional culture"
   },
   "nav": {
     "home": "Home",
     "creational": "Creational",
     "structural": "Structural",
     "behavioral": "Behavioral",
-    "all_patterns": "All Patterns"
+    "all_patterns": "All Patterns",
+    "primary": "Primary navigation",
+    "mobile": "Mobile collection menu",
+    "open": "Open navigation",
+    "close": "Close navigation",
+    "switch_language": "Switch language"
   },
   "categories": {
     "creational": "Creational Patterns",
@@ -32,6 +37,12 @@
     "popularity": "Popularity",
     "also_known_as": "Also known as",
     "applicability": "When to use",
+    "contents": "On this page",
+    "related": "Continue exploring",
+    "overview": "Pattern overview",
+    "copy": "Copy code",
+    "copied": "Code copied",
+    "copy_error": "Unable to copy code",
     "diagram": {
       "label": "UML class diagram",
       "instructions": "Drag the background to pan and drag a box to move it. Keys: + and - zoom, 0 fits the diagram, arrow keys pan.",
@@ -51,9 +62,33 @@
     "vi": "Tiếng Việt"
   },
   "home": {
-    "explore": "Explore Patterns",
-    "total_patterns": "23 Design Patterns",
+    "archive": "An illustrated software design archive",
+    "intro": "Study the {{count}} patterns in this archive through working code, structural diagrams, and stories drawn from Vietnamese culture.",
+    "catalogue_note": "A bilingual reference for students and working developers.",
+    "collections": "Browse the collections",
+    "selected": "Selected patterns",
+    "view_collection": "View collection",
+    "view_all": "View all patterns",
+    "patterns": "patterns",
+    "total_patterns": "22 Design Patterns",
     "categories": "3 Categories",
     "languages": "2 Languages"
+  },
+  "common": {
+    "archive": "Design pattern archive",
+    "skip": "Skip to content",
+    "loading": "Loading the archive",
+    "empty_title": "No patterns yet",
+    "empty_body": "This collection is ready for its first pattern."
+  },
+  "not_found": {
+    "title": "This page is outside the archive",
+    "body": "The collection or pattern may have moved, or the address may be incomplete.",
+    "back": "Return to the archive"
+  },
+  "footer": {
+    "label": "Site information",
+    "collections": "Collections",
+    "note": "A bilingual learning reference connecting software architecture with Vietnamese cultural examples."
   }
 }

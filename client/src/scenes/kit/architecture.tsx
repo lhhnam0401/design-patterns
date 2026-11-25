@@ -1,5 +1,4 @@
-import { url, useSceneIds } from './ids'
-import { C, INK } from './palette'
+import { C, INK, SCENE_COLORS } from './palette'
 
 /** Curved Vietnamese roof with upturned eaves. `y` is the eave line, `w` the eave width. */
 export function Roof({ cx, y, w, h, color = C.tile, dark = C.tileDark, ornaments = true }: {
@@ -42,7 +41,6 @@ export function Roof({ cx, y, w, h, color = C.tile, dark = C.tileDark, ornaments
 export function Hall({ cx, y, w, h, roofH = h * 0.75, tiers = 1, wall = '#7a2f1c', doors = 3, glow = true, dim = false }: {
   cx: number; y: number; w: number; h: number; roofH?: number; tiers?: 1 | 2; wall?: string; doors?: number; glow?: boolean; dim?: boolean
 }) {
-  const ids = useSceneIds()
   const left = cx - w / 2
   const base = 10
   const wallTop = y - base - h
@@ -57,8 +55,10 @@ export function Hall({ cx, y, w, h, roofH = h * 0.75, tiers = 1, wall = '#7a2f1c
         const dx = left + 10 + 7 + i * ((w - 20) / doors)
         return (
           <g key={i}>
-            <rect x={dx} y={wallTop + h * 0.22} width={doorW} height={h * 0.78} fill={glow ? '#f4b44a' : '#2a1208'} stroke={INK} strokeWidth={2} />
-            {glow && <rect x={dx} y={wallTop + h * 0.22} width={doorW} height={h * 0.78} fill={url(ids.lamp)} opacity={0.8} />}
+            <rect x={dx} y={wallTop + h * 0.22} width={doorW} height={h * 0.78} fill={glow ? SCENE_COLORS.paperLight : SCENE_COLORS.paperShade} stroke={INK} strokeWidth={2} />
+            {glow && Array.from({ length: 4 }, (_, line) => (
+              <line key={`hatch-${line}`} x1={dx + 3} y1={wallTop + h * (0.34 + line * 0.15)} x2={dx + doorW - 3} y2={wallTop + h * (0.28 + line * 0.15)} stroke={SCENE_COLORS.ochre} strokeWidth={1} opacity={0.55} />
+            ))}
             <line x1={dx + doorW / 2} y1={wallTop + h * 0.22} x2={dx + doorW / 2} y2={y - base} stroke={INK} strokeWidth={1.5} />
             {[0.4, 0.62].map(t => <line key={t} x1={dx} y1={wallTop + h * t} x2={dx + doorW} y2={wallTop + h * t} stroke={INK} strokeWidth={1} opacity={0.6} />)}
           </g>
@@ -86,13 +86,13 @@ export function Gate({ cx, y, w = 170, h = 90 }: { cx: number; y: number; w?: nu
         return (
           <g key={s}>
             <rect x={x - side / 2} y={y - h * 0.62} width={side} height={h * 0.62} fill="#8a3a22" stroke={INK} strokeWidth={2} />
-            <path d={`M${x - side / 2 + 8},${y} L${x - side / 2 + 8},${y - h * 0.38} Q${x},${y - h * 0.52} ${x + side / 2 - 8},${y - h * 0.38} L${x + side / 2 - 8},${y} Z`} fill="#1a0d08" stroke={INK} strokeWidth={1.5} />
+            <path d={`M${x - side / 2 + 8},${y} L${x - side / 2 + 8},${y - h * 0.38} Q${x},${y - h * 0.52} ${x + side / 2 - 8},${y - h * 0.38} L${x + side / 2 - 8},${y} Z`} fill={SCENE_COLORS.inkMuted} stroke={INK} strokeWidth={1.5} />
             <Roof cx={x} y={y - h * 0.62} w={side + 16} h={h * 0.2} ornaments={false} />
           </g>
         )
       })}
       <rect x={cx - mid / 2} y={y - h} width={mid} height={h} fill="#9a4126" stroke={INK} strokeWidth={2.5} />
-      <path d={`M${cx - mid / 2 + 10},${y} L${cx - mid / 2 + 10},${y - h * 0.55} Q${cx},${y - h * 0.78} ${cx + mid / 2 - 10},${y - h * 0.55} L${cx + mid / 2 - 10},${y} Z`} fill="#1a0d08" stroke={INK} strokeWidth={2} />
+      <path d={`M${cx - mid / 2 + 10},${y} L${cx - mid / 2 + 10},${y - h * 0.55} Q${cx},${y - h * 0.78} ${cx + mid / 2 - 10},${y - h * 0.55} L${cx + mid / 2 - 10},${y} Z`} fill={SCENE_COLORS.inkMuted} stroke={INK} strokeWidth={2} />
       <rect x={cx - mid / 2 + 6} y={y - h + 8} width={mid - 12} height={14} rx={2} fill={C.lacquerDark} stroke={C.gold} strokeWidth={1.2} />
       <Roof cx={cx} y={y - h} w={mid + 30} h={h * 0.3} />
     </g>

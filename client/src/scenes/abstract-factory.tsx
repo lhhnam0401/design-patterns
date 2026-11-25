@@ -38,14 +38,14 @@ const abstractFactory: SceneDefinition = {
         <Stars seed={8} count={50} maxY={150} />
         <LanternString x0={-10} x1={300} y={6} sag={16} count={4} />
         <LanternString x0={660} x1={970} y={6} sag={16} count={4} colors={['#f2a03b', '#d62828']} />
-        <Hills y={250} amp={26} color="#141a3a" seed={6} />
+        <Hills y={250} amp={26} color="#b7aa98" seed={6} />
         <BlossomTree x={36} y={262} s={0.95} color="#f9a8d4" seed={2} />
         <BlossomTree x={924} y={262} s={0.95} color="#facc15" seed={9} flip />
         <Hall cx={170} y={258} w={210} h={66} roofH={48} />
         <Hall cx={790} y={258} w={210} h={66} roofH={48} wall="#6f3a1a" />
         <Person x={150} y={250} s={0.72} robe="#9f1d1d" hat="bun" pose="hold" />
-        <Person x={812} y={250} s={0.72} robe="#1f4e79" hat="nonLa" long={false} pose="hold" />
-        <Ground y={256} color="#22150f" edge="#3a2418" />
+        <Person x={812} y={250} s={0.72} robe="#4f7064" hat="nonLa" long={false} pose="hold" />
+        <Ground y={256} color="#c8b597" edge="#8e765e" />
 
         {/* Banner shared by both kitchens */}
         <line x1={340} y1={42} x2={340} y2={52} stroke={INK} strokeWidth={2} />

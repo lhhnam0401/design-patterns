@@ -1,7 +1,6 @@
 import type { Point } from '../types'
 import { band, rng, smooth } from './geometry'
-import { url, useSceneIds } from './ids'
-import { C, INK, W } from './palette'
+import { C, INK, SCENE_COLORS, W } from './palette'
 
 export function Stars({ seed = 1, count = 40, maxY = 180 }: { seed?: number; count?: number; maxY?: number }) {
   const r = rng(seed)
@@ -11,31 +10,32 @@ export function Stars({ seed = 1, count = 40, maxY = 180 }: { seed?: number; cou
         const x = r() * W
         const y = r() * maxY
         const big = r() > 0.85
-        return <circle key={i} cx={x} cy={y} r={big ? 1.6 : 0.9} fill="#fff6dc" opacity={0.35 + r() * 0.5} />
+        return <circle key={i} cx={x} cy={y} r={big ? 1.7 : 1} fill={big ? SCENE_COLORS.ochre : INK} opacity={0.38 + r() * 0.36} />
       })}
     </g>
   )
 }
 
 export function Moon({ x, y, r = 26 }: { x: number; y: number; r?: number }) {
-  const ids = useSceneIds()
   return (
     <g>
-      <circle cx={x} cy={y} r={r * 3.2} fill={url(ids.lamp)} opacity={0.35} />
-      <circle cx={x} cy={y} r={r} fill="#fbecc0" />
-      <circle cx={x - r * 0.3} cy={y - r * 0.2} r={r * 0.18} fill="#e9d39b" opacity={0.7} />
-      <circle cx={x + r * 0.35} cy={y + r * 0.3} r={r * 0.12} fill="#e9d39b" opacity={0.6} />
+      <circle cx={x} cy={y} r={r * 1.35} fill="none" stroke={SCENE_COLORS.ochre} strokeWidth={1.2} strokeDasharray="2 4" opacity={0.65} />
+      <circle cx={x} cy={y} r={r} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={1.5} />
+      <circle cx={x - r * 0.3} cy={y - r * 0.2} r={r * 0.18} fill={SCENE_COLORS.paperShade} opacity={0.7} />
+      <circle cx={x + r * 0.35} cy={y + r * 0.3} r={r * 0.12} fill={SCENE_COLORS.paperShade} opacity={0.6} />
     </g>
   )
 }
 
 export function Sun({ x, y, r = 34 }: { x: number; y: number; r?: number }) {
-  const ids = useSceneIds()
   return (
     <g>
-      <circle cx={x} cy={y} r={r * 3.5} fill={url(ids.lamp)} opacity={0.55} />
-      <circle cx={x} cy={y} r={r} fill="#ffcf7a" />
-      <circle cx={x} cy={y} r={r * 0.82} fill="#ffdc96" />
+      {Array.from({ length: 16 }, (_, index) => {
+        const angle = (Math.PI * 2 * index) / 16
+        return <line key={index} x1={x + Math.cos(angle) * r * 1.2} y1={y + Math.sin(angle) * r * 1.2} x2={x + Math.cos(angle) * r * 1.55} y2={y + Math.sin(angle) * r * 1.55} stroke={SCENE_COLORS.ochre} strokeWidth={1.4} />
+      })}
+      <circle cx={x} cy={y} r={r} fill="#d6a854" stroke={INK} strokeWidth={1.5} />
+      <circle cx={x} cy={y} r={r * 0.78} fill="none" stroke={SCENE_COLORS.paperLight} strokeWidth={1.2} />
     </g>
   )
 }
@@ -61,7 +61,7 @@ export function Hills({ y, amp = 40, color, seed = 3, step = 120, bottom = 440 }
   return <path d={band(pts, bottom)} fill={color} />
 }
 
-export function Ground({ y, color = '#2a1a12', edge = '#3d2618' }: { y: number; color?: string; edge?: string }) {
+export function Ground({ y, color = '#b9a58d', edge = '#7b6855' }: { y: number; color?: string; edge?: string }) {
   return (
     <g>
       <rect x={0} y={y} width={W} height={440 - y} fill={color} />
@@ -74,11 +74,10 @@ export function Ground({ y, color = '#2a1a12', edge = '#3d2618' }: { y: number; 
 export function Water({ y, h = 440 - y, x = 0, w = W, seed = 5, reflections = [] }: {
   y: number; h?: number; x?: number; w?: number; seed?: number; reflections?: { x: number; color: string }[]
 }) {
-  const ids = useSceneIds()
   const r = rng(seed)
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} fill={url(ids.water)} />
+      <rect x={x} y={y} width={w} height={h} fill={SCENE_COLORS.water} />
       {reflections.map((rf, i) => (
         <g key={`rf${i}`} opacity={0.55}>
           {[0, 1, 2, 3, 4].map(k => (
@@ -90,7 +89,7 @@ export function Water({ y, h = 440 - y, x = 0, w = W, seed = 5, reflections = []
         const rx = x + r() * w
         const ry = y + 6 + r() * (h - 10)
         const len = 14 + r() * 26
-        return <path key={i} d={`M${rx},${ry} q${len / 2},-3 ${len},0`} stroke="#9cc3ff" strokeOpacity={0.18 + r() * 0.2} strokeWidth={1.2} fill="none" />
+        return <path key={i} d={`M${rx},${ry} q${len / 2},-3 ${len},0`} stroke={SCENE_COLORS.jade} strokeOpacity={0.28 + r() * 0.24} strokeWidth={1.2} fill="none" />
       })}
     </g>
   )
@@ -200,11 +199,11 @@ export function Paddy({ x, y, w, h, water = '#2d4a5e', plant = C.rice, rows = 4,
 }
 
 /** A gentle path for figures to walk on. */
-export function Path({ points, width = 26, color = '#5b4330' }: { points: Point[]; width?: number; color?: string }) {
+export function Path({ points, width = 26, color = '#a89175' }: { points: Point[]; width?: number; color?: string }) {
   const d = smooth(points)
   return (
     <g>
-      <path d={d} stroke={INK} strokeWidth={width + 4} fill="none" strokeLinecap="round" opacity={0.5} />
+      <path d={d} stroke={INK} strokeWidth={width + 3} fill="none" strokeLinecap="round" opacity={0.7} />
       <path d={d} stroke={color} strokeWidth={width} fill="none" strokeLinecap="round" />
     </g>
   )
@@ -238,10 +237,9 @@ export function BlossomTree({ x, y, s = 1, color = '#f9a8d4', seed = 21, flip = 
 }
 
 /** A firework burst. */
-export function Firework({ x, y, r = 34, color = '#fbbf24' }: { x: number; y: number; r?: number; color?: string }) {
+export function Firework({ x, y, r = 34, color = '#a87934' }: { x: number; y: number; r?: number; color?: string }) {
   return (
-    <g opacity={0.85}>
-      <circle cx={x} cy={y} r={r * 1.3} fill={color} opacity={0.08} />
+    <g opacity={0.82}>
       {Array.from({ length: 16 }, (_, i) => {
         const a = (Math.PI * 2 * i) / 16
         const x1 = x + Math.cos(a) * r * 0.35

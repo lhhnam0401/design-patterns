@@ -50,13 +50,13 @@ const composite: SceneDefinition = {
         <Sun x={860} y={196} r={34} />
         <Cloud x={260} y={90} s={1} />
         <Cloud x={640} y={70} s={1.2} />
-        <Hills y={220} amp={40} color="#3b1f4a" seed={21} />
-        <Hills y={250} amp={20} color="#2c1834" seed={3} step={80} />
-        <Ground y={240} color="#2d2014" edge="#3f2d1b" />
+        <Hills y={220} amp={40} color="#b6aa98" seed={21} />
+        <Hills y={250} amp={20} color="#a79a87" seed={3} step={80} />
+        <Ground y={240} color="#c1ad8f" edge="#866f58" />
         <Grass y={300} x0={0} x1={960} seed={8} count={30} color="#4a5a2a" />
 
         {/* The general on horseback, on a small rise */}
-        <path d="M0,330 Q120,290 250,330 L250,440 L0,440 Z" fill="#3a2a18" />
+        <path d="M0,330 Q120,290 250,330 L250,440 L0,440 Z" fill="#b9a383" />
         <Banner x={60} y={318} h={150} w={40} color={C.lacquer} />
         <Horse x={130} y={330} s={1.05} color="#5b3418" />
         <Person x={124} y={292} s={1.0} robe="#b91c1c" pants="#1f1410" hat="helmet" hatColor={C.gold} armor pose="point" />

@@ -38,8 +38,8 @@ function ToolButton({ label, onClick, disabled, children, buttonRef }: {
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-300 transition-colors
-        hover:bg-slate-800 hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+      className="inline-flex h-10 w-10 items-center justify-center rounded-sm text-inverse-muted transition-colors duration-200 ease-out
+        hover:bg-inverse-surface hover:text-inverse-ink focus-visible:outline-none
         disabled:pointer-events-none disabled:opacity-40"
     >
       {children}
@@ -195,8 +195,8 @@ export default function PatternDiagram({ diagram }: Props) {
         aria-describedby={descId}
         aria-keyshortcuts="+ - 0 ArrowLeft ArrowRight ArrowUp ArrowDown"
         onKeyDown={onKeyDown}
-        className={`overflow-hidden bg-slate-950 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-          expanded ? 'fixed inset-0 z-[100]' : 'absolute inset-0 rounded-xl border border-slate-700/50'
+        className={`overflow-hidden bg-inverse-surface outline-none ${
+          expanded ? 'fixed inset-0 z-[100]' : 'absolute inset-0 rounded-lg border border-line-strong'
         }`}
         style={{ touchAction: expanded ? 'none' : 'pan-x pan-y' }}
       >
@@ -211,7 +211,7 @@ export default function PatternDiagram({ diagram }: Props) {
           style={{
             touchAction: expanded ? 'none' : 'pan-x pan-y',
             cursor: draggingId ? 'grabbing' : panning ? 'grabbing' : 'grab',
-            fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+            fontFamily: '"IBM Plex Sans Variable", "Segoe UI", sans-serif',
           }}
           {...handlers}
         >
@@ -224,7 +224,7 @@ export default function PatternDiagram({ diagram }: Props) {
               patternUnits="userSpaceOnUse"
               patternTransform={transform}
             >
-              <circle cx={1} cy={1} r={1} fill="#1e293b" />
+              <circle cx={1} cy={1} r={1} fill="var(--diagram-grid)" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill={`url(#${uid}-grid)`} />
@@ -235,27 +235,27 @@ export default function PatternDiagram({ diagram }: Props) {
 
         {hint && (
           <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center" aria-hidden="true">
-            <span className="rounded-full border border-slate-700 bg-slate-900/90 px-3 py-1.5 text-xs text-slate-200 shadow-lg">
+            <span className="rounded-sm border border-inverse-muted bg-inverse-raised px-3 py-2 text-xs text-inverse-ink">
               {t(hint === 'meta' ? 'pattern.diagram.hint_meta' : 'pattern.diagram.hint_ctrl')}
             </span>
           </div>
         )}
 
         <div
-          className="absolute bottom-3 right-3 flex items-center gap-0.5 rounded-lg border border-slate-700
-            bg-slate-900/80 p-1 shadow-lg backdrop-blur"
+          className="absolute bottom-3 right-3 flex max-w-[calc(100%-1.5rem)] items-center gap-0.5 overflow-x-auto rounded-sm border border-inverse-muted
+            bg-inverse-raised p-1"
         >
           <ToolButton label={t('pattern.diagram.zoom_out')} onClick={() => zoomBy(1 / BUTTON_ZOOM_FACTOR)} disabled={vp.scale <= limits.min + 1e-6}>
             <ZoomOut className="h-4 w-4" />
           </ToolButton>
-          <span className="w-12 text-center text-xs tabular-nums text-slate-300" title={t('pattern.diagram.zoom_level')}>
+          <span className="w-12 shrink-0 text-center text-xs tabular-nums text-inverse-muted" title={t('pattern.diagram.zoom_level')}>
             <span className="sr-only">{t('pattern.diagram.zoom_level')}: </span>
             {percent}
           </span>
           <ToolButton label={t('pattern.diagram.zoom_in')} onClick={() => zoomBy(BUTTON_ZOOM_FACTOR)} disabled={vp.scale >= limits.max - 1e-6}>
             <ZoomIn className="h-4 w-4" />
           </ToolButton>
-          <span className="mx-0.5 h-5 w-px bg-slate-700" aria-hidden="true" />
+          <span className="mx-0.5 h-5 w-px shrink-0 bg-inverse-muted" aria-hidden="true" />
           <ToolButton label={t('pattern.diagram.fit')} onClick={fitView}>
             <Scan className="h-4 w-4" />
           </ToolButton>

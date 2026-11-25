@@ -2,46 +2,66 @@ import type { Diagram } from '../types/pattern'
 import SceneFrame from './kit/SceneFrame'
 import { toneOf } from './kit/names'
 import { Call, Tag } from './kit/overlay'
-import type { Lang, SceneDefinition } from './types'
+import type { Lang, SceneDefinition, SceneVariant } from './types'
 
 interface Props {
   definition: SceneDefinition
   diagram: Diagram
   lang: Lang
+  variant?: SceneVariant
+  /** @deprecated Use variant="thumbnail". */
   compact?: boolean
 }
 
-/** Draws a scene's art, then its call arrows and code-name tags taken from the diagram. */
-export default function SceneView({ definition, diagram, lang, compact = false }: Props) {
-  const nodes = new Map(diagram.nodes.map(n => [n.id, n]))
+/** Draws a scene's art and adds only the annotations appropriate to its context. */
+export default function SceneView({ definition, diagram, lang, variant, compact = false }: Props) {
+  const resolvedVariant = variant ?? (compact ? 'thumbnail' : 'detail')
+  const nodes = new Map(diagram.nodes.map(node => [node.id, node]))
   const { Art } = definition
+  const showCalls = resolvedVariant !== 'thumbnail'
+  const showTags = resolvedVariant === 'detail'
 
   return (
     <SceneFrame
       title={definition.title[lang]}
       sky={definition.sky}
-      compact={compact}
-      art={<Art lang={lang} compact={compact} />}
+      variant={resolvedVariant}
+      art={<Art lang={lang} compact={resolvedVariant === 'thumbnail'} />}
       overlay={
-        <g>
-          {definition.calls.map((c, i) => (
-            <Call key={`c${i}`} d={c.d} method={c.method} at={c.at} tone={toneOf(nodes.get(c.nodeId))} compact={compact} />
-          ))}
-          {!compact && definition.tags.map((t, i) => {
-            const node = nodes.get(t.nodeId)
-            return (
-              <Tag
-                key={`t${i}`}
-                name={node?.label ?? t.nodeId}
-                method={t.method}
-                caption={t.caption[lang]}
-                at={t.at}
-                to={t.to}
-                tone={toneOf(node)}
-              />
-            )
-          })}
-        </g>
+        <>
+          {showCalls && (
+            <g data-scene-calls="true">
+              {definition.calls.map((call, index) => (
+                <Call
+                  key={`c${index}`}
+                  d={call.d}
+                  method={call.method}
+                  at={call.at}
+                  tone={toneOf(nodes.get(call.nodeId))}
+                  compact={resolvedVariant !== 'detail'}
+                />
+              ))}
+            </g>
+          )}
+          {showTags && (
+            <g data-scene-tags="true">
+              {definition.tags.map((tag, index) => {
+                const node = nodes.get(tag.nodeId)
+                return (
+                  <Tag
+                    key={`t${index}`}
+                    name={node?.label ?? tag.nodeId}
+                    method={tag.method}
+                    caption={tag.caption[lang]}
+                    at={tag.at}
+                    to={tag.to}
+                    tone={toneOf(node)}
+                  />
+                )
+              })}
+            </g>
+          )}
+        </>
       }
     />
   )

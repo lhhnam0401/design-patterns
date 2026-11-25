@@ -35,8 +35,8 @@ const strategy: SceneDefinition = {
         <Hills y={220} amp={34} color="#3b1f4a" seed={6} />
         <Hall cx={300} y={262} w={300} h={70} roofH={50} />
         <Tree x={40} y={270} s={0.95} />
-        <Ground y={260} color="#5b4330" edge="#6d533c" />
-        <rect x={0} y={300} width={960} height={140} fill="#7a5c3c" opacity={0.35} />
+        <Ground y={260} color="#c1ad91" edge="#89735e" />
+        <rect x={0} y={300} width={960} height={140} fill="#ac9679" opacity={0.45} />
 
         {/* Three school banners, each with a fighter in its stance */}
         {SCHOOLS.map(s => (

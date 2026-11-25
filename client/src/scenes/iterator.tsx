@@ -86,7 +86,7 @@ const iterator: SceneDefinition = {
   Art: function IteratorArt({ lang }: SceneArtProps) {
     return (
       <g>
-        <rect width={960} height={440} fill="#2b170d" />
+        <rect width={960} height={440} fill="#d7c9af" />
         {/* The map scroll */}
         <rect x={40} y={34} width={880} height={372} fill="#efdcae" stroke={INK} strokeWidth={2.5} />
         <rect x={50} y={44} width={860} height={352} fill="none" stroke="#b08a4a" strokeWidth={1.2} />

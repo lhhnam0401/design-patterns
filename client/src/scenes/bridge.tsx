@@ -65,12 +65,12 @@ const bridge: SceneDefinition = {
   Art: function BridgeArt({ lang }: SceneArtProps) {
     return (
       <g>
-        <rect width={W} height={360} fill="#2b170d" />
+        <rect width={W} height={360} fill="#ded0ba" />
         {Array.from({ length: 16 }, (_, i) => (
-          <line key={i} x1={i * 62 + 30} y1={0} x2={i * 62 + 30} y2={360} stroke="#1a0d07" strokeWidth={3} />
+          <line key={i} x1={i * 62 + 30} y1={0} x2={i * 62 + 30} y2={360} stroke="#8b755e" strokeWidth={1} opacity={0.28} />
         ))}
-        <rect y={358} width={W} height={82} fill="#5a3a22" />
-        {[374, 398, 424].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#3e2615" strokeWidth={2} />)}
+        <rect y={358} width={W} height={82} fill="#c6b090" />
+        {[374, 398, 424].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#8b755e" strokeWidth={1} opacity={0.5} />)}
         <Lantern x={480} y={210} r={11} cord={30} />
 
         {/* Two styles on dress forms */}
@@ -88,7 +88,7 @@ const bridge: SceneDefinition = {
 
         {/* The fabric shelf */}
         <rect x={640} y={88} width={268} height={252} fill={C.woodDark} stroke={INK} strokeWidth={2.5} />
-        <rect x={648} y={96} width={252} height={236} fill="#23120a" />
+        <rect x={648} y={96} width={252} height={236} fill="#b99b78" />
         <rect x={644} y={208} width={260} height={6} fill={C.wood} stroke={INK} strokeWidth={1} />
         <rect x={644} y={330} width={260} height={6} fill={C.wood} stroke={INK} strokeWidth={1} />
         {[['#f9a8d4', 656, 126], ['#93c5fd', 740, 126], ['#fde68a', 824, 126], ['#fbcfe8', 698, 178], ['#a7f3d0', 782, 178]].map(([c, x, y]) => bolt(x as number, y as number, c as string, false))}

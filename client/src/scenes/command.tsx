@@ -50,14 +50,14 @@ const command: SceneDefinition = {
       <g>
         <Sun x={880} y={130} r={30} />
         <Cloud x={720} y={60} s={1} color="#fde68a" />
-        <Hills y={250} amp={30} color="#4b2e55" seed={2} />
+        <Hills y={250} amp={30} color="#b5aa99" seed={2} />
 
         {/* Palace interior on the left: red columns and floor */}
-        <rect x={0} y={60} width={600} height={300} fill="#2b170d" />
+        <rect x={0} y={60} width={600} height={300} fill="#ded0ba" />
         <rect x={0} y={60} width={600} height={14} fill={C.woodDark} stroke={INK} strokeWidth={2} />
         {[20, 230, 580].map(x => <rect key={x} x={x} y={74} width={16} height={286} fill={C.lacquer} stroke={INK} strokeWidth={2} />)}
-        <rect x={0} y={358} width={W} height={82} fill="#4a3220" />
-        <rect x={0} y={358} width={600} height={82} fill="#5a3a22" />
+        <rect x={0} y={358} width={W} height={82} fill="#cbb99f" />
+        <rect x={0} y={358} width={600} height={82} fill="#c3a988" />
         <Lantern x={130} y={130} r={11} cord={40} />
         <Lantern x={470} y={110} r={11} cord={30} color="#f2a03b" />
 

@@ -2,50 +2,63 @@
 export const W = 960
 export const H = 440
 
-/** Woodblock outline colour. */
-export const INK = '#1a110d'
+/** The limited archival print palette shared by every scene. */
+export const SCENE_COLORS = {
+  paper: '#efe5d2',
+  paperLight: '#f8f1e4',
+  paperShade: '#d7c9af',
+  ink: '#29251f',
+  inkMuted: '#6c6459',
+  vermilion: '#a93c31',
+  jade: '#356659',
+  ochre: '#7c5728',
+  water: '#9fb8ae',
+} as const
 
-/** Tag colours, matching the UML diagram's colour for each node kind. */
+/** Woodblock outline colour. */
+export const INK = SCENE_COLORS.ink
+
+/** Annotation tones pair colour with shape and line style in the overlay. */
 export const TONES = {
-  client: '#fbbf24',
-  class: '#60a5fa',
-  abstract: '#c084fc',
-  interface: '#4ade80',
+  client: SCENE_COLORS.ink,
+  class: SCENE_COLORS.vermilion,
+  abstract: SCENE_COLORS.jade,
+  interface: SCENE_COLORS.ochre,
 } as const
 export type Tone = keyof typeof TONES
 
-/** Sky gradients, top to horizon. */
+/** Flat paper fields preserve setting without cinematic skies. */
 export const SKIES = {
-  dusk: ['#140f2e', '#3b1a5a', '#8a2b4f', '#e0853a'],
-  night: ['#030712', '#0b1533', '#1a2a5e', '#3a3470'],
-  dawn: ['#111827', '#3b3f6b', '#b65a4a', '#f2b45a'],
-  interior: ['#120a07', '#22110a', '#341a0e', '#4a2412'],
+  dusk: '#e8d6c5',
+  night: '#d9dfd7',
+  dawn: '#f0e2ca',
+  interior: '#e7dccb',
 } as const
 export type SkyName = keyof typeof SKIES
 
-export const SKIN = '#e9b98c'
-export const HAIR = '#1f1410'
+export const SKIN = '#c99570'
+export const HAIR = SCENE_COLORS.ink
 
-/** Lacquer and woodblock colours shared by the scenes. */
+/** Muted material colours for archival plate illustrations. */
 export const C = {
-  lacquer: '#9f1d1d',
-  lacquerDark: '#6b1414',
-  wood: '#5a2a14',
-  woodDark: '#3a1a0c',
-  tile: '#6e2a17',
-  tileDark: '#4a1a0e',
-  gold: '#f2b84b',
-  goldDark: '#b7791f',
-  paper: '#f3e3c3',
-  paperDark: '#d9c39a',
-  stone: '#6b625b',
-  stoneDark: '#45403b',
-  jade: '#2f7d5b',
-  leaf: '#2c6a3f',
-  leafDark: '#1b4529',
-  rice: '#7fae3c',
-  water: '#1d3557',
-  bronze: '#8a5a1e',
-  indigo: '#2b3a7a',
-  cream: '#f6ead2',
+  lacquer: SCENE_COLORS.vermilion,
+  lacquerDark: '#7f2f29',
+  wood: '#8a6043',
+  woodDark: '#634632',
+  tile: '#9d5544',
+  tileDark: '#754237',
+  gold: '#a87934',
+  goldDark: SCENE_COLORS.ochre,
+  paper: SCENE_COLORS.paperLight,
+  paperDark: SCENE_COLORS.paperShade,
+  stone: '#a89e8e',
+  stoneDark: '#746d63',
+  jade: SCENE_COLORS.jade,
+  leaf: '#527760',
+  leafDark: '#365846',
+  rice: '#78904d',
+  water: SCENE_COLORS.water,
+  bronze: '#87652f',
+  indigo: '#596b68',
+  cream: SCENE_COLORS.paperLight,
 } as const

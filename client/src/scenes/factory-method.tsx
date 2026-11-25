@@ -29,9 +29,9 @@ const factoryMethod: SceneDefinition = {
     return (
       <g>
         <Stars seed={5} count={60} maxY={170} />
-        <Firework x={320} y={70} r={30} color="#f87171" />
-        <Firework x={660} y={56} r={36} color="#fbbf24" />
-        <Firework x={590} y={128} r={20} color="#86efac" />
+        <Firework x={320} y={70} r={30} color="#a95a51" />
+        <Firework x={660} y={56} r={36} color="#a87934" />
+        <Firework x={590} y={128} r={20} color="#5f806c" />
         <LanternString x0={-10} x1={340} y={10} sag={18} count={4} />
         <LanternString x0={620} x1={970} y={10} sag={18} count={4} colors={['#f2a03b', '#d62828']} />
         <Hills y={300} amp={30} color="#141a3a" seed={2} />
@@ -40,7 +40,7 @@ const factoryMethod: SceneDefinition = {
         <Hall cx={770} y={320} w={220} h={70} roofH={52} wall="#6f3a1a" />
         <BlossomTree x={36} y={330} s={1.05} color="#f9a8d4" seed={4} />
         <BlossomTree x={926} y={330} s={1.05} color="#facc15" seed={7} flip />
-        <Ground y={318} color="#24160f" edge="#3a2418" />
+        <Ground y={318} color="#c3ae91" edge="#876f58" />
 
         {/* The shared routine, painted on a board: wrap → boil → offer at the altar */}
         <line x1={420} y1={232} x2={414} y2={330} stroke={INK} strokeWidth={5} />

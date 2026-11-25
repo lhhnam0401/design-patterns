@@ -3,13 +3,8 @@ import type { Tone } from './palette'
 
 /** Unique SVG ids for one rendered scene, so several scenes can share a page. */
 export interface SceneIds {
-  sky: string
-  lamp: string
-  glow: string
-  shadow: string
   grain: string
-  vignette: string
-  water: string
+  print: string
   arrow: Record<Tone, string>
 }
 

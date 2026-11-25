@@ -65,11 +65,11 @@ const templateMethod: SceneDefinition = {
       : ['broth', 'ingredients', 'season', '(optional)', 'garnish']
     return (
       <g>
-        <rect width={W} height={440} fill="#2b170d" />
+        <rect width={W} height={440} fill="#ded0ba" />
         {Array.from({ length: 16 }, (_, i) => (
-          <line key={i} x1={i * 62 + 14} y1={0} x2={i * 62 + 14} y2={300} stroke="#1a0d07" strokeWidth={3} />
+          <line key={i} x1={i * 62 + 14} y1={0} x2={i * 62 + 14} y2={300} stroke="#8b755e" strokeWidth={1} opacity={0.28} />
         ))}
-        <rect y={300} width={W} height={140} fill="#4a3220" />
+        <rect y={300} width={W} height={140} fill="#c6b090" />
         <rect y={296} width={W} height={8} fill={C.woodDark} stroke={INK} strokeWidth={1.5} />
         <Lantern x={60} y={110} r={11} cord={50} />
         <Lantern x={900} y={110} r={11} cord={50} color="#f2a03b" />
@@ -91,14 +91,14 @@ const templateMethod: SceneDefinition = {
         {POTS.map(p => (
           <g key={p.x}>
             <Pot x={p.x} y={392} w={112} color={p.color} />
-            <rect x={p.x - 60} y={232} width={120} height={24} rx={12} fill="#0a0f1d" fillOpacity={0.8} stroke={INK} />
+            <rect x={p.x - 60} y={232} width={120} height={24} rx={2} fill="#f8f1e4" stroke={INK} />
             {[0, 1, 2, 3, 4].map(k => (
               <circle key={k} cx={p.x - 40 + k * 20} cy={244} r={6}
                 fill={p.own.includes(k) ? C.gold : 'none'} stroke={C.gold} strokeWidth={1.6} />
             ))}
           </g>
         ))}
-        <Caption x={480} y={222} size={11} fill="#fde68a">{lang === 'vi' ? '● bước riêng của món   ○ dùng mặc định' : '● its own step   ○ uses the default'}</Caption>
+        <Caption x={480} y={222} size={11} fill={INK}>{lang === 'vi' ? '● bước riêng của món   ○ dùng mặc định' : '● its own step   ○ uses the default'}</Caption>
         <Person x={340} y={400} s={1.0} robe="#e5e7eb" pants="#374151" hat="topknot" pose="reach">
           <path d="M30,-58 L60,-74" stroke={C.wood} strokeWidth={3} />
           <ellipse cx={62} cy={-75} rx={6} ry={3} fill={C.wood} stroke={INK} />

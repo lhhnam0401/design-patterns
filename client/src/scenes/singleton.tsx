@@ -52,7 +52,7 @@ const singleton: SceneDefinition = {
       <BronzeDrum cx={622} y={232} w={42} h={26} />
       <Hall cx={480} y={205} w={200} h={56} roofH={40} tiers={2} />
 
-      <Ground y={342} color="#22150f" edge="#33201a" />
+      <Ground y={342} color="#c2ae91" edge="#87705b" />
       <Path points={[[30, 450], [150, 410], [300, 372], [452, 348]]} />
       <Path points={[[290, 450], [350, 404], [420, 368], [466, 350]]} width={22} />
       <Path points={[[940, 450], [820, 410], [660, 372], [508, 348]]} />
