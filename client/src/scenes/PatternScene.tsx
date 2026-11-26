@@ -1,7 +1,8 @@
 import type { Pattern } from '../types/pattern'
+import ScenePlate from './ScenePlate'
 import SceneView from './SceneView'
 import { sceneFor } from './registry'
-import type { Lang, SceneVariant } from './types'
+import { isPlate, type Lang, type SceneVariant } from './types'
 
 interface Props {
   pattern: Pattern
@@ -14,12 +15,9 @@ interface Props {
 export default function PatternScene({ pattern, lang, variant, compact = false }: Props) {
   const definition = sceneFor(pattern.slug)
   if (!definition) return null
-  return (
-    <SceneView
-      definition={definition}
-      diagram={pattern.diagram}
-      lang={lang}
-      variant={variant ?? (compact ? 'thumbnail' : 'detail')}
-    />
-  )
+  const resolved = variant ?? (compact ? 'thumbnail' : 'detail')
+  if (isPlate(definition)) {
+    return <ScenePlate definition={definition} diagram={pattern.diagram} lang={lang} variant={resolved} />
+  }
+  return <SceneView definition={definition} diagram={pattern.diagram} lang={lang} variant={resolved} />
 }

@@ -2,6 +2,8 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
 const routes = ['/', '/category/creational', '/pattern/singleton', '/missing']
+/** Pages whose example is a redesigned Đông Hồ plate with pins, steps and a legend. */
+const plateRoutes = ['/pattern/observer', '/pattern/abstract-factory', '/pattern/decorator']
 
 for (const route of routes) {
   test(`${route} has a coherent responsive shell`, async ({ page }) => {
@@ -38,7 +40,7 @@ test('home page Vietnamese visual baseline', async ({ page }) => {
 
 test('primary routes have no serious automated accessibility violations', async ({ page }, testInfo) => {
   test.skip(!['mobile-360', 'desktop-1280'].includes(testInfo.project.name), 'mobile and desktop accessibility audit')
-  for (const route of routes.slice(0, 3)) {
+  for (const route of [...routes.slice(0, 3), ...plateRoutes]) {
     await page.goto(route)
     const results = await new AxeBuilder({ page }).analyze()
     const serious = results.violations
@@ -65,4 +67,40 @@ test('archival illustrations hold together in card and detail contexts', async (
     await page.goto('/pattern/adapter')
     await expect(page.locator('#example [aria-label="Technical annotations"]')).toHaveScreenshot('scene-mobile-legend.png', { animations: 'disabled' })
   }
+})
+
+const plateCases = ['observer', 'abstract-factory', 'decorator']
+
+test('Đông Hồ plates hold together in overview, mid-walkthrough and as cards', async ({ page }, testInfo) => {
+  test.skip(!['mobile-360', 'desktop-1280'].includes(testInfo.project.name), 'representative plate review widths')
+
+  for (const slug of plateCases) {
+    await page.goto(`/pattern/${slug}`)
+    const plate = page.locator('[data-scene-explorer] > div').first()
+    await expect(plate).toHaveScreenshot(`plate-${slug}.png`, { animations: 'disabled' })
+
+    const controls = page.locator('[data-scene-steps] [role="group"]')
+    await controls.getByRole('button', { name: 'Start' }).click()
+    await controls.getByRole('button', { name: 'Next' }).click()
+    await expect(page.locator('[data-step-status]')).toContainText('Step 2 of')
+    await expect(plate).toHaveScreenshot(`plate-${slug}-step2.png`, { animations: 'disabled' })
+  }
+
+  if (testInfo.project.name === 'mobile-360') {
+    await page.goto('/pattern/observer')
+    await expect(page.locator('[data-scene-legend]')).toHaveScreenshot('plate-observer-legend.png', { animations: 'disabled' })
+  }
+
+  await page.goto('/category/behavioral')
+  const card = page.locator('a[href="/pattern/observer"] [data-scene-variant="thumbnail"]')
+  await expect(card).toHaveScreenshot('plate-observer-card.png', { animations: 'disabled' })
+})
+
+test('plate pins and legend rows light the same object', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop-1280', 'desktop pointer check')
+  await page.goto('/pattern/observer')
+  await page.locator('[data-legend-row="F"]').hover()
+  await expect(page.locator('[data-part="o3"]')).toHaveAttribute('data-lit', 'true')
+  await expect(page.locator('[data-part="pub"]')).toHaveAttribute('data-dimmed', 'true')
+  await expect(page.locator('[data-pin="F"]')).toHaveAttribute('data-lit', 'true')
 })

@@ -4,7 +4,7 @@ import { rng } from './kit/geometry'
 import { Moon, Stars, Water } from './kit/nature'
 import { C, INK, SCENE_COLORS } from './kit/palette'
 import { Lantern } from './kit/props'
-import type { SceneDefinition } from './types'
+import type { LegacySceneDefinition } from './types'
 
 /** The three shared lantern designs (the intrinsic state): red, yellow and pink, as in the code sample. */
 export const DESIGNS = [
@@ -26,7 +26,7 @@ function floating(x: number, y: number, d: number, s: number, ring: boolean, key
   )
 }
 
-const flyweight: SceneDefinition = {
+const flyweight: LegacySceneDefinition = {
   slug: 'flyweight',
   title: { en: 'Flyweight: thousands of lanterns, three shared designs', vi: 'Flyweight: hàng nghìn đèn hoa đăng, ba mẫu dùng chung' },
   sky: 'night',

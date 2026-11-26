@@ -1,70 +1,138 @@
-import { Hall } from './kit/architecture'
-import { Person } from './kit/figures'
-import { band } from './kit/geometry'
-import { Bamboo, Ground, Hills, Moon, Paddy, Stars } from './kit/nature'
-import { C, INK } from './kit/palette'
-import { BronzeDrum, Scroll } from './kit/props'
-import type { SceneDefinition } from './types'
+import { Person } from './print/figures'
+import { Grass, GroundBand, Moon, Stars } from './print/nature'
+import { INK, PIGMENT } from './print/pigments'
+import { BronzeDrum, HangingScroll } from './print/props'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { SceneArtProps, SceneDefinition } from './types'
+
+const FEET = 378
+const LISTENERS = { o1: 590, o2: 730, o3: 870 } as const
 
 const observer: SceneDefinition = {
   slug: 'observer',
   title: { en: 'Observer: the bronze drum signals the village', vi: 'Observer: tiếng trống đồng báo hiệu cả làng' },
-  sky: 'night',
-  tags: [
-    { nodeId: 'pub', method: 'strike', caption: { en: 'one beat for everyone', vi: 'một hồi trống cho tất cả' }, at: [330, 54], to: [440, 136] },
-    { nodeId: 'pub', method: 'subscribe', caption: { en: 'the list of listeners', vi: 'danh sách người nghe' }, at: [620, 54], to: [608, 186] },
-    { nodeId: 'client', caption: { en: 'the elder signs them up', vi: 'cụ trưởng làng ghi tên' }, at: [780, 140], to: [696, 182] },
-    { nodeId: 'obs', method: 'react', caption: { en: 'anyone who hears it', vi: 'ai nghe trống cũng phản ứng' }, at: [346, 330], to: [404, 262] },
-    { nodeId: 'o1', caption: { en: 'runs back to the village', vi: 'chạy về làng' }, at: [100, 300], to: [146, 334] },
-    { nodeId: 'o2', caption: { en: 'takes up arms', vi: 'cầm vũ khí' }, at: [660, 330], to: [572, 344] },
-    { nodeId: 'o3', caption: { en: 'left to trade far away', vi: 'đi buôn xa, hủy đăng ký' }, at: [866, 300], to: [884, 334] },
+  setting: 'night',
+  pins: [
+    { nodeId: 'client', caption: { en: 'the elder signs people up and strikes the drum', vi: 'cụ trưởng làng ghi tên và đánh trống' }, at: [92, 360] },
+    { nodeId: 'pub', methods: ['subscribe', 'unsubscribe', 'strike'], caption: { en: 'keeps the list, beats once for everyone on it', vi: 'giữ danh sách, đánh một hồi cho mọi người trong đó' }, at: [330, 330] },
+    { nodeId: 'obs', methods: ['react'], caption: { en: 'anyone who hears the drum', vi: 'bất kỳ ai nghe tiếng trống' }, at: [586, 44], side: 'left' },
+    { nodeId: 'o1', caption: { en: 'runs back to the village', vi: 'chạy về làng' }, at: [LISTENERS.o1, 362], showName: false },
+    { nodeId: 'o2', caption: { en: 'takes up arms', vi: 'cầm vũ khí' }, at: [LISTENERS.o2, 362], showName: false },
+    { nodeId: 'o3', caption: { en: 'leaves to trade far away', vi: 'đi buôn xa, hủy đăng ký' }, at: [LISTENERS.o3, 362], showName: false },
   ],
   calls: [
-    { nodeId: 'obs', method: 'react', d: 'M418,214 C330,250 240,290 176,330', at: [270, 266] },
-    { nodeId: 'obs', method: 'react', d: 'M528,216 C570,250 586,290 576,326' },
-    { nodeId: 'pub', method: 'unsubscribe', d: 'M870,326 C820,262 720,232 642,224', at: [760, 246] },
+    { id: 'subscribe', nodeId: 'pub', method: 'subscribe', d: 'M118,244 C150,196 230,186 290,194' },
+    { id: 'unsubscribe', nodeId: 'pub', method: 'unsubscribe', d: 'M124,270 C170,240 240,226 290,224' },
+    { id: 'strike', nodeId: 'pub', method: 'strike', d: 'M176,318 L246,318' },
+    { id: 'react-o1', nodeId: 'o1', method: 'react', d: 'M412,300 C470,284 520,284 556,296' },
+    { id: 'react-o2', nodeId: 'o2', method: 'react', d: 'M408,282 C480,196 640,190 698,268' },
+    { id: 'react-o3', nodeId: 'o3', method: 'react', d: 'M402,266 C470,130 790,124 838,262' },
   ],
+  steps: [
+    {
+      calls: ['subscribe'],
+      nodes: ['client', 'pub', 'o1', 'o2', 'o3'],
+      at: [205, 182],
+      caption: { en: 'The elder writes the farmer, the soldier and the trader on the drum’s list.', vi: 'Cụ trưởng làng ghi tên người nông dân, người lính và người lái buôn vào danh sách của trống.' },
+    },
+    {
+      calls: ['strike', 'react-o1', 'react-o2', 'react-o3'],
+      nodes: ['client', 'pub', 'obs', 'o1', 'o2', 'o3'],
+      at: [482, 232],
+      caption: { en: 'Enemies are coming: one strike, and each listener reacts in its own way.', vi: 'Giặc đến: chỉ một hồi trống, mỗi người nghe phản ứng theo cách riêng.' },
+    },
+    {
+      calls: ['unsubscribe'],
+      nodes: ['client', 'pub', 'o3'],
+      at: [196, 240],
+      caption: { en: 'The trader leaves to trade far away, so the elder crosses him off the list.', vi: 'Người lái buôn đi buôn xa, nên cụ trưởng làng gạch tên khỏi danh sách.' },
+    },
+    {
+      calls: ['strike', 'react-o1', 'react-o2'],
+      nodes: ['client', 'pub', 'obs', 'o1', 'o2'],
+      at: [212, 296],
+      caption: { en: 'The festival strike now reaches only the farmer and the soldier.', vi: 'Hồi trống lễ hội giờ chỉ đến tai người nông dân và người lính.' },
+    },
+  ],
+  focus: [210, 70, 720, 312],
   untagged: [],
-  Art: function ObserverArt() {
+  Art: function ObserverArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        <Stars seed={17} count={60} maxY={180} />
-        <Moon x={860} y={60} r={22} />
-        <Hills y={240} amp={40} color="#141a3a" seed={11} />
-        <path d={band([[240, 330], [340, 268], [480, 252], [640, 266], [740, 330]], 440)} fill="#2a1d14" />
+      <>
+        <Backdrop>
+          <Moon x={88} y={50} r={22} />
+          <Stars seed={17} count={14} x0={170} x1={540} y0={12} y1={86} />
+          <GroundBand />
+          <Grass x0={430} x1={560} seed={4} count={6} />
+          <Grass x0={10} x1={60} seed={6} count={3} />
+        </Backdrop>
 
-        {/* Sound rings spreading from the drum */}
-        {[1, 2, 3, 4].map(i => (
-          <ellipse key={i} cx={470} cy={170} rx={70 + i * 70} ry={34 + i * 34} fill="none" stroke={C.gold} strokeOpacity={0.32 - i * 0.06} strokeWidth={3} />
-        ))}
-        <BronzeDrum cx={470} y={250} w={130} h={80} />
-        <Person x={386} y={262} s={1.05} robe="#7f1d1d" hat="khanXep" pose="wave">
-          <line x1={22} y1={-100} x2={40} y2={-116} stroke={C.wood} strokeWidth={5} strokeLinecap="round" />
-          <circle cx={42} cy={-118} r={6} fill="#a16207" stroke={INK} />
-        </Person>
+        {/* The listener interface hangs over exactly the three listeners */}
+        <Part node="obs">
+          <Signboard x={730} w={320} tone="interface" span={[LISTENERS.o1, LISTENERS.o3]} ticks={Object.values(LISTENERS)}>
+            <Caption x={730} y={53}>{lang === 'vi' ? 'Ai nghe trống đều phản ứng' : 'Everyone who hears the drum'}</Caption>
+          </Signboard>
+        </Part>
 
-        {/* The list of listeners and the elder who keeps it */}
-        <Scroll x={584} y={190} w={48} h={50} lines={3} seal={false} />
-        <Person x={690} y={262} s={0.92} robe="#4b5563" hat="khanXep" pose="reach" flip />
+        {/* The drum, its frame and the list of listeners it keeps */}
+        <Part node="pub">
+          <g stroke={INK} strokeWidth={3} strokeLinejoin="round">
+            <rect x={238} y={160} width={9} height={220} fill={PIGMENT.wood} />
+            <rect x={413} y={160} width={9} height={220} fill={PIGMENT.wood} />
+            <path d="M216,150 Q228,160 240,156 L420,156 Q432,160 444,150 L440,166 L220,166 Z" fill={PIGMENT.red} />
+          </g>
+          <line x1={312} y1={166} x2={312} y2={178} stroke={INK} strokeWidth={2} />
+          <line x1={348} y1={166} x2={348} y2={178} stroke={INK} strokeWidth={2} />
+          <HangingScroll x={298} y={180} w={64} h={62} lines={3} struck={2} />
+          <rect x={262} y={370} width={136} height={10} fill={PIGMENT.woodDark} stroke={INK} strokeWidth={2.5} />
+          <BronzeDrum cx={330} y={372} w={140} h={96} />
+          {[0, 1, 2].map(i => (
+            <path key={i} d={`M${244 - i * 2},${300 + i * 12} l-10,${-4 + i * 4}`} stroke={PIGMENT.yellowDark} strokeWidth={3} strokeLinecap="round" />
+          ))}
+        </Part>
 
-        <Ground y={350} color="#c1ae94" edge="#89745f" />
-        <Paddy x={10} y={360} w={230} h={64} height={12} />
-        <Bamboo x={240} y={360} h={140} seed={8} count={3} />
-        <Hall cx={780} y={360} w={120} h={38} roofH={28} doors={2} glow={false} />
+        {/* The elder: signs people up and strikes the drum */}
+        <Part node="client">
+          <Person x={92} y={FEET} s={1.3} robe={PIGMENT.blue} pants={PIGMENT.blueDark} hat="khanXep" pose="reach">
+            <line x1={32} y1={-60} x2={54} y2={-45} stroke={INK} strokeWidth={5} strokeLinecap="round" />
+            <line x1={32} y1={-60} x2={54} y2={-45} stroke={PIGMENT.wood} strokeWidth={2.6} strokeLinecap="round" />
+            <circle cx={57} cy={-43} r={5} fill={PIGMENT.red} stroke={INK} strokeWidth={1.8} />
+          </Person>
+        </Part>
 
-        {/* Farmer runs home, soldier takes up arms */}
-        <Person x={146} y={428} s={1.05} robe="#6b4226" pants="#3a2a1d" hat="nonLa" long={false} pose="wave" />
-        <Person x={572} y={430} s={1.1} robe="#7f1d1d" pants="#2a1a12" hat="helmet" armor pose="wave">
-          <line x1={22} y1={-60} x2={26} y2={-150} stroke={INK} strokeWidth={4} />
-          <path d="M26,-150 l-4,-2 l4,-14 l4,14 Z" fill="#cbd5e1" stroke={INK} strokeWidth={1.2} />
-        </Person>
+        {/* The farmer runs home with his hoe */}
+        <Part node="o1">
+          <Person x={LISTENERS.o1} y={FEET} s={1.2} robe={PIGMENT.amber} pants={PIGMENT.woodDark} hat="nonLa" long={false}>
+            <line x1={26} y1={-112} x2={26} y2={-8} stroke={INK} strokeWidth={5.5} strokeLinecap="round" />
+            <line x1={26} y1={-112} x2={26} y2={-8} stroke={PIGMENT.wood} strokeWidth={3} strokeLinecap="round" />
+            <path d="M16,-10 L36,-10 L34,0 L18,0 Z" fill={PIGMENT.steel} stroke={INK} strokeWidth={1.8} strokeLinejoin="round" />
+          </Person>
+        </Part>
 
-        {/* The trader unsubscribed and is walking away */}
-        <Person x={884} y={424} s={1.0} robe="#1f4e79" hat="nonLa" long={false} pose="hold" dim>
-          <line x1={-30} y1={-68} x2={30} y2={-68} stroke={C.wood} strokeWidth={4} />
-          <path d="M-40,-48 L-20,-48 L-24,-30 L-36,-30 Z M20,-48 L40,-48 L36,-30 L24,-30 Z" fill="#a16207" stroke={INK} strokeWidth={1.4} />
-        </Person>
-      </g>
+        {/* The soldier takes up his spear */}
+        <Part node="o2">
+          <Person x={LISTENERS.o2} y={FEET} s={1.2} robe={PIGMENT.red} pants={PIGMENT.woodDark} hat="helmet" armor>
+            <line x1={20} y1={-20} x2={22} y2={-122} stroke={INK} strokeWidth={5.5} strokeLinecap="round" />
+            <line x1={20} y1={-20} x2={22} y2={-122} stroke={PIGMENT.wood} strokeWidth={3} strokeLinecap="round" />
+            <path d="M22,-122 l-5,-3 l5,-16 l5,16 Z" fill={PIGMENT.steel} stroke={INK} strokeWidth={1.6} strokeLinejoin="round" />
+          </Person>
+        </Part>
+
+        {/* The trader carries his goods on a shoulder pole */}
+        <Part node="o3">
+          <Person x={LISTENERS.o3} y={FEET} s={1.2} robe={PIGMENT.green} pants={PIGMENT.woodDark} hat="nonLa" long={false} pose="hold">
+            <line x1={-36} y1={-70} x2={36} y2={-70} stroke={INK} strokeWidth={6} strokeLinecap="round" />
+            <line x1={-36} y1={-70} x2={36} y2={-70} stroke={PIGMENT.wood} strokeWidth={3} strokeLinecap="round" />
+            {[-32, 32].map(bx => (
+              <g key={bx}>
+                <path d={`M${bx - 8},-70 L${bx - 11},-42 M${bx + 8},-70 L${bx + 11},-42`} stroke={INK} strokeWidth={1.4} />
+                <path d={`M${bx - 13},-42 L${bx + 13},-42 L${bx + 9},-24 L${bx - 9},-24 Z`} fill={PIGMENT.yellow} stroke={INK} strokeWidth={2} strokeLinejoin="round" />
+                <path d={`M${bx - 11},-35 L${bx + 11},-35`} stroke={PIGMENT.yellowDark} strokeWidth={1.4} />
+              </g>
+            ))}
+          </Person>
+        </Part>
+      </>
     )
   },
 }

@@ -4,7 +4,7 @@ import { Cloud, Grass, Hills, Sun } from './kit/nature'
 import { Caption } from './kit/overlay'
 import { C, INK, W } from './kit/palette'
 import { Banner, Lantern, RolledScroll, Scroll, Table } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
 /** An open decree scroll with a small picture of what it orders. */
 function decree(x: number, y: number, kind: 'citadel' | 'tax') {
@@ -27,7 +27,7 @@ function decree(x: number, y: number, kind: 'citadel' | 'tax') {
   )
 }
 
-const command: SceneDefinition = {
+const command: LegacySceneDefinition = {
   slug: 'command',
   title: { en: 'Command: the Emperor’s decrees as objects', vi: 'Command: chiếu chỉ của Hoàng Đế là các đối tượng' },
   sky: 'dawn',

@@ -5,10 +5,12 @@ import SceneView from '../scenes/SceneView'
 import { allPatterns } from '../data'
 import { scenes } from '../scenes/registry'
 import { SCENE_COLORS, TONES } from '../scenes/kit/palette'
-import type { SceneVariant } from '../scenes/types'
+import { isPlate, type LegacySceneDefinition, type SceneVariant } from '../scenes/types'
 
 const pattern = allPatterns.find(item => item.slug === 'factory-method')!
-const definition = scenes['factory-method']
+const anyDefinition = scenes['factory-method']
+if (isPlate(anyDefinition)) throw new Error('factory-method is a plate now: move these checks onto ScenePlate')
+const definition: LegacySceneDefinition = anyDefinition
 
 const renderScene = (variant: SceneVariant, lang: 'en' | 'vi' = 'en') => renderToStaticMarkup(
   <SceneView definition={definition} diagram={pattern.diagram} lang={lang} variant={variant} />,

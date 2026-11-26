@@ -1,8 +1,8 @@
 import type { Diagram } from '../types/pattern'
-import type { Lang, SceneDefinition } from './types'
+import type { Lang, LegacySceneDefinition } from './types'
 
 interface Props {
-  definition: SceneDefinition
+  definition: LegacySceneDefinition
   diagram: Diagram
   lang: Lang
 }

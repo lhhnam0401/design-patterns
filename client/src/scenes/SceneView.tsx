@@ -2,10 +2,10 @@ import type { Diagram } from '../types/pattern'
 import SceneFrame from './kit/SceneFrame'
 import { toneOf } from './kit/names'
 import { Call, Tag } from './kit/overlay'
-import type { Lang, SceneDefinition, SceneVariant } from './types'
+import type { Lang, LegacySceneDefinition, SceneVariant } from './types'
 
 interface Props {
-  definition: SceneDefinition
+  definition: LegacySceneDefinition
   diagram: Diagram
   lang: Lang
   variant?: SceneVariant

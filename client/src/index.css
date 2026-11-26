@@ -196,12 +196,13 @@ pre {
   }
 }
 
-/* On narrow screens the illustration becomes a clean plate; the generated legend carries its technical detail. */
+/* Legacy scenes only: on narrow screens the illustration becomes a clean plate and the legend carries the detail.
+   Redesigned plates (data-scene-frame="dong-ho-plate") keep their arrows and use container queries instead. */
 @media (max-width: 767px) {
-  [data-scene-variant="detail"] [data-scene-tags="true"],
-  [data-scene-variant="detail"] [data-scene-calls="true"],
-  [data-scene-variant="feature"] [data-scene-calls="true"],
-  [data-scene-variant="detail"] [data-scene-caption="true"] {
+  [data-scene-frame="paper-print"][data-scene-variant="detail"] [data-scene-tags="true"],
+  [data-scene-frame="paper-print"][data-scene-variant="detail"] [data-scene-calls="true"],
+  [data-scene-frame="paper-print"][data-scene-variant="feature"] [data-scene-calls="true"],
+  [data-scene-frame="paper-print"][data-scene-variant="detail"] [data-scene-caption="true"] {
     display: none;
   }
 }

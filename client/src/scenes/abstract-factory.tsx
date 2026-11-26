@@ -1,120 +1,145 @@
-import { Hall } from './kit/architecture'
-import { Person } from './kit/figures'
-import { BlossomTree, Ground, Hills, Stars } from './kit/nature'
-import { Caption } from './kit/overlay'
-import { C, INK } from './kit/palette'
-import { Board, Dish, LanternString, LogCake, SquareCake, Table } from './kit/props'
+import { Person } from './print/figures'
+import { BraisedPorkBowl, JelliedPork, Kitchen, LogCake, PickledLeekJar, PickledOnionBowl, SquareCake } from './print/food'
+import { BlossomBranch, GroundBand, Moon } from './print/nature'
+import { INK, PIGMENT, TINT } from './print/pigments'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
 import type { SceneArtProps, SceneDefinition } from './types'
 
-const TABLE_TOP = 344
+/** Columns of the matrix: the kitchens, then one column per kind of dish. */
+const COL = { kitchen: 300, cake: 480, meat: 640, pickle: 800 } as const
+/** Rows: the Northern tray sits on a raised terrace, the Southern tray on the ground. */
+const NORTH = 222
+const SOUTH = 366
+const NORTH_TERRACE = 232
 
-/** Thịt đông: a set slab of jellied pork, cut into squares, on a plate. */
-function jelliedPork(x: number, y: number) {
-  return (
-    <g>
-      <ellipse cx={x} cy={y + 3} rx={29} ry={8.7} fill="#e8e2d0" stroke={INK} strokeWidth={1.5} />
-      <rect x={x - 19} y={y - 13} width={38} height={14} rx={2} fill="#e9d9c4" stroke={INK} strokeWidth={1.3} />
-      <line x1={x - 6} y1={y - 13} x2={x - 6} y2={y + 1} stroke={INK} strokeOpacity={0.45} />
-      <line x1={x + 7} y1={y - 13} x2={x + 7} y2={y + 1} stroke={INK} strokeOpacity={0.45} />
-      {[[-13, -8], [1, -5], [13, -9], [-11, -3]].map(([dx, dy], i) => (
-        <circle key={i} cx={x + dx} cy={y + dy} r={2} fill="#b98a68" stroke={INK} strokeWidth={0.6} />
-      ))}
-      <path d={`M${x - 16},${y - 11} l8,0`} stroke="#fffaf0" strokeWidth={1.2} />
-    </g>
-  )
-}
-
-/** Thịt kho tàu: braised pork belly with halved eggs in a bowl. */
-function braisedPorkWithEggs(x: number, y: number) {
-  return (
-    <g>
-      <path d={`M${x - 26},${y - 8} Q${x - 24},${y + 8} ${x},${y + 9} Q${x + 24},${y + 8} ${x + 26},${y - 8} Z`} fill="#e8e2d0" stroke={INK} strokeWidth={1.5} />
-      <ellipse cx={x} cy={y - 8} rx={26} ry={5} fill="#a8642f" stroke={INK} strokeWidth={1.3} />
-      {[-14, 13].map(dx => (
-        <g key={dx}>
-          <ellipse cx={x + dx} cy={y - 10} rx={7} ry={4.5} fill="#f4ead2" stroke={INK} strokeWidth={1} />
-          <circle cx={x + dx} cy={y - 10} r={2.6} fill="#d99a2b" />
-        </g>
-      ))}
-      <rect x={x - 5} y={y - 14} width={9} height={6} rx={1.5} fill="#7d4527" stroke={INK} strokeWidth={0.9} />
-    </g>
-  )
-}
+const tr = (lang: SceneArtProps['lang'], en: string, vi: string) => (lang === 'vi' ? vi : en)
 
 const abstractFactory: SceneDefinition = {
   slug: 'abstract-factory',
   title: { en: 'Abstract Factory: matching Tết feast trays', vi: 'Abstract Factory: mâm cỗ Tết đồng bộ theo vùng' },
-  sky: 'night',
-  tags: [
-    { nodeId: 'factory', caption: { en: 'every kitchen makes one full tray', vi: 'bếp nào cũng làm đủ một mâm' }, at: [480, 24], to: [480, 52] },
-    { nodeId: 'facN', caption: { en: 'Northern kitchen', vi: 'bếp miền Bắc' }, at: [118, 96], to: [160, 146] },
-    { nodeId: 'facS', caption: { en: 'Southern kitchen', vi: 'bếp miền Nam' }, at: [842, 96], to: [800, 146] },
-    { nodeId: 'riceCakeI', caption: { en: 'a rice cake', vi: 'một loại bánh' }, at: [370, 204], to: [410, 158] },
-    { nodeId: 'meatDishI', caption: { en: 'a meat dish', vi: 'một món thịt' }, at: [480, 204], to: [480, 158] },
-    { nodeId: 'pickleI', caption: { en: 'a pickle', vi: 'một loại dưa' }, at: [592, 204], to: [550, 158] },
-    { nodeId: 'client', method: 'prepare', caption: { en: 'the host sets the tray', vi: 'gia chủ bày mâm' }, at: [610, 272], to: [500, 290] },
-    { nodeId: 'cakeN', caption: { en: 'bánh chưng', vi: 'bánh chưng' }, at: [142, 410], to: [182, 330] },
-    { nodeId: 'meatN', caption: { en: 'thịt đông', vi: 'thịt đông' }, at: [262, 410], to: [265, 334] },
-    { nodeId: 'pickN', caption: { en: 'dưa hành', vi: 'dưa hành' }, at: [382, 410], to: [350, 334] },
-    { nodeId: 'cakeS', caption: { en: 'bánh tét', vi: 'bánh tét' }, at: [575, 410], to: [612, 330] },
-    { nodeId: 'meatS', caption: { en: 'thịt kho tàu', vi: 'thịt kho tàu' }, at: [705, 410], to: [695, 334] },
-    { nodeId: 'pickS', caption: { en: 'dưa kiệu', vi: 'dưa kiệu' }, at: [845, 410], to: [780, 334] },
+  setting: 'night',
+  pins: [
+    { nodeId: 'client', methods: ['prepare'], caption: { en: 'the host sets the tray, knowing only the interfaces', vi: 'gia chủ bày mâm, chỉ biết các giao diện' }, at: [100, 362] },
+    { nodeId: 'factory', methods: ['makeRiceCake', 'makeMeatDish', 'makePickle'], caption: { en: 'every kitchen makes one full tray', vi: 'bếp nào cũng làm đủ một mâm' }, at: [364, 44], showName: false },
+    { nodeId: 'facN', caption: { en: 'the Northern kitchen', vi: 'bếp miền Bắc' }, at: [270, 205], showName: false },
+    { nodeId: 'facS', caption: { en: 'the Southern kitchen', vi: 'bếp miền Nam' }, at: [284, 358], showName: false },
+    { nodeId: 'riceCakeI', methods: ['serve'], caption: { en: 'a rice cake', vi: 'một loại bánh' }, at: [540, 44], showName: false },
+    { nodeId: 'meatDishI', methods: ['serve'], caption: { en: 'a meat dish', vi: 'một món thịt' }, at: [700, 44], showName: false },
+    { nodeId: 'pickleI', methods: ['serve', 'eatWith'], caption: { en: 'a pickle, eaten with the cake', vi: 'một món dưa, ăn kèm bánh' }, at: [860, 44], showName: false },
+    { nodeId: 'cakeN', caption: { en: 'bánh chưng', vi: 'bánh chưng' }, at: [COL.cake, 196], showName: false },
+    { nodeId: 'meatN', caption: { en: 'thịt đông', vi: 'thịt đông' }, at: [COL.meat, 200], showName: false },
+    { nodeId: 'pickN', caption: { en: 'dưa hành', vi: 'dưa hành' }, at: [COL.pickle, 212], showName: false },
+    { nodeId: 'cakeS', caption: { en: 'bánh tét', vi: 'bánh tét' }, at: [COL.cake, 351], showName: false },
+    { nodeId: 'meatS', caption: { en: 'thịt kho tàu', vi: 'thịt kho tàu' }, at: [COL.meat, 350], showName: false },
+    { nodeId: 'pickS', caption: { en: 'dưa kiệu', vi: 'dưa kiệu' }, at: [COL.pickle, 340], showName: false },
   ],
   calls: [
-    { nodeId: 'facN', method: 'makeRiceCake', d: 'M196,250 C210,280 225,300 238,318' },
-    { nodeId: 'facS', method: 'makeRiceCake', d: 'M764,250 C750,280 735,300 722,318' },
+    { id: 'prepare', nodeId: 'client', method: 'prepare', d: 'M10,214 C40,214 62,228 78,248' },
+    { id: 'cake-n', nodeId: 'facN', method: 'makeRiceCake', d: 'M152,278 C190,220 240,186 300,182 C364,178 410,178 444,192' },
+    { id: 'meat-n', nodeId: 'facN', method: 'makeMeatDish', d: 'M152,278 C190,220 240,186 300,182 C400,152 540,148 598,184' },
+    { id: 'pickle-n', nodeId: 'facN', method: 'makePickle', d: 'M152,278 C190,220 240,186 300,182 C420,130 700,124 758,178' },
+    { id: 'eat-with', nodeId: 'pickleI', method: 'eatWith', d: 'M486,240 C520,264 760,264 794,240' },
+    { id: 'cake-s', nodeId: 'facS', method: 'makeRiceCake', d: 'M152,296 C200,318 250,340 300,340 C350,340 392,346 426,352' },
+    { id: 'meat-s', nodeId: 'facS', method: 'makeMeatDish', d: 'M152,296 C200,318 250,340 300,340 C400,300 540,294 594,326' },
+    { id: 'pickle-s', nodeId: 'facS', method: 'makePickle', d: 'M152,296 C200,318 250,340 300,340 C420,276 700,268 766,312' },
   ],
+  steps: [
+    {
+      calls: ['prepare'],
+      nodes: ['client', 'factory', 'facN'],
+      at: [38, 186],
+      caption: { en: 'Given the Northern kitchen, the host starts prepare(). She only knows it as a FeastFactory.', vi: 'Được giao bếp miền Bắc, gia chủ bắt đầu prepare(). Bà chỉ biết đó là một FeastFactory.' },
+    },
+    {
+      calls: ['cake-n', 'meat-n', 'pickle-n'],
+      nodes: ['client', 'facN', 'cakeN', 'meatN', 'pickN', 'riceCakeI', 'meatDishI', 'pickleI'],
+      at: [186, 232],
+      caption: { en: 'She asks for a rice cake, a meat dish and a pickle. The Northern kitchen sends bánh chưng, thịt đông and dưa hành.', vi: 'Bà xin một loại bánh, một món thịt và một món dưa. Bếp miền Bắc gửi bánh chưng, thịt đông và dưa hành.' },
+    },
+    {
+      calls: ['eat-with'],
+      nodes: ['client', 'cakeN', 'pickN', 'pickleI'],
+      at: [560, 256],
+      caption: { en: 'eatWith(cake): dưa hành goes with bánh chưng because both came from the same kitchen.', vi: 'eatWith(cake): dưa hành ăn kèm bánh chưng vì cả hai cùng do một bếp làm ra.' },
+    },
+    {
+      calls: ['cake-s', 'meat-s', 'pickle-s'],
+      nodes: ['client', 'factory', 'facS', 'cakeS', 'meatS', 'pickS'],
+      at: [196, 314],
+      caption: { en: 'Given the Southern kitchen, the same three calls bring bánh tét, thịt kho tàu and dưa kiệu. Her code does not change.', vi: 'Được giao bếp miền Nam, cùng ba lời gọi ấy mang về bánh tét, thịt kho tàu và dưa kiệu. Mã của bà không đổi.' },
+    },
+  ],
+  focus: [200, 104, 700, 300],
   untagged: [],
   Art: function AbstractFactoryArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        <Stars seed={8} count={50} maxY={150} />
-        <LanternString x0={-10} x1={300} y={6} sag={16} count={4} />
-        <LanternString x0={660} x1={970} y={6} sag={16} count={4} colors={['#f2a03b', '#d62828']} />
-        <Hills y={250} amp={26} color="#b7aa98" seed={6} />
-        <BlossomTree x={36} y={262} s={0.95} color="#f9a8d4" seed={2} />
-        <BlossomTree x={924} y={262} s={0.95} color="#facc15" seed={9} flip />
-        <Hall cx={170} y={258} w={210} h={66} roofH={48} />
-        <Hall cx={790} y={258} w={210} h={66} roofH={48} wall="#6f3a1a" />
-        <Person x={150} y={250} s={0.72} robe="#9f1d1d" hat="bun" pose="hold" />
-        <Person x={812} y={250} s={0.72} robe="#4f7064" hat="nonLa" long={false} pose="hold" />
-        <Ground y={256} color="#c8b597" edge="#8e765e" />
+      <>
+        <Backdrop>
+          <Moon x={58} y={48} r={18} />
+          <BlossomBranch x={-6} y={84} s={0.9} />
+          <GroundBand />
+          {/* The Northern row stands on a raised terrace, the Southern row on the ground */}
+          <rect x={226} y={NORTH_TERRACE} width={680} height={14} fill={TINT.ground} />
+          <line x1={226} y1={NORTH_TERRACE + 1} x2={906} y2={NORTH_TERRACE + 1} stroke={TINT.groundEdge} strokeWidth={3} />
+          {[NORTH, SOUTH].map(y => (
+            <g key={y}>
+              <rect x={396} y={y} width={488} height={10} rx={2} fill={TINT.red} stroke={INK} strokeOpacity={0.5} strokeWidth={1.5} />
+              <line x1={404} y1={y + 5} x2={876} y2={y + 5} stroke={TINT.yellow} strokeWidth={1.5} strokeDasharray="10 6" />
+            </g>
+          ))}
+          <rect x={404} y={SOUTH + 10} width={8} height={4} fill={TINT.ink} />
+          <rect x={868} y={SOUTH + 10} width={8} height={4} fill={TINT.ink} />
+        </Backdrop>
 
-        {/* Banner shared by both kitchens */}
-        <line x1={340} y1={42} x2={340} y2={52} stroke={INK} strokeWidth={2} />
-        <line x1={620} y1={42} x2={620} y2={52} stroke={INK} strokeWidth={2} />
-        <Board x={330} y={52} w={300} h={30}>
-          <Caption x={480} y={72} size={13} fill={C.gold}>{lang === 'vi' ? 'Mâm cỗ ngày Tết' : 'The Tết feast tray'}</Caption>
-        </Board>
+        {/* The rail: the factory interface over the kitchens, one product interface over each column of dishes */}
+        <Part node="factory">
+          <Signboard x={COL.kitchen} w={170} tone="interface" span={[COL.kitchen - 50, COL.kitchen + 50]} ticks={[COL.kitchen]}>
+            <Caption x={COL.kitchen - 15} y={53}>{tr(lang, 'kitchen', 'bếp')}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="riceCakeI">
+          <Signboard x={COL.cake} w={150} tone="interface" span={[COL.cake - 40, COL.cake + 40]} ticks={[COL.cake]}>
+            <Caption x={COL.cake - 15} y={53}>{tr(lang, 'rice cake', 'bánh Tết')}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="meatDishI">
+          <Signboard x={COL.meat} w={150} tone="interface" span={[COL.meat - 40, COL.meat + 40]} ticks={[COL.meat]}>
+            <Caption x={COL.meat - 15} y={53}>{tr(lang, 'meat dish', 'món thịt')}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="pickleI">
+          <Signboard x={COL.pickle} w={150} tone="interface" span={[COL.pickle - 40, COL.pickle + 40]} ticks={[COL.pickle]}>
+            <Caption x={COL.pickle - 15} y={53}>{tr(lang, 'pickle', 'món dưa')}</Caption>
+          </Signboard>
+        </Part>
 
-        {/* Menu board: the three kinds of dish every tray needs */}
-        <rect x={360} y={98} width={240} height={72} rx={5} fill={C.paper} stroke={INK} strokeWidth={2.5} />
-        <Caption x={480} y={116} size={11} fill="#7c2d12">{lang === 'vi' ? 'Mỗi mâm cần' : 'Every tray needs'}</Caption>
-        <g fill="none" stroke="#7c2d12" strokeWidth={1.6} strokeDasharray="4 3">
-          <rect x={396} y={128} width={28} height={28} rx={2} />
-          <rect x={460} y={134} width={40} height={18} rx={9} />
-          <ellipse cx={550} cy={143} rx={18} ry={11} />
-        </g>
+        {/* The two kitchens, one per row */}
+        <Part node="facN">
+          <Kitchen x={COL.kitchen} y={NORTH_TERRACE} tile={PIGMENT.red}>
+            <Caption x={COL.kitchen - 16} y={NORTH_TERRACE - 110 + 51}>{tr(lang, 'North', 'Miền Bắc')}</Caption>
+          </Kitchen>
+        </Part>
+        <Part node="facS">
+          <Kitchen x={COL.kitchen} y={380} tile={PIGMENT.green}>
+            <Caption x={COL.kitchen - 16} y={380 - 110 + 51}>{tr(lang, 'South', 'Miền Nam')}</Caption>
+          </Kitchen>
+        </Part>
 
-        {/* The host stands behind the long table */}
-        <Person x={480} y={366} s={1.05} robe="#7c2d12" pants="#1f1410" hat="khanXep" pose="hold" />
+        {/* Northern tray: bánh chưng, thịt đông, dưa hành */}
+        <Part node="cakeN"><SquareCake x={COL.cake} y={NORTH} size={60} /></Part>
+        <Part node="meatN"><JelliedPork x={COL.meat} y={NORTH - 10} /></Part>
+        <Part node="pickN"><PickledOnionBowl x={COL.pickle} y={NORTH - 26} /></Part>
 
-        <Table x={80} y={384} w={800} h={32} color={C.lacquerDark} />
-        <rect x={92} y={TABLE_TOP + 2} width={776} height={26} fill={C.lacquer} stroke={INK} strokeWidth={2} />
-        <path d={`M100,${TABLE_TOP + 15} H860`} stroke={C.gold} strokeOpacity={0.55} strokeWidth={1.2} strokeDasharray="10 6" />
-        <rect x={120} y={TABLE_TOP - 4} width={290} height={6} rx={3} fill="#b91c1c" stroke={INK} strokeWidth={1} />
-        <rect x={550} y={TABLE_TOP - 4} width={290} height={6} rx={3} fill="#b91c1c" stroke={INK} strokeWidth={1} />
+        {/* Southern tray: bánh tét, thịt kho tàu, dưa kiệu */}
+        <Part node="cakeS"><LogCake x={COL.cake} y={SOUTH} w={100} h={38} /></Part>
+        <Part node="meatS"><BraisedPorkBowl x={COL.meat} y={SOUTH - 36} /></Part>
+        <Part node="pickS"><PickledLeekJar x={COL.pickle} y={SOUTH} /></Part>
 
-        {/* Northern tray */}
-        <SquareCake x={182} y={TABLE_TOP - 2} size={34} />
-        {jelliedPork(265, TABLE_TOP - 8)}
-        <Dish x={350} y={TABLE_TOP - 8} w={52} food="#f1f5f9" kind="pickles" />
-
-        {/* Southern tray */}
-        <LogCake x={612} y={TABLE_TOP - 2} w={62} h={24} />
-        {braisedPorkWithEggs(695, TABLE_TOP - 8)}
-        <Dish x={780} y={TABLE_TOP - 8} w={52} food="#f5e6b0" kind="pickles" />
-      </g>
+        {/* The host points to the kitchens; she only knows the interfaces */}
+        <Part node="client">
+          <Person x={100} y={378} s={1.3} robe={PIGMENT.red} pants={PIGMENT.redDark} hat="khanXep" pose="point" />
+        </Part>
+      </>
     )
   },
 }

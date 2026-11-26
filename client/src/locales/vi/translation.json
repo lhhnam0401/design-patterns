@@ -55,6 +55,24 @@
       "collapse": "Thoát chế độ mở rộng",
       "hint_ctrl": "Ctrl + cuộn để thu phóng",
       "hint_meta": "⌘ + cuộn để thu phóng"
+    },
+    "scene": {
+      "legend": "Chú giải kỹ thuật",
+      "key": "Ký hiệu",
+      "kind": {
+        "client": "mã client",
+        "class": "lớp",
+        "abstract": "lớp trừu tượng",
+        "interface": "giao diện"
+      },
+      "walkthrough": "Từng bước",
+      "steps_label": "Xem lần lượt các lời gọi phương thức",
+      "start": "Bắt đầu",
+      "previous": "Trước",
+      "next": "Tiếp",
+      "overview": "Tổng quan",
+      "step_of": "Bước {{n}}/{{total}}",
+      "overview_hint": "Chỉ vào một chữ cái hoặc một dòng bên dưới để làm nổi bật đối tượng đó và các lời gọi của nó, hoặc bắt đầu xem {{total}} bước."
     }
   },
   "language": {

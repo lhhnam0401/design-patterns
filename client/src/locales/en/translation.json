@@ -55,6 +55,24 @@
       "collapse": "Exit expanded view",
       "hint_ctrl": "Ctrl + scroll to zoom",
       "hint_meta": "⌘ + scroll to zoom"
+    },
+    "scene": {
+      "legend": "Technical annotations",
+      "key": "Key",
+      "kind": {
+        "client": "client code",
+        "class": "class",
+        "abstract": "abstract class",
+        "interface": "interface"
+      },
+      "walkthrough": "Walkthrough",
+      "steps_label": "Step through the method calls",
+      "start": "Start",
+      "previous": "Previous",
+      "next": "Next",
+      "overview": "Overview",
+      "step_of": "Step {{n}} of {{total}}",
+      "overview_hint": "Point at a letter or a row below to light that object and its calls, or start the {{total}}-step walkthrough."
     }
   },
   "language": {

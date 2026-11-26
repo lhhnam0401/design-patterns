@@ -3,9 +3,9 @@ import { Person } from './kit/figures'
 import { Ground, Hills, Paddy, Sun, Tree } from './kit/nature'
 import { C, INK } from './kit/palette'
 import { Jar, Lantern } from './kit/props'
-import type { SceneDefinition } from './types'
+import type { LegacySceneDefinition } from './types'
 
-const mediator: SceneDefinition = {
+const mediator: LegacySceneDefinition = {
   slug: 'mediator',
   title: { en: 'Mediator: the village council coordinates everyone', vi: 'Mediator: hội đồng làng điều phối mọi người' },
   sky: 'dawn',

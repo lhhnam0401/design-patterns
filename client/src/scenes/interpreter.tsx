@@ -2,7 +2,7 @@ import { Person } from './kit/figures'
 import { Caption } from './kit/overlay'
 import { C, INK, SCENE_COLORS, W } from './kit/palette'
 import { Jar, Shelf } from './kit/props'
-import type { Point, SceneDefinition } from './types'
+import type { Point, LegacySceneDefinition } from './types'
 
 const COUNTER = 372
 
@@ -55,7 +55,7 @@ function abacus(x: number, y: number, digits: number[]) {
   )
 }
 
-const interpreter: SceneDefinition = {
+const interpreter: LegacySceneDefinition = {
   slug: 'interpreter',
   title: { en: 'Interpreter: reading an amount written in words', vi: 'Interpreter: đọc số tiền viết bằng chữ' },
   sky: 'interior',

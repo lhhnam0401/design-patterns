@@ -2,7 +2,7 @@ import { Person } from './kit/figures'
 import { Caption } from './kit/overlay'
 import { C, INK, W } from './kit/palette'
 import { Board, Lantern, Shelf, Table } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
 /** A rooster print on giấy điệp paper, `x, y` is the top-left corner. */
 function rooster(x: number, y: number, body: string, w = 70, h = 90) {
@@ -68,7 +68,7 @@ const DRY = [
   { x: 724, color: '#eab308' },
 ]
 
-const prototype: SceneDefinition = {
+const prototype: LegacySceneDefinition = {
   slug: 'prototype',
   title: { en: 'Prototype: copying Đông Hồ master prints', vi: 'Prototype: nhân bản tranh mẫu Đông Hồ' },
   sky: 'interior',

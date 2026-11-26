@@ -5,9 +5,11 @@ import CodeBlock from '../components/CodeBlock'
 import PatternCollection from '../components/PatternCollection'
 import PatternDiagram from '../components/PatternDiagram'
 import { getPattern, patternsByCategory } from '../data'
+import SceneExplorer from '../scenes/explorer/SceneExplorer'
 import PatternScene from '../scenes/PatternScene'
 import SceneLegend from '../scenes/SceneLegend'
 import { sceneFor } from '../scenes/registry'
+import { isPlate } from '../scenes/types'
 import { patternFolio } from '../utils/presentation'
 import NotFound from './NotFound'
 
@@ -124,10 +126,16 @@ export default function PatternDetail() {
           <section id="example" className="scroll-mt-24 border-t border-line pt-7">
             <p className="eyebrow text-accent">05 / {t('pattern.example')}</p>
             <h2 className="section-title mt-3 text-ink">{pattern.vietnamese_example.title[lang]}</h2>
-            <figure className="mt-6 w-full max-w-full overflow-hidden rounded-lg border border-line bg-scene-paper">
-              <PatternScene pattern={pattern} lang={lang} variant="detail" />
-            </figure>
-            {scene && <SceneLegend definition={scene} diagram={pattern.diagram} lang={lang} />}
+            {scene && isPlate(scene) ? (
+              <SceneExplorer key={pattern.slug} definition={scene} diagram={pattern.diagram} lang={lang} />
+            ) : (
+              <>
+                <figure className="mt-6 w-full max-w-full overflow-hidden rounded-lg border border-line bg-scene-paper">
+                  <PatternScene pattern={pattern} lang={lang} variant="detail" />
+                </figure>
+                {scene && <SceneLegend definition={scene} diagram={pattern.diagram} lang={lang} />}
+              </>
+            )}
             <p className="prose-copy mt-5 text-ink-muted">{pattern.vietnamese_example.description[lang]}</p>
           </section>
 

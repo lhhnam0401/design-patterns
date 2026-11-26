@@ -3,7 +3,7 @@ import { Person, type Pose } from './kit/figures'
 import { Tree } from './kit/nature'
 import { Caption } from './kit/overlay'
 import { C, INK, SCENE_COLORS, W } from './kit/palette'
-import type { Point, SceneArtProps, SceneDefinition } from './types'
+import type { Point, SceneArtProps, LegacySceneDefinition } from './types'
 
 const GROUND = 356
 
@@ -116,7 +116,7 @@ function teaGlass(x: number, y: number) {
   )
 }
 
-const memento: SceneDefinition = {
+const memento: LegacySceneDefinition = {
   slug: 'memento',
   title: { en: 'Memento: asking to take back a move in cờ tướng', vi: 'Memento: xin đi lại một nước cờ tướng' },
   sky: 'dawn',

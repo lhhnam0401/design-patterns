@@ -6,9 +6,9 @@ import { sansWidth } from './kit/metrics'
 import { Caption } from './kit/overlay'
 import { C, INK, SCENE_COLORS } from './kit/palette'
 import { Banner, BronzeDrum, Lantern, Scroll } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
-const singleton: SceneDefinition = {
+const singleton: LegacySceneDefinition = {
   slug: 'singleton',
   title: { en: 'Singleton: the one royal court of Văn Lang', vi: 'Singleton: triều đình duy nhất của Văn Lang' },
   sky: 'dusk',

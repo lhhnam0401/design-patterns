@@ -2,7 +2,7 @@ import { Person } from './kit/figures'
 import { Caption } from './kit/overlay'
 import { C, INK, W } from './kit/palette'
 import { Lantern, Pot } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
 const STEP_X = [200, 340, 480, 620, 760]
 const POTS = [
@@ -42,7 +42,7 @@ function stepIcon(i: number, x: number, y: number) {
   }
 }
 
-const templateMethod: SceneDefinition = {
+const templateMethod: LegacySceneDefinition = {
   slug: 'template-method',
   title: { en: 'Template Method: one cooking order for every soup', vi: 'Template Method: một trình tự nấu cho mọi món nước' },
   sky: 'interior',

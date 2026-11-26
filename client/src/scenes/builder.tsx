@@ -3,7 +3,7 @@ import { Person } from './kit/figures'
 import { Bamboo, Cloud, Grass, Ground, Hills, Sun } from './kit/nature'
 import { C, INK } from './kit/palette'
 import { Scroll, Table } from './kit/props'
-import type { SceneDefinition } from './types'
+import type { LegacySceneDefinition } from './types'
 
 const BASE = 300
 const STAGES = [262, 382, 502, 622, 800]
@@ -41,7 +41,7 @@ function scaffold(cx: number, top: number) {
   )
 }
 
-const builder: SceneDefinition = {
+const builder: LegacySceneDefinition = {
   slug: 'builder',
   title: { en: 'Builder: raising a communal house step by step', vi: 'Builder: dựng đình làng từng bước' },
   sky: 'dawn',

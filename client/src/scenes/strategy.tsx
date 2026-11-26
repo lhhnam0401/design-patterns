@@ -3,7 +3,7 @@ import { Person } from './kit/figures'
 import { Ground, Hills, Sun, Tree } from './kit/nature'
 import { C, INK } from './kit/palette'
 import { Banner, RolledScroll } from './kit/props'
-import type { SceneDefinition } from './types'
+import type { LegacySceneDefinition } from './types'
 
 const SCHOOLS = [
   { x: 600, color: '#b91c1c', pose: 'point' as const, robe: '#7f1d1d' },
@@ -11,7 +11,7 @@ const SCHOOLS = [
   { x: 860, color: '#15803d', pose: 'hold' as const, robe: '#14532d' },
 ]
 
-const strategy: SceneDefinition = {
+const strategy: LegacySceneDefinition = {
   slug: 'strategy',
   title: { en: 'Strategy: one warrior, interchangeable martial schools', vi: 'Strategy: một võ sĩ, nhiều võ phái hoán đổi được' },
   sky: 'dusk',

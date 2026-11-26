@@ -5,7 +5,7 @@ import { scenes } from '../scenes/registry'
 import SceneView from '../scenes/SceneView'
 import { tagBox } from '../scenes/kit/metrics'
 import { H, W } from '../scenes/kit/palette'
-import type { Lang, SceneDefinition } from '../scenes/types'
+import { isPlate, type Lang, type LegacySceneDefinition } from '../scenes/types'
 import type { Pattern } from '../types/pattern'
 import { codeFor, isClientLabel, mentionsMethod, methodName } from './codeNames'
 
@@ -18,7 +18,7 @@ function visibleText(markup: string): string {
   return (body.match(/>([^<]+)</g) ?? []).map(s => decode(s.slice(1, -1))).join('\n')
 }
 
-function render(definition: SceneDefinition, pattern: Pattern, lang: Lang, compact = false): string {
+function render(definition: LegacySceneDefinition, pattern: Pattern, lang: Lang, compact = false): string {
   return visibleText(renderToStaticMarkup(
     <SceneView definition={definition} diagram={pattern.diagram} lang={lang} compact={compact} />,
   ))
@@ -27,9 +27,12 @@ function render(definition: SceneDefinition, pattern: Pattern, lang: Lang, compa
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const hasWord = (text: string, word: string) => new RegExp(`(^|[^\\w])${escape(word)}($|[^\\w])`).test(text)
 
-const entries = Object.values(scenes).map(d => [d.slug, d] as const)
+/** Scenes not yet redrawn as plates; plate scenes are checked in scenePlates.test.tsx. */
+const entries = Object.values(scenes)
+  .filter((d): d is LegacySceneDefinition => !isPlate(d))
+  .map(d => [d.slug, d] as const)
 
-describe.each(entries)('%s scene', (slug, definition) => {
+if (entries.length > 0) describe.each(entries)('%s scene (legacy)', (slug, definition) => {
   const pattern = allPatterns.find(p => p.slug === slug)
   if (!pattern) throw new Error(`No pattern for scene ${slug}`)
   const nodes = new Map(pattern.diagram.nodes.map(n => [n.id, n]))

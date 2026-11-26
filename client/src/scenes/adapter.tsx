@@ -3,11 +3,11 @@ import { Bamboo, Moon } from './kit/nature'
 import { Caption } from './kit/overlay'
 import { C, INK, SCENE_COLORS, W } from './kit/palette'
 import { Lantern, Table } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
 const NOTES = { en: ['Hò', 'Xự', 'Xang', 'Xê', 'Cống'], vi: ['Hò', 'Xự', 'Xang', 'Xê', 'Cống'] }
 
-const adapter: SceneDefinition = {
+const adapter: LegacySceneDefinition = {
   slug: 'adapter',
   title: { en: 'Adapter: recording a đàn tranh through MIDI', vi: 'Adapter: thu âm đàn tranh qua MIDI' },
   sky: 'interior',

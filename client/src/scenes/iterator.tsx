@@ -2,7 +2,7 @@ import { Person } from './kit/figures'
 import { smooth } from './kit/geometry'
 import { Caption } from './kit/overlay'
 import { C, INK } from './kit/palette'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
 type P = [number, number]
 const SITES: Record<string, { at: P; year: string; name: { en: string; vi: string } }> = {
@@ -67,7 +67,7 @@ function icon(kind: string, [x, y]: P) {
   }
 }
 
-const iterator: SceneDefinition = {
+const iterator: LegacySceneDefinition = {
   slug: 'iterator',
   title: { en: 'Iterator: two ways to tour Hanoi’s historic sites', vi: 'Iterator: hai cách đi thăm di tích Hà Nội' },
   sky: 'interior',

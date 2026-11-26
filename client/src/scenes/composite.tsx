@@ -2,7 +2,7 @@ import { Horse, Person } from './kit/figures'
 import { Cloud, Grass, Ground, Hills, Sun } from './kit/nature'
 import { C, INK } from './kit/palette'
 import { Banner } from './kit/props'
-import type { SceneDefinition } from './types'
+import type { LegacySceneDefinition } from './types'
 
 const FEET = 380
 
@@ -27,7 +27,7 @@ const SQUADS = [
   { x: 790, color: '#1e3a8a' },
 ]
 
-const composite: SceneDefinition = {
+const composite: LegacySceneDefinition = {
   slug: 'composite',
   title: { en: 'Composite: the Tây Sơn army, units inside units', vi: 'Composite: quân Tây Sơn, đơn vị lồng đơn vị' },
   sky: 'dusk',

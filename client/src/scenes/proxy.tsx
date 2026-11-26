@@ -4,9 +4,9 @@ import { Cloud, Ground, Hills, Moon, Stars, Tree } from './kit/nature'
 import { Caption } from './kit/overlay'
 import { C, INK } from './kit/palette'
 import { Lantern, Scroll, Table } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
-const proxy: SceneDefinition = {
+const proxy: LegacySceneDefinition = {
   slug: 'proxy',
   title: { en: 'Proxy: the mandarin at the palace gate', vi: 'Proxy: viên quan giữ cổng cung điện' },
   sky: 'dusk',

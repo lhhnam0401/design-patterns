@@ -2,7 +2,7 @@ import { Person } from './kit/figures'
 import { Hills, Paddy, Sun } from './kit/nature'
 import { Caption } from './kit/overlay'
 import { C, INK, SCENE_COLORS } from './kit/palette'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
 const XS = [100, 290, 480, 670, 860]
 const TOP = 56
@@ -62,7 +62,7 @@ function panel(i: number) {
   )
 }
 
-const state: SceneDefinition = {
+const state: LegacySceneDefinition = {
   slug: 'state',
   title: { en: 'State: a rice paddy through the seasons', vi: 'State: ruộng lúa qua các giai đoạn' },
   sky: 'dawn',

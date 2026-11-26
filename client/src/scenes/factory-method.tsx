@@ -4,9 +4,9 @@ import { BlossomTree, Firework, Grass, Ground, Hills, Stars } from './kit/nature
 import { Caption } from './kit/overlay'
 import { C, INK } from './kit/palette'
 import { LanternString, LogCake, Pot, SquareCake, Table } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
-const factoryMethod: SceneDefinition = {
+const factoryMethod: LegacySceneDefinition = {
   slug: 'factory-method',
   title: { en: 'Factory Method: two households wrap their Tết cakes', vi: 'Factory Method: hai gia đình gói bánh Tết' },
   sky: 'night',

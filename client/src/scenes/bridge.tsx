@@ -2,7 +2,7 @@ import { Person } from './kit/figures'
 import { Caption } from './kit/overlay'
 import { C, INK, W } from './kit/palette'
 import { Lantern, Table } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
 /** An áo dài on a dress form. `cx, top` is the shoulder line; `fabric` decides the look. */
 function aoDai(cx: number, top: number, color: string, modern: boolean, s = 1, brocade = false) {
@@ -44,7 +44,7 @@ function bolt(x: number, y: number, color: string, brocade: boolean) {
   )
 }
 
-const bridge: SceneDefinition = {
+const bridge: LegacySceneDefinition = {
   slug: 'bridge',
   title: { en: 'Bridge: áo dài styles and fabrics vary on their own', vi: 'Bridge: kiểu áo dài và loại vải thay đổi độc lập' },
   sky: 'interior',

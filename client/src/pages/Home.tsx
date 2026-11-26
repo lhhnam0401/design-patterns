@@ -22,7 +22,7 @@ export default function Home() {
           </div>
 
           <figure className="lg:col-span-5">
-            <div className="overflow-hidden rounded-lg border border-line bg-scene-paper">
+            <div className="@container overflow-hidden rounded-lg border border-line bg-scene-paper">
               <PatternScene pattern={featurePattern} lang={lang} variant="feature" />
             </div>
             <figcaption className="mt-3 flex items-start justify-between gap-4 text-xs text-ink-muted">

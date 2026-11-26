@@ -5,9 +5,9 @@ import { Bamboo, Cloud, Hills, Path, Stars, Sun, Tree } from './kit/nature'
 import { Caption } from './kit/overlay'
 import { C, INK, SCENE_COLORS } from './kit/palette'
 import { RolledScroll } from './kit/props'
-import type { SceneArtProps, SceneDefinition } from './types'
+import type { SceneArtProps, LegacySceneDefinition } from './types'
 
-const chain: SceneDefinition = {
+const chain: LegacySceneDefinition = {
   slug: 'chain-of-responsibility',
   title: { en: 'Chain of Responsibility: a petition climbs the ranks', vi: 'Chain of Responsibility: lá đơn đi lên từng cấp' },
   sky: 'dawn',

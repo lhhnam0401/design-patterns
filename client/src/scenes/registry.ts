@@ -1,4 +1,4 @@
-import type { SceneDefinition } from './types'
+import type { AnySceneDefinition } from './types'
 import abstractFactory from './abstract-factory'
 import adapter from './adapter'
 import bridge from './bridge'
@@ -23,7 +23,7 @@ import strategy from './strategy'
 import templateMethod from './template-method'
 import visitor from './visitor'
 
-const definitions: SceneDefinition[] = [
+const definitions: AnySceneDefinition[] = [
   factoryMethod,
   abstractFactory,
   builder,
@@ -49,8 +49,8 @@ const definitions: SceneDefinition[] = [
   visitor,
 ]
 
-export const scenes: Record<string, SceneDefinition> = Object.fromEntries(definitions.map(d => [d.slug, d]))
+export const scenes: Record<string, AnySceneDefinition> = Object.fromEntries(definitions.map(d => [d.slug, d]))
 
-export function sceneFor(slug: string): SceneDefinition | undefined {
+export function sceneFor(slug: string): AnySceneDefinition | undefined {
   return scenes[slug]
 }

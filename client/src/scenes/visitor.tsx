@@ -3,9 +3,9 @@ import { Person } from './kit/figures'
 import { Cloud, Ground, Hills, Sun } from './kit/nature'
 import { C, INK } from './kit/palette'
 import { Jar, LanternString } from './kit/props'
-import type { SceneDefinition } from './types'
+import type { LegacySceneDefinition } from './types'
 
-const visitor: SceneDefinition = {
+const visitor: LegacySceneDefinition = {
   slug: 'visitor',
   title: { en: 'Visitor: officials make the rounds of the craft guilds', vi: 'Visitor: các quan đi thăm phường thủ công' },
   sky: 'dawn',

@@ -3,9 +3,9 @@ import { Person } from './kit/figures'
 import { BlossomTree, Ground, Hills, Stars } from './kit/nature'
 import { C, INK } from './kit/palette'
 import { LanternString, Pot, Scroll } from './kit/props'
-import type { SceneDefinition } from './types'
+import type { LegacySceneDefinition } from './types'
 
-const facade: SceneDefinition = {
+const facade: LegacySceneDefinition = {
   slug: 'facade',
   title: { en: 'Facade: the master of ceremonies runs a Quan Họ wedding', vi: 'Facade: chủ hôn điều phối đám cưới Quan Họ' },
   sky: 'dusk',
