@@ -1,51 +1,61 @@
 {
   "site": {
     "title": "Design Patterns",
-    "subtitle": "Learn Gang of Four design patterns with Vietnamese cultural examples",
-    "description": "Classic design patterns explained with code snippets and illustrated through Vietnam's rich traditional culture"
+    "subtitle": "The Gang of Four patterns, explained through Vietnamese examples",
+    "description": "Explore the 23 Gang of Four design patterns through annotated code, UML diagrams, and examples based on Vietnamese crafts, food, music, history, and everyday life.",
+    "brand_top": "GoF",
+    "brand_bottom": "Archive"
   },
   "nav": {
     "home": "Home",
+    "breadcrumb": "Breadcrumb",
     "creational": "Creational",
     "structural": "Structural",
     "behavioral": "Behavioral",
-    "all_patterns": "All Patterns",
+    "all_patterns": "All patterns",
     "primary": "Primary navigation",
     "mobile": "Mobile collection menu",
     "open": "Open navigation",
     "close": "Close navigation",
-    "switch_language": "Switch language"
+    "switch_to": "{{code}} — Switch language to {{language}}"
   },
   "categories": {
-    "creational": "Creational Patterns",
-    "creational_desc": "Object creation mechanisms that increase flexibility and reuse",
-    "structural": "Structural Patterns",
-    "structural_desc": "Explain how to assemble objects and classes into larger structures",
-    "behavioral": "Behavioral Patterns",
-    "behavioral_desc": "Take care of effective communication and responsibilities between objects"
+    "creational": "Creational patterns",
+    "creational_desc": "Patterns for creating objects without tying code to concrete classes.",
+    "structural": "Structural patterns",
+    "structural_desc": "Patterns for composing classes and objects into larger structures.",
+    "behavioral": "Behavioral patterns",
+    "behavioral_desc": "Patterns for assigning responsibilities and coordinating communication between objects.",
+    "pattern_count_one": "{{count}} pattern",
+    "pattern_count_other": "{{count}} patterns"
   },
   "pattern": {
-    "example": "Vietnamese Example",
+    "example": "Vietnamese example",
     "intent": "Intent",
     "problem": "Problem",
     "solution": "Solution",
     "structure": "Structure",
-    "code_example": "Code Example",
-    "view_code": "View Code",
-    "back": "Back to Patterns",
+    "code_example": "Code example",
+    "view_code": "View code",
+    "back": "Back to all patterns",
     "complexity": "Complexity",
+    "complexity_level": {
+      "simple": "Simple",
+      "medium": "Medium",
+      "complex": "Complex"
+    },
     "popularity": "Popularity",
     "also_known_as": "Also known as",
-    "applicability": "When to use",
+    "applicability": "When to use it",
     "contents": "On this page",
-    "related": "Continue exploring",
+    "related": "Related patterns",
     "overview": "Pattern overview",
     "copy": "Copy code",
     "copied": "Code copied",
-    "copy_error": "Unable to copy code",
+    "copy_error": "Could not copy the code",
     "diagram": {
       "label": "UML class diagram",
-      "instructions": "Drag the background to pan and drag a box to move it. Keys: + and - zoom, 0 fits the diagram, arrow keys pan.",
+      "instructions": "Drag the background to pan, or drag a box to move it. Press + or - to zoom, 0 to fit the diagram, and the arrow keys to pan.",
       "zoom_in": "Zoom in",
       "zoom_out": "Zoom out",
       "zoom_level": "Zoom level",
@@ -72,16 +82,18 @@
       "next": "Next",
       "overview": "Overview",
       "step_of": "Step {{n}} of {{total}}",
-      "overview_hint": "Point at a letter or a row below to light that object and its calls, or start the {{total}}-step walkthrough."
+      "overview_hint": "Point at a letter or a row below to highlight that object and its calls, or start the {{total}}-step walkthrough."
     }
   },
   "language": {
     "en": "English",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "code_en": "EN",
+    "code_vi": "VI"
   },
   "home": {
-    "archive": "An illustrated software design archive",
-    "intro": "Study the {{count}} patterns in this archive through working code, structural diagrams, and stories drawn from Vietnamese culture.",
+    "archive": "An illustrated archive of software design",
+    "intro": "Study the {{count}} patterns in this archive through working code, structural diagrams, and examples from Vietnamese crafts, food, music, and everyday life.",
     "catalogue_note": "A bilingual reference for students and working developers.",
     "collections": "Browse the collections",
     "selected": "Selected patterns",
@@ -94,16 +106,18 @@
     "skip": "Skip to content",
     "loading": "Loading the archive",
     "empty_title": "No patterns yet",
-    "empty_body": "This collection is ready for its first pattern."
+    "empty_body": "This collection has no patterns yet."
   },
   "not_found": {
-    "title": "This page is outside the archive",
+    "title": "This page is not in the archive",
     "body": "The collection or pattern may have moved, or the address may be incomplete.",
     "back": "Return to the archive"
   },
   "footer": {
     "label": "Site information",
     "collections": "Collections",
-    "note": "A bilingual learning reference connecting software architecture with Vietnamese cultural examples."
+    "note": "A bilingual reference connecting software design patterns with carefully scoped Vietnamese examples.",
+    "tagline": "Examples from Vietnamese crafts, food, music, and everyday life",
+    "credit": "Patterns by the Gang of Four"
   }
 }

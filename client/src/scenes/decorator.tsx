@@ -39,7 +39,7 @@ const decorator: SceneDefinition = {
   setting: 'night',
   pins: [
     { nodeId: 'client', caption: { en: 'prints the bill, sees only a NoodleSoup', vi: 'in hóa đơn, chỉ thấy một NoodleSoup' }, at: [62, 362] },
-    { nodeId: 'comp', methods: ['describe', 'price'], caption: { en: 'a bowl, plain or loaded', vi: 'bát phở, không hay đủ món' }, at: [510, 44] },
+    { nodeId: 'comp', methods: ['describe', 'price'], caption: { en: 'a bowl, plain or loaded', vi: 'bát phở không hoặc đủ món' }, at: [510, 44] },
     { nodeId: 'decorator', caption: { en: 'each topping wraps the bowl beneath it', vi: 'mỗi món thêm bọc lấy bát bên dưới' }, at: [918, 44], showName: false },
     { nodeId: 'decD', caption: { en: 'spring onion, the outer layer, +0đ', vi: 'hành lá, lớp ngoài cùng, +0đ' }, at: [380, mid('decD')], showName: false },
     { nodeId: 'decC', caption: { en: 'chili, +5.000đ', vi: 'ớt, +5.000đ' }, at: [570, mid('decC')], showName: false },
@@ -64,7 +64,7 @@ const decorator: SceneDefinition = {
       calls: ['price-onion'],
       nodes: ['client', 'comp', 'decD'],
       at: [240, 196],
-      caption: { en: 'printBill() asks the outer layer, the spring onion, for price(). It only sees a NoodleSoup.', vi: 'printBill() hỏi lớp ngoài cùng, hành lá, giá bao nhiêu qua price(). Nó chỉ thấy một NoodleSoup.' },
+      caption: { en: 'printBill() asks the outer layer, the spring onion, for price(). It only sees a NoodleSoup.', vi: 'printBill() gọi price() ở lớp ngoài cùng là hành lá. Nó chỉ thấy một NoodleSoup.' },
     },
     {
       calls: ['price-chili', 'price-egg', 'price-beef', 'price-plain'],
@@ -115,7 +115,7 @@ const decorator: SceneDefinition = {
             <Caption x={838} y={53}>{lang === 'vi' ? 'mỗi món thêm' : 'each topping'}</Caption>
           </Signboard>
           <g fill="none" stroke={TONES.abstract} strokeWidth={3} strokeLinecap="round">
-            <path d={`M790,64 L790,${LAYER.decD[0]} L790,${LAYER.decA[1]}`} strokeDasharray="8 6" />
+            <path d={`M790,64 L790,${LAYER.decD[0]} L790,${LAYER.decA[1]}`} />
             {layerTicks.map(y => (
               <path key={y} d={`M790,${y} L768,${y} M774,${y - 6} L768,${y} L774,${y + 6}`} />
             ))}

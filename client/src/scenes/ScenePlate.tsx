@@ -26,7 +26,7 @@ export default function ScenePlate({ definition, diagram, lang, variant = 'detai
       setting={definition.setting}
       variant={variant}
       view={thumbnail ? definition.focus : undefined}
-      art={<Art lang={lang} compact={thumbnail} />}
+      art={<Art lang={lang} />}
       calls={thumbnail ? undefined : definition.calls.map(call => (
         <CallPath key={call.id} id={call.id} d={call.d} tone={toneOf(nodes.get(call.nodeId))} kind={call.kind} />
       ))}

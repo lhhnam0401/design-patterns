@@ -1,102 +1,150 @@
-import { Person } from './kit/figures'
-import { Bamboo, Moon } from './kit/nature'
-import { Caption } from './kit/overlay'
-import { C, INK, SCENE_COLORS, W } from './kit/palette'
-import { Lantern, Table } from './kit/props'
-import type { SceneArtProps, LegacySceneDefinition } from './types'
+import { Person } from './print/figures'
+import { Bamboo, GroundBand, Moon } from './print/nature'
+import { INK, PAPER_LIGHT, PIGMENT, TINT } from './print/pigments'
+import { Lantern } from './print/props'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { SceneArtProps, SceneDefinition } from './types'
 
-const NOTES = { en: ['Hò', 'Xự', 'Xang', 'Xê', 'Cống'], vi: ['Hò', 'Xự', 'Xang', 'Xê', 'Cống'] }
+const FEET = 378
+const KEYBOARD_X = 322
+const ADAPTER_X = 500
 
-const adapter: LegacySceneDefinition = {
+/** Screen and desk of the recording software, beside the engineer. */
+function console_(x: number) {
+  return (
+    <g stroke={INK} strokeWidth={3} strokeLinejoin="round">
+      <rect x={x} y={342} width={92} height={10} fill={PIGMENT.woodDark} />
+      <rect x={x + 8} y={352} width={9} height={26} fill={PIGMENT.wood} />
+      <rect x={x + 75} y={352} width={9} height={26} fill={PIGMENT.wood} />
+      <rect x={x + 6} y={282} width={80} height={56} rx={4} fill={PIGMENT.iron} />
+      <rect x={x + 12} y={288} width={68} height={44} fill={PAPER_LIGHT} strokeWidth={1.6} />
+      <path d={`M${x + 16},312 l8,-12 l8,22 l8,-18 l8,14 l8,-10 l8,6 l6,-3`} fill="none" stroke={PIGMENT.green} strokeWidth={2.6} />
+      <circle cx={x + 74} cy={294} r={3.5} fill={PIGMENT.red} strokeWidth={1.4} />
+    </g>
+  )
+}
+
+/** A MIDI keyboard on an X stand, with a small display on top. */
+function keyboard(cx: number) {
+  const left = cx - 60
+  return (
+    <g stroke={INK} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round">
+      <path d={`M${cx - 38},334 L${cx + 30},378 M${cx + 38},334 L${cx - 30},378`} fill="none" strokeWidth={5} />
+      <rect x={left + 14} y={278} width={92} height={24} rx={3} fill={PIGMENT.blueDark} />
+      <rect x={left + 20} y={283} width={80} height={14} fill={PAPER_LIGHT} strokeWidth={1.4} />
+      <rect x={left} y={300} width={120} height={36} rx={5} fill={PIGMENT.iron} />
+      <rect x={left + 6} y={308} width={108} height={24} fill={PAPER_LIGHT} strokeWidth={1.6} />
+      {[0, 1, 2, 3, 4, 5, 6, 7].map(i => <line key={i} x1={left + 20 + i * 12} y1={308} x2={left + 20 + i * 12} y2={332} strokeWidth={1.2} />)}
+      {[0, 1, 3, 4, 5].map(i => <rect key={i} x={left + 15 + i * 12} y={308} width={9} height={14} fill={INK} strokeWidth={1} />)}
+    </g>
+  )
+}
+
+/** A lacquered box with five buttons, one per mapped string: the adapter. */
+function adapterBox(cx: number) {
+  return (
+    <g stroke={INK} strokeWidth={3} strokeLinejoin="round">
+      <rect x={cx - 46} y={360} width={92} height={18} fill={PIGMENT.woodDark} />
+      <rect x={cx - 60} y={272} width={120} height={90} rx={6} fill={PIGMENT.red} />
+      <rect x={cx - 52} y={280} width={104} height={74} rx={4} fill="none" stroke={PIGMENT.yellow} strokeWidth={2} />
+      {[0, 1, 2, 3, 4].map(i => (
+        <circle key={i} cx={cx - 40 + i * 20} cy={304} r={7.5} fill={PAPER_LIGHT} strokeWidth={1.6} />
+      ))}
+      <circle cx={cx} cy={304} r={12} fill="none" stroke={PIGMENT.yellow} strokeWidth={2} strokeDasharray="3 3" />
+      <rect x={cx - 38} y={326} width={76} height={8} rx={3} fill={PIGMENT.redDark} strokeWidth={1.6} />
+      <circle cx={cx - 66} cy={332} r={7} fill={PIGMENT.steel} strokeWidth={2} />
+      <circle cx={cx + 66} cy={332} r={7} fill={PIGMENT.steel} strokeWidth={2} />
+    </g>
+  )
+}
+
+/** A zither on two legs. */
+function zither(x: number) {
+  return (
+    <g stroke={INK} strokeWidth={3} strokeLinejoin="round">
+      <rect x={x + 14} y={322} width={10} height={56} fill={PIGMENT.woodDark} />
+      <rect x={x + 136} y={322} width={10} height={56} fill={PIGMENT.woodDark} />
+      <rect x={x} y={284} width={160} height={40} rx={16} fill={PIGMENT.wood} />
+      <rect x={x + 10} y={290} width={140} height={22} rx={9} fill={PIGMENT.amber} strokeWidth={1.6} />
+      {[0, 1, 2, 3, 4, 5, 6].map(i => <line key={i} x1={x + 18} y1={293 + i * 3} x2={x + 142} y2={293 + i * 3} stroke={PIGMENT.straw} strokeWidth={1} />)}
+      {[0, 1, 2, 3, 4, 5, 6].map(i => <path key={i} d={`M${x + 36 + i * 15},312 l3,-8 l3,8 Z`} fill={PAPER_LIGHT} strokeWidth={1.2} />)}
+      <circle cx={x + 144} cy={301} r={5} fill={PIGMENT.yellow} strokeWidth={1.6} />
+    </g>
+  )
+}
+
+const adapter: SceneDefinition = {
   slug: 'adapter',
   title: { en: 'Adapter: recording a đàn tranh through MIDI', vi: 'Adapter: thu âm đàn tranh qua MIDI' },
-  sky: 'interior',
-  tags: [
-    { nodeId: 'adaptee', method: 'pluckString', caption: { en: 'the musician plucks strings', vi: 'nghệ sĩ gảy dây đàn' }, at: [150, 132], to: [214, 284] },
-    { nodeId: 'adapter', method: 'readNote', caption: { en: 'turns each pluck into a note', vi: 'đổi mỗi cú gảy thành nốt' }, at: [440, 402], to: [470, 336] },
-    { nodeId: 'target', caption: { en: 'the port it reads', vi: 'cổng mà phần mềm đọc' }, at: [600, 222], to: [688, 300] },
-    { nodeId: 'keyboard', caption: { en: 'already speaks MIDI', vi: 'vốn đã nói MIDI' }, at: [616, 418], to: [616, 374] },
-    { nodeId: 'client', method: 'record', caption: { en: 'records every note', vi: 'thu lại mọi nốt' }, at: [806, 112], to: [800, 226] },
+  setting: 'interior',
+  pins: [
+    { nodeId: 'client', methods: ['record'], caption: { en: 'records every note it receives', vi: 'ghi lại mọi nốt nhận được' }, at: [60, 320], showName: false },
+    { nodeId: 'target', methods: ['readNote'], caption: { en: 'the port the software reads', vi: 'cổng mà phần mềm đọc' }, at: [266, 44], side: 'left' },
+    { nodeId: 'keyboard', methods: ['readNote'], caption: { en: 'already speaks MIDI', vi: 'vốn đã dùng MIDI' }, at: [KEYBOARD_X, 318], showName: false },
+    { nodeId: 'adapter', methods: ['readNote'], caption: { en: 'turns each pluck into a note', vi: 'đổi mỗi cú gảy thành một nốt' }, at: [ADAPTER_X, 346], showName: false },
+    { nodeId: 'adaptee', methods: ['pluckString', 'nextPluck'], caption: { en: 'the musician plucks the strings', vi: 'nghệ sĩ gảy dây đàn' }, at: [740, 306], showName: false },
   ],
   calls: [
-    { nodeId: 'target', method: 'readNote', d: 'M730,292 Q712,300 700,308', at: [756, 334] },
-    { nodeId: 'adaptee', method: 'nextPluck', d: 'M400,290 C380,268 356,266 338,280', at: [372, 250] },
+    { id: 'read-kb', nodeId: 'keyboard', method: 'readNote', d: 'M190,312 L256,312' },
+    { id: 'read-ad', nodeId: 'adapter', method: 'readNote', d: 'M176,276 C230,150 400,140 482,266' },
+    { id: 'next', nodeId: 'adaptee', method: 'nextPluck', d: 'M566,296 L670,296' },
+    { id: 'back', nodeId: 'adaptee', method: 'nextPluck', d: 'M670,340 L566,340', kind: 'return' },
   ],
+  steps: [
+    {
+      calls: ['read-kb'],
+      nodes: ['client', 'target', 'keyboard'],
+      at: [224, 356],
+      caption: { en: 'The software calls readNote() on the keyboard, which returns a note right away.', vi: 'Phần mềm gọi readNote() trên bàn phím, và bàn phím trả về một nốt ngay.' },
+    },
+    {
+      calls: ['read-ad'],
+      nodes: ['client', 'target', 'adapter'],
+      at: [328, 148],
+      caption: { en: 'It asks the adapter the same way, with readNote(). The zither itself has no such method.', vi: 'Nó hỏi bộ chuyển đổi theo cùng cách, bằng readNote(). Bản thân đàn tranh không có phương thức này.' },
+    },
+    {
+      calls: ['next'],
+      nodes: ['adapter', 'adaptee'],
+      at: [608, 246],
+      caption: { en: 'The adapter asks the zither for its next pluck with nextPluck().', vi: 'Bộ chuyển đổi xin đàn tranh cú gảy kế tiếp bằng nextPluck().' },
+    },
+    {
+      calls: ['back'],
+      nodes: ['adapter', 'adaptee'],
+      at: [608, 396],
+      caption: { en: 'The pluck comes back as a string number and a strength; the adapter looks them up and returns a MIDI note.', vi: 'Cú gảy trở về dưới dạng số dây và lực gảy; bộ chuyển đổi tra bảng rồi trả về một nốt MIDI.' },
+    },
+  ],
+  focus: [0, 56, 960, 384],
   untagged: [],
   Art: function AdapterArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        <rect width={W} height={340} fill={SCENE_COLORS.paperShade} />
-        {Array.from({ length: 16 }, (_, i) => (
-          <line key={i} x1={i * 62 + 10} y1={0} x2={i * 62 + 10} y2={340} stroke={SCENE_COLORS.inkMuted} strokeWidth={1} opacity={0.24} />
-        ))}
-        {/* Moon window looking onto the garden */}
-        <circle cx={480} cy={130} r={78} fill="#cfd8cf" stroke={C.woodDark} strokeWidth={10} />
-        <circle cx={480} cy={130} r={78} fill="none" stroke={INK} strokeWidth={2} />
-        <Moon x={510} y={100} r={14} />
-        <g opacity={0.8}><Bamboo x={430} y={208} h={120} seed={5} count={3} color="#24452a" /></g>
-        <circle cx={480} cy={130} r={83} fill="none" stroke={C.wood} strokeWidth={4} />
-        <Lantern x={300} y={80} r={12} cord={50} />
-        <Lantern x={660} y={80} r={12} cord={50} color="#f2a03b" />
-
-        <rect y={338} width={W} height={102} fill="#c8b49a" />
-        {[352, 374, 402].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke={SCENE_COLORS.inkMuted} strokeWidth={1} opacity={0.45} />)}
-        <rect x={0} y={330} width={W} height={10} fill={C.woodDark} stroke={INK} strokeWidth={1.5} />
-
-        {/* The musician and her 16-string zither */}
-        <Person x={176} y={352} s={1.12} robe="#9f1d1d" pants="#1f1410" hat="bun" pose="reach" />
-        <g transform="translate(60,300) rotate(-6)">
-          <rect x={4} y={30} width={10} height={40} fill={C.woodDark} stroke={INK} strokeWidth={1.5} />
-          <rect x={256} y={30} width={10} height={36} fill={C.woodDark} stroke={INK} strokeWidth={1.5} />
-          <rect x={0} y={0} width={280} height={36} rx={14} fill="#7a3b1e" stroke={INK} strokeWidth={2.5} />
-          <rect x={10} y={4} width={260} height={18} rx={8} fill="#a0623a" stroke={INK} strokeWidth={1} />
-          {Array.from({ length: 8 }, (_, i) => (
-            <line key={i} x1={18} y1={6 + i * 2} x2={262} y2={6 + i * 2} stroke="#fde68a" strokeWidth={0.7} opacity={0.9} />
-          ))}
-          {Array.from({ length: 8 }, (_, i) => (
-            <path key={`b${i}`} d={`M${70 + i * 18},${20} l3,-6 l3,6 Z`} fill={C.paper} stroke={INK} strokeWidth={0.8} />
-          ))}
-          <circle cx={248} cy={13} r={5} fill={C.gold} stroke={INK} />
-        </g>
-        <path d="M336,288 C366,300 386,306 404,302" stroke={INK} strokeWidth={4} fill="none" />
-        <path d="M336,288 C366,300 386,306 404,302" stroke="#9ca3af" strokeWidth={2} fill="none" />
-
-        {/* The adapter: a lacquered box with the five pentatonic notes */}
-        <rect x={430} y={330} width={100} height={8} fill={C.woodDark} stroke={INK} strokeWidth={1.4} />
-        <rect x={404} y={262} width={152} height={70} rx={6} fill={C.lacquer} stroke={INK} strokeWidth={2.5} />
-        <rect x={410} y={268} width={140} height={58} rx={4} fill="none" stroke={C.gold} strokeWidth={1.4} />
-        {NOTES[lang].map((n, i) => (
-          <g key={n}>
-            <circle cx={424 + i * 28} cy={288} r={6} fill={C.paper} opacity={i === 2 ? 1 : 0.7} stroke={INK} strokeWidth={1} />
-            {i === 2 && <circle cx={424 + i * 28} cy={288} r={11} fill="none" stroke={C.gold} strokeWidth={1.5} strokeDasharray="2 2" />}
-            <Caption x={424 + i * 28} y={314} size={9} fill={C.gold} weight={600}>{n}</Caption>
-          </g>
-        ))}
-        <path d="M556,300 C590,310 625,312 680,312" stroke={INK} strokeWidth={4} fill="none" />
-        <path d="M556,300 C590,310 625,312 680,312" stroke="#9ca3af" strokeWidth={2} fill="none" />
-
-        {/* The recording console with its MIDI port */}
-        <Table x={680} y={372} w={230} h={36} color={C.wood} />
-        <rect x={680} y={292} width={22} height={36} rx={3} fill="#b7791f" stroke={INK} strokeWidth={1.8} />
-        <circle cx={691} cy={304} r={4} fill={INK} />
-        <circle cx={691} cy={318} r={4} fill={INK} />
-        <rect x={730} y={228} width={150} height={92} rx={4} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={2.5} />
-        <rect x={738} y={236} width={134} height={72} rx={2} fill={SCENE_COLORS.paperShade} />
-        <path d={'M742,276 ' + Array.from({ length: 26 }, (_, i) => `L${746 + i * 5},${276 + Math.sin(i * 1.3) * (6 + (i % 5) * 3)}`).join(' ')} stroke={SCENE_COLORS.jade} strokeWidth={1.8} fill="none" />
-        {[0, 1, 2, 3, 4].map(i => <rect key={i} x={748 + i * 24} y={292 - i * 3} width={18} height={4} rx={1} fill={SCENE_COLORS.ochre} />)}
-        <rect x={790} y={320} width={30} height={8} fill={SCENE_COLORS.inkMuted} stroke={INK} strokeWidth={1.2} />
-        <circle cx={760} cy={250} r={4} fill={SCENE_COLORS.vermilion} />
-
-        {/* A MIDI keyboard plugged into the same port */}
-        <line x1={572} y1={366} x2={566} y2={400} stroke={INK} strokeWidth={4} />
-        <line x1={660} y1={366} x2={666} y2={400} stroke={INK} strokeWidth={4} />
-        <rect x={556} y={348} width={120} height={22} rx={3} fill={SCENE_COLORS.inkMuted} stroke={INK} strokeWidth={2} />
-        {Array.from({ length: 14 }, (_, i) => (
-          <rect key={i} x={560 + i * 8} y={356} width={7} height={12} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={0.6} />
-        ))}
-        {[0, 1, 3, 4, 5, 7, 8, 10, 11, 12].map(i => <rect key={`k${i}`} x={565 + i * 8} y={356} width={4} height={7} fill={INK} />)}
-        <path d="M676,356 C690,350 692,340 691,322" stroke="#9ca3af" strokeWidth={2} fill="none" />
-      </g>
+      <>
+        <Backdrop>
+          <circle cx={690} cy={176} r={62} fill={TINT.green} stroke={INK} strokeWidth={3} />
+          <circle cx={690} cy={176} r={72} fill="none" stroke={TINT.amber} strokeWidth={8} />
+          <Moon x={716} y={150} r={14} />
+          <Bamboo x={660} y={236} h={120} seed={5} count={3} pale />
+          <Lantern x={850} y={90} r={14} cord={60} pale />
+          <GroundBand />
+        </Backdrop>
+        <Part node="target">
+          <Signboard x={410} w={320} tone="interface" span={[KEYBOARD_X, ADAPTER_X]}>
+            <Caption x={426} y={53}>{lang === 'vi' ? 'Mọi nguồn nốt nhạc' : 'Any source of notes'}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="client">
+          <Person x={58} y={FEET} s={1.25} robe={PIGMENT.blue} pants={PIGMENT.woodDark} hat="khanXep" pose="point" />
+          {console_(96)}
+        </Part>
+        <Part node="keyboard">{keyboard(KEYBOARD_X)}</Part>
+        <Part node="adapter">{adapterBox(ADAPTER_X)}</Part>
+        <Part node="adaptee">
+          {zither(680)}
+          <Person x={886} y={FEET} s={1.25} robe={PIGMENT.red} pants={PIGMENT.woodDark} hat="bun" pose="reach" flip />
+        </Part>
+      </>
     )
   },
 }

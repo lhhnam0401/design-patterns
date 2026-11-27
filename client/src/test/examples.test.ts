@@ -53,10 +53,10 @@ describe('flyweight example', () => {
 describe('proxy example', () => {
   it('turns away an unlisted petitioner and summons the Emperor once, for the first permitted petition', () => {
     expect(runTypeScript(codeFor(patternOf('proxy'), 'typescript'))).toEqual([
-      '🚫 Dân Thường không được yết kiến',
-      '👑 Triệu Hoàng Đế ra điện Kính Thiên',
-      "Hoàng Đế phán: chuẩn tấu việc 'mở khoa thi'",
-      "Hoàng Đế phán: chuẩn tấu việc 'đắp đê sông Hồng'",
+      '🚫 Dân thường không được yết kiến',
+      '👑 Triệu Hoàng đế ra điện Kính Thiên',
+      "Hoàng đế phán: chuẩn tấu việc 'mở khoa thi'",
+      "Hoàng đế phán: chuẩn tấu việc 'đắp đê sông Hồng'",
     ])
   })
 })
@@ -72,13 +72,13 @@ describe('chain of responsibility example', () => {
   it('stops each petition at the lowest official who may settle it', () => {
     expect(runTypeScript(ts)).toEqual([
       'Dân nộp đơn ở xã:',
-      'Xã Trưởng hòa giải: tranh chấp bờ ruộng',
-      'Quan Huyện xét xử: mất trộm trâu',
-      'Tri Phủ giải quyết: đê sông Hồng sắp vỡ',
-      'Hoàng Đế 👑 ra chiếu: giặc tràn qua biên giới',
+      'Xã trưởng hòa giải: tranh chấp bờ ruộng',
+      'Quan huyện xét xử: mất trộm trâu',
+      'Tri phủ giải quyết: đê sông Hồng sắp vỡ',
+      'Hoàng đế 👑 ra chiếu: giặc tràn qua biên giới',
       '❌ Không quan nào đủ quyền xử: xin trời làm mưa',
       'Đơn nộp thẳng lên huyện:',
-      'Quan Huyện xét xử: lấn đất làng bên',
+      'Quan huyện xét xử: lấn đất làng bên',
     ])
   })
 })

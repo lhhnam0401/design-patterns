@@ -2,13 +2,14 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { allPatterns } from '../data'
+import { flattenProse } from '../utils/prose'
 import { nodeMap } from '../scenes/explorer/nodes'
 import { badgeBoxes, overlaps, pinBoxes, type PxBox } from '../scenes/explorer/pinMetrics'
 import { H, MIN_CAPTION_SIZE, NAME_BREAKPOINT, W } from '../scenes/print/layout'
 import { PAPER, PIGMENT, SETTINGS, TONES } from '../scenes/print/pigments'
 import { scenes } from '../scenes/registry'
 import ScenePlate from '../scenes/ScenePlate'
-import { isPlate, type Lang, type SceneDefinition, type SceneVariant } from '../scenes/types'
+import type { Lang, SceneDefinition, SceneVariant } from '../scenes/types'
 import { codeFor, isClientLabel, mentionsMethod, methodName } from './codeNames'
 
 const decode = (s: string) =>
@@ -17,7 +18,7 @@ const decode = (s: string) =>
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const hasWord = (text: string, word: string) => new RegExp(`(^|[^\\w])${escape(word)}($|[^\\w])`).test(text)
 
-const plates = Object.values(scenes).filter(isPlate)
+const plates = Object.values(scenes)
 const patternOf = (slug: string) => {
   const pattern = allPatterns.find(p => p.slug === slug)
   if (!pattern) throw new Error(`No pattern for scene ${slug}`)
@@ -101,7 +102,7 @@ if (plates.length > 0) describe.each(plates.map(p => [p.slug, p] as const))('%s 
       const label = nodes.get(pin.nodeId)?.label ?? pin.nodeId
       if (isClientLabel(label)) continue
       for (const lang of ['en', 'vi'] as const) {
-        if (!hasWord(pattern.vietnamese_example.description[lang], label)) missing.push(`${lang}: ${label}`)
+        if (!hasWord(flattenProse(pattern.vietnamese_example.description[lang]), label)) missing.push(`${lang}: ${label}`)
       }
     }
     expect(missing).toEqual([])
@@ -190,6 +191,21 @@ if (plates.length > 0) describe.each(plates.map(p => [p.slug, p] as const))('%s 
     const html = markup(definition, 'en', 'feature')
     expect(html).toContain('data-scene-calls="true"')
     expect(html).not.toMatch(/data-pin|data-step-badge/)
+  })
+})
+
+describe('scene registry', () => {
+  it('only registers scenes for existing patterns', () => {
+    const slugs = new Set(allPatterns.map(p => p.slug))
+    expect(Object.keys(scenes).filter(s => !slugs.has(s))).toEqual([])
+  })
+
+  it('has a plate for every pattern', () => {
+    expect(allPatterns.filter(p => !scenes[p.slug]).map(p => p.slug)).toEqual([])
+  })
+
+  it('registers each plate under its own slug', () => {
+    expect(Object.entries(scenes).filter(([slug, d]) => d.slug !== slug).map(([slug]) => slug)).toEqual([])
   })
 })
 

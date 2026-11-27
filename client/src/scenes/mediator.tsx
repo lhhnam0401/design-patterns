@@ -1,70 +1,134 @@
-import { Hall } from './kit/architecture'
-import { Person } from './kit/figures'
-import { Ground, Hills, Paddy, Sun, Tree } from './kit/nature'
-import { C, INK } from './kit/palette'
-import { Jar, Lantern } from './kit/props'
-import type { LegacySceneDefinition } from './types'
+import { Hall } from './print/architecture'
+import { Person } from './print/figures'
+import { GroundBand, Grass, Hills, Paddy } from './print/nature'
+import { INK, PIGMENT, TINT } from './print/pigments'
+import { Jar } from './print/props'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { SceneArtProps, SceneDefinition } from './types'
 
-const mediator: LegacySceneDefinition = {
+const FEET = 378
+const X = { farmer: 110, merchant: 250, potter: 390, hall: 724 } as const
+
+/** A shoulder pole with two baskets of rice. `x` is the figure's hand height centre. */
+function carryPole() {
+  return (
+    <g stroke={INK} strokeWidth={3} strokeLinejoin="round">
+      <line x1={-40} y1={-70} x2={40} y2={-70} stroke={INK} strokeWidth={6} strokeLinecap="round" />
+      <line x1={-40} y1={-70} x2={40} y2={-70} stroke={PIGMENT.wood} strokeWidth={3} strokeLinecap="round" />
+      {[-36, 36].map(bx => (
+        <g key={bx}>
+          <path d={`M${bx - 9},-70 L${bx - 12},-44 M${bx + 9},-70 L${bx + 12},-44`} stroke={INK} strokeWidth={1.4} />
+          <path d={`M${bx - 14},-44 L${bx + 14},-44 L${bx + 10},-24 L${bx - 10},-24 Z`} fill={PIGMENT.straw} strokeWidth={2} />
+          {[-6, 0, 6].map(gx => <circle key={gx} cx={bx + gx} cy={-40} r={2.4} fill={PIGMENT.yellow} stroke="none" />)}
+        </g>
+      ))}
+    </g>
+  )
+}
+
+const mediator: SceneDefinition = {
   slug: 'mediator',
   title: { en: 'Mediator: the village council coordinates everyone', vi: 'Mediator: hội đồng làng điều phối mọi người' },
-  sky: 'dawn',
-  tags: [
-    { nodeId: 'cmed', method: 'notify', caption: { en: 'decides who acts next', vi: 'quyết định ai làm tiếp' }, at: [480, 44], to: [480, 226] },
-    { nodeId: 'med', caption: { en: 'the only channel', vi: 'đầu mối duy nhất' }, at: [290, 96], to: [376, 196] },
-    { nodeId: 'comp', method: 'notifyCouncil', caption: { en: 'every villager only reports', vi: 'dân làng chỉ việc báo lên' }, at: [112, 176], to: [126, 300] },
-    { nodeId: 'c1', method: 'harvest', caption: { en: 'a poor harvest', vi: 'vụ này mất mùa' }, at: [100, 412], to: [126, 368] },
-    { nodeId: 'c3', method: 'makeJars', caption: { en: 'jars to fit the rice', vi: 'chum vừa đủ số lúa' }, at: [274, 412], to: [356, 372] },
-    { nodeId: 'c2', method: 'buyRice', caption: { en: 'buys the shortfall', vi: 'mua phần lúa thiếu' }, at: [850, 220], to: [842, 300] },
+  setting: 'dawn',
+  pins: [
+    { nodeId: 'comp', methods: ['notifyCouncil'], caption: { en: 'every villager only reports to the council', vi: 'dân làng chỉ việc báo lên hội đồng' }, at: [115, 44], showName: false },
+    { nodeId: 'c1', methods: ['harvest'], caption: { en: 'this season the harvest is poor', vi: 'vụ này mất mùa' }, at: [X.farmer, 338], showName: false },
+    { nodeId: 'c2', methods: ['buyRice'], caption: { en: 'buys the shortfall from the next village', vi: 'mua phần lúa thiếu ở làng bên' }, at: [X.merchant, 338], showName: false },
+    { nodeId: 'c3', methods: ['makeJars'], caption: { en: 'makes jars to fit the rice', vi: 'nặn chum vừa đủ số lúa' }, at: [X.potter, 338], showName: false },
+    { nodeId: 'med', caption: { en: 'the only channel between them', vi: 'đầu mối duy nhất giữa họ' }, at: [620, 44], showName: false },
+    { nodeId: 'cmed', methods: ['notify'], caption: { en: 'decides who acts next', vi: 'quyết định ai làm tiếp theo' }, at: [X.hall, 300], showName: false },
   ],
   calls: [
-    { nodeId: 'comp', method: 'notifyCouncil', d: 'M166,330 C250,300 330,290 404,284', at: [268, 296] },
-    { nodeId: 'c3', method: 'makeJars', d: 'M440,312 C420,330 404,342 390,352', at: [356, 322] },
-    { nodeId: 'c2', method: 'buyRice', d: 'M556,282 C640,288 720,298 792,318', at: [680, 278] },
+    { id: 'harvest', nodeId: 'c1', method: 'harvest', d: 'M44,422 C70,398 92,384 106,370' },
+    { id: 'notify-council', nodeId: 'comp', method: 'notifyCouncil', d: 'M130,300 C320,196 540,196 688,284' },
+    { id: 'notify', nodeId: 'cmed', method: 'notify', d: 'M748,282 C796,262 804,306 762,316' },
+    { id: 'buy-rice', nodeId: 'c2', method: 'buyRice', d: 'M692,300 C520,214 372,214 266,298' },
+    { id: 'make-jars', nodeId: 'c3', method: 'makeJars', d: 'M704,314 C600,246 492,246 404,300' },
   ],
+  steps: [
+    {
+      calls: ['harvest'],
+      nodes: ['c1', 'comp'],
+      at: [70, 262],
+      caption: { en: 'A poor season: the farmer’s harvest() brings in only 60 of the 100 baskets the village needs.', vi: 'Vụ mất mùa: harvest() của nông dân chỉ được 60 trên 100 thúng mà cả làng cần.' },
+    },
+    {
+      calls: ['notify-council', 'notify'],
+      nodes: ['c1', 'comp', 'med', 'cmed'],
+      at: [430, 176],
+      caption: { en: 'He calls no one directly: notifyCouncil() sends notify() to the council, which alone knows who to turn to.', vi: 'Anh không gọi thẳng ai: notifyCouncil() gửi notify() lên hội đồng, nơi duy nhất biết cần nhờ ai.' },
+    },
+    {
+      calls: ['buy-rice'],
+      nodes: ['cmed', 'comp', 'c2'],
+      at: [520, 250],
+      caption: { en: 'Seeing the shortfall, the council asks the merchant to buyRice() for the 40 baskets still missing.', vi: 'Thấy còn thiếu, hội đồng nhờ thương nhân dùng buyRice() mua thêm 40 thúng.' },
+    },
+    {
+      calls: ['make-jars'],
+      nodes: ['cmed', 'comp', 'c3'],
+      at: [540, 330],
+      caption: { en: 'With the rice in, the council orders the potter to makeJars() to hold it. No villager ever called another.', vi: 'Lúa về, hội đồng đặt thợ gốm dùng makeJars() nặn chum để chứa. Không người dân nào gọi thẳng người khác.' },
+    },
+  ],
+  focus: [60, 96, 800, 340],
   untagged: [],
-  Art: function MediatorArt() {
+  Art: function MediatorArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        <Sun x={800} y={150} r={30} />
-        <Hills y={220} amp={30} color="#4b2e55" seed={9} />
-        <Tree x={60} y={250} s={1} />
-        <Tree x={910} y={250} s={1.05} />
-        <Hall cx={480} y={262} w={280} h={72} roofH={54} />
-        <Lantern x={360} y={196} r={9} cord={8} />
-        <Lantern x={600} y={196} r={9} cord={8} />
-        <Ground y={258} color="#c2ad91" edge="#89715b" />
-        <rect x={250} y={258} width={460} height={60} fill="#aa9478" opacity={0.6} />
+      <>
+        <Backdrop>
+          <Hills y={214} amp={22} seed={9} step={150} color={TINT.green} />
+          <GroundBand />
+          <Paddy x={18} y={392} w={150} h={44} rows={2} height={8} gold pale />
+          <Grass x0={470} x1={560} seed={5} count={5} />
+        </Backdrop>
 
-        {/* The council: three elders on a red mat */}
-        <path d="M400,300 L560,300 L580,316 L380,316 Z" fill="#b91c1c" stroke={INK} strokeWidth={1.5} />
-        {[430, 480, 530].map((x, i) => (
-          <Person key={x} x={x} y={306} s={0.86} robe={['#7c2d12', '#1e3a8a', '#4b5563'][i]} hat="khanXep" pose="hold" />
-        ))}
+        {/* The rail: the Mediator interface over the council, the Villager base class over the three villagers */}
+        <Part node="med">
+          <Signboard x={X.hall} w={240} tone="interface" span={[704, 744]} ticks={[X.hall]}>
+            <Caption x={X.hall + 16} y={53}>{lang === 'vi' ? 'Đầu mối duy nhất' : 'The only channel'}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="comp">
+          <Signboard x={262} w={344} tone="class" span={[X.farmer, X.potter]} ticks={[X.farmer, X.merchant, X.potter]}>
+            <Caption x={278} y={53}>{lang === 'vi' ? 'Ai lo việc nấy' : 'Each to their own job'}</Caption>
+          </Signboard>
+        </Part>
 
-        {/* Farmer with a few sheaves beside a thin, poor crop */}
-        <Paddy x={20} y={372} w={210} h={60} gold rows={2} height={8} />
-        <Person x={126} y={398} s={1.05} robe="#6b4226" pants="#3a2a1d" hat="nonLa" long={false} pose="hold">
-          {[-6, -2, 2, 6].map(dx => <path key={dx} d={`M${dx * 0.4},-46 Q${dx},-62 ${dx * 1.8},-76`} stroke={C.gold} strokeWidth={2} fill="none" />)}
-        </Person>
+        {/* The council hall: the one place everyone reports to */}
+        <Part node="cmed">
+          <Hall cx={X.hall} y={FEET} w={200} h={78} roofH={58} tiers={2} doors={3} />
+          <path d={`M${X.hall - 14},300 L${X.hall + 14},300 L${X.hall + 10},318 L${X.hall - 10},318 Z`} fill={PIGMENT.yellow} stroke={INK} strokeWidth={2.4} strokeLinejoin="round" />
+          <circle cx={X.hall} cy={296} r={6} fill={PIGMENT.red} stroke={INK} strokeWidth={2} />
+        </Part>
 
-        {/* Potter with jars */}
-        <Person x={370} y={426} s={1.0} robe="#57534e" pants="#292524" hat="topknot" long={false} pose="work" />
-        <Jar x={418} y={430} s={0.9} />
-        <Jar x={450} y={432} s={0.75} color="#7c5a3a" />
-        <Jar x={312} y={432} s={0.8} color="#8a6a4a" />
+        {/* The farmer, with a thin harvest of rice sheaves */}
+        <Part node="c1">
+          <Person x={X.farmer} y={FEET} s={1.2} robe={PIGMENT.amber} pants={PIGMENT.woodDark} hat="nonLa" long={false} pose="hold">
+            {[-8, -2, 4].map(dx => (
+              <g key={dx}>
+                <line x1={dx} y1={-48} x2={dx * 1.8} y2={-96} stroke={PIGMENT.yellowDark} strokeWidth={3} strokeLinecap="round" />
+                <circle cx={dx * 1.8} cy={-98} r={3} fill={PIGMENT.yellow} stroke={INK} strokeWidth={1} />
+              </g>
+            ))}
+          </Person>
+        </Part>
 
-        {/* Merchant with a carrying pole and two baskets */}
-        <Person x={842} y={412} s={1.05} robe="#1f4e79" pants="#1a1a1a" hat="nonLa" long={false} pose="hold" />
-        <line x1={790} y1={344} x2={894} y2={344} stroke={C.wood} strokeWidth={4} />
-        {[796, 888].map(x => (
-          <g key={x}>
-            <line x1={x} y1={344} x2={x - 8} y2={380} stroke={INK} />
-            <line x1={x} y1={344} x2={x + 8} y2={380} stroke={INK} />
-            <path d={`M${x - 16},380 L${x + 16},380 L${x + 12},404 L${x - 12},404 Z`} fill="#a16207" stroke={INK} strokeWidth={1.5} />
-          </g>
-        ))}
-      </g>
+        {/* The merchant, with a shoulder pole of bought rice */}
+        <Part node="c2">
+          <Person x={X.merchant} y={FEET} s={1.2} robe={PIGMENT.blue} pants={PIGMENT.woodDark} hat="nonLa" long={false} pose="hold">
+            {carryPole()}
+          </Person>
+        </Part>
+
+        {/* The potter, with the jars he throws */}
+        <Part node="c3">
+          <Person x={X.potter} y={FEET} s={1.2} robe={PIGMENT.stone} pants={PIGMENT.woodDark} hat="topknot" long={false} pose="work" />
+          <Jar x={X.potter + 44} y={FEET} s={0.9} />
+          <Jar x={X.potter + 76} y={FEET} s={0.72} color={PIGMENT.wood} />
+          <Jar x={X.potter - 40} y={FEET} s={0.78} color={PIGMENT.amber} />
+        </Part>
+      </>
     )
   },
 }

@@ -39,6 +39,16 @@ export const PIGMENT = {
   steel: '#c9cbc4',
   straw: '#e8cd8c',
   strawDark: '#a7823f',
+  /** Terracotta roof tiles. */
+  tile: '#a4553a',
+  tileDark: '#723826',
+  stone: '#a39a8a',
+  stoneDark: '#6f685d',
+  /** Cast-iron pots. */
+  iron: '#3f3a34',
+  ironLight: '#6b635a',
+  /** Hoa đào blossom; hoa mai uses yellow. */
+  pink: '#d9858c',
 } as const
 
 /** Pale tints (pigment mixed toward paper), for scenery that must not compete with participants. */

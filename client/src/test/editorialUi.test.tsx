@@ -4,14 +4,32 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import i18next from 'i18next'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import CodeBlock from '../components/CodeBlock'
 import Navbar from '../components/Navbar'
 import PatternCollection from '../components/PatternCollection'
+import SiteShell from '../components/SiteShell'
 import { allPatterns } from '../data'
+import PatternDetail from '../pages/PatternDetail'
+import type { Pattern } from '../types/pattern'
 import en from '../locales/en/translation.json'
 import viLocale from '../locales/vi/translation.json'
+
+const proseFixture: Pattern = {
+  ...allPatterns[0],
+  slug: 'fixture-prose',
+  intent: { en: [{ type: 'paragraph', text: 'Summary paragraph.' }, { type: 'list', items: ['x'] }], vi: 'Tóm tắt.' },
+  applicability: {
+    en: [{ type: 'paragraph', text: 'Use it when:' }, { type: 'list', items: ['first <i>case</i>', 'second case'] }],
+    vi: 'Dùng khi cần.',
+  },
+}
+
+vi.mock('../data', async importOriginal => {
+  const actual = await importOriginal<typeof import('../data')>()
+  return { ...actual, getPattern: (slug: string) => (slug === 'fixture-prose' ? proseFixture : actual.getPattern(slug)) }
+})
 
 function makeI18n(lng: 'en' | 'vi' = 'en') {
   const instance = i18next.createInstance()
@@ -55,6 +73,22 @@ describe('editorial navigation', () => {
     renderWithApp(<Navbar />)
     await user.click(screen.getByRole('button', { name: /switch language/i }))
     expect(localStorage.getItem('lang')).toBe('vi')
+  })
+
+  it('updates document metadata when the language changes', async () => {
+    const meta = document.createElement('meta')
+    meta.name = 'description'
+    document.head.append(meta)
+    const user = userEvent.setup()
+
+    renderWithApp(<SiteShell><div>Page content</div></SiteShell>)
+    expect(document.title).toBe(en.site.title)
+    expect(meta.content).toBe(en.site.description)
+
+    await user.click(screen.getByRole('button', { name: /switch language/i }))
+    expect(document.title).toBe(viLocale.site.title)
+    expect(meta.content).toBe(viLocale.site.description)
+    meta.remove()
   })
 })
 
@@ -102,6 +136,25 @@ describe('code example feedback', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Code copied')
 
     await user.click(screen.getByRole('button', { name: /copy code/i }))
-    expect(screen.getByRole('status')).toHaveTextContent('Unable to copy code')
+    expect(screen.getByRole('status')).toHaveTextContent('Could not copy the code')
+  })
+})
+
+describe('structured prose', () => {
+  it('summarizes structured intent on a card', () => {
+    renderWithApp(<PatternCollection ariaLabel="Fixture" patterns={[proseFixture]} />)
+    expect(screen.getByText('Summary paragraph.')).toBeVisible()
+  })
+  it('renders structured applicability as a list on the detail page', () => {
+    render(
+      <I18nextProvider i18n={makeI18n('en')}>
+        <MemoryRouter initialEntries={['/pattern/fixture-prose']}>
+          <Routes><Route path="/pattern/:slug" element={<PatternDetail />} /></Routes>
+        </MemoryRouter>
+      </I18nextProvider>,
+    )
+    const section = document.getElementById('applicability')!
+    expect(section.querySelectorAll('li')).toHaveLength(2)
+    expect(section).toHaveTextContent('first <i>case</i>')
   })
 })

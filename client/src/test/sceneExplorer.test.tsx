@@ -13,7 +13,7 @@ import { nodeMap, pinLetter, stepChips } from '../scenes/explorer/nodes'
 import SceneExplorer from '../scenes/explorer/SceneExplorer'
 import { scenes } from '../scenes/registry'
 import ScenePlate from '../scenes/ScenePlate'
-import { isPlate, type Lang, type SceneDefinition } from '../scenes/types'
+import type { Lang, SceneDefinition } from '../scenes/types'
 
 function makeI18n(lng: Lang) {
   const instance = i18next.createInstance()
@@ -26,7 +26,7 @@ function makeI18n(lng: Lang) {
   return instance
 }
 
-const plates = Object.values(scenes).filter(isPlate)
+const plates = Object.values(scenes)
 const patternOf = (slug: string) => allPatterns.find(p => p.slug === slug)!
 
 function renderExplorer(definition: SceneDefinition, lang: Lang = 'en') {
@@ -62,6 +62,18 @@ if (plates.length > 0) describe.each(plates.map(p => [p.slug, p] as const))('%s 
     expect(problems).toEqual([])
   })
 
+  it.each(['en', 'vi'] as const)('lists every pin with its class name and caption in the %s legend', lang => {
+    renderExplorer(definition, lang)
+    const legend = document.querySelector('[data-scene-legend]') as HTMLElement
+    const rows = Array.from(legend.querySelectorAll('[data-legend-row]'))
+    expect(rows).toHaveLength(definition.pins.length)
+    definition.pins.forEach((pin, index) => {
+      expect(rows[index]).toHaveTextContent(nodes.get(pin.nodeId)!.label)
+      expect(rows[index]).toHaveTextContent(pin.caption[lang])
+      for (const method of pin.methods ?? []) expect(rows[index]).toHaveTextContent(`.${method}()`)
+    })
+  })
+
   it('letters the pins on the plate the same way as the legend', () => {
     renderExplorer(definition)
     const pinLetters = Array.from(document.querySelectorAll('[data-pin]')).map(el => el.getAttribute('data-pin'))
@@ -73,7 +85,6 @@ if (plates.length > 0) describe.each(plates.map(p => [p.slug, p] as const))('%s 
 
 describe('highlight rules', () => {
   const definition = scenes.observer
-  if (!isPlate(definition)) throw new Error('observer should be a plate')
 
   it('shows the overview with nothing lit', () => {
     expect(highlightFor(definition, OVERVIEW)).toBeNull()
@@ -95,7 +106,6 @@ describe('highlight rules', () => {
 
 describe('observer explorer', () => {
   const definition = scenes.observer
-  if (!isPlate(definition)) throw new Error('observer should be a plate')
 
   it('lights the pressed object and its arrows, dims the rest, and clears on Escape', async () => {
     const user = userEvent.setup()

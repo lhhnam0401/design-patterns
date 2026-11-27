@@ -1,76 +1,190 @@
-import { Gate, Hall } from './kit/architecture'
-import { Person } from './kit/figures'
-import { band } from './kit/geometry'
-import { Bamboo, Cloud, Hills, Path, Stars, Sun, Tree } from './kit/nature'
-import { Caption } from './kit/overlay'
-import { C, INK, SCENE_COLORS } from './kit/palette'
-import { RolledScroll } from './kit/props'
-import type { SceneArtProps, LegacySceneDefinition } from './types'
+import { Roof } from './print/architecture'
+import { Person } from './print/figures'
+import { Cloud, Grass, GroundBand, Hills } from './print/nature'
+import { INK, PAPER_LIGHT, PIGMENT, TINT, TONES } from './print/pigments'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { SceneArtProps, SceneDefinition } from './types'
 
-const chain: LegacySceneDefinition = {
+/** The villager at the foot of the stairs, then one official per step, rising to the right. */
+const VILLAGER = { x: 80, feet: 378 } as const
+const RANK = {
+  h1: { x: 280, feet: 352 },
+  h2: { x: 460, feet: 326 },
+  h3: { x: 640, feet: 300 },
+  h4: { x: 830, feet: 274 },
+} as const
+const RANK_X = Object.values(RANK).map(r => r.x)
+
+/** The rail: the interface board on the left, the base class board over the four officials. */
+const IFACE_BOARD = { x: 200, w: 200 } as const
+const BASE_BOARD = { x: 560, w: 300 } as const
+
+const tr = (lang: SceneArtProps['lang'], en: string, vi: string) => (lang === 'vi' ? vi : en)
+
+/** The petition: an open scroll with ruled lines, a red seal and four level marks, one filled. */
+function petition(x: number, y: number) {
+  const w = 58
+  const h = 86
+  return (
+    <g stroke={INK} strokeLinejoin="round">
+      <rect x={x} y={y} width={w} height={h} fill={PAPER_LIGHT} strokeWidth={2.6} />
+      <rect x={x - 5} y={y - 4} width={w + 10} height={8} rx={4} fill={PIGMENT.wood} strokeWidth={2} />
+      <rect x={x - 5} y={y + h - 4} width={w + 10} height={8} rx={4} fill={PIGMENT.wood} strokeWidth={2} />
+      {[0, 1, 2].map(i => (
+        <line key={i} x1={x + 9} y1={y + 34 + i * 12} x2={x + w - 9} y2={y + 34 + i * 12} strokeWidth={2.2} strokeLinecap="round" />
+      ))}
+      {[0, 1, 2, 3].map(i => (
+        <rect key={i} x={x + 9 + i * 11} y={y + h - 20} width={8} height={8} fill={i === 0 ? PIGMENT.red : PAPER_LIGHT} strokeWidth={1.4} />
+      ))}
+    </g>
+  )
+}
+
+/** A red parasol of state over the Emperor. `x` is the pole, `top` the canopy's crown. */
+function parasol(x: number, top: number, feet: number) {
+  return (
+    <g stroke={INK} strokeLinejoin="round">
+      <line x1={x} y1={top} x2={x} y2={feet} strokeWidth={5.5} strokeLinecap="round" />
+      <line x1={x} y1={top} x2={x} y2={feet} stroke={PIGMENT.wood} strokeWidth={3} strokeLinecap="round" />
+      <path d={`M${x - 44},${top + 22} Q${x},${top - 8} ${x + 44},${top + 22} Z`} fill={PIGMENT.red} strokeWidth={3} />
+      <path d={`M${x - 44},${top + 22} L${x + 44},${top + 22} L${x + 40},${top + 30} L${x - 40},${top + 30} Z`} fill={PIGMENT.yellow} strokeWidth={2} />
+    </g>
+  )
+}
+
+const chain: SceneDefinition = {
   slug: 'chain-of-responsibility',
-  title: { en: 'Chain of Responsibility: a petition climbs the ranks', vi: 'Chain of Responsibility: lá đơn đi lên từng cấp' },
-  sky: 'dawn',
-  tags: [
-    { nodeId: 'client', method: 'filePetition', caption: { en: 'a villager files it', vi: 'người dân nộp đơn' }, at: [86, 208], to: [66, 330] },
-    { nodeId: 'req', caption: { en: 'level + content', vi: 'mức độ + nội dung' }, at: [290, 418], to: [240, 392] },
-    { nodeId: 'h1', caption: { en: 'settles level 1', vi: 'xử đơn mức 1' }, at: [210, 280], to: [168, 334] },
-    { nodeId: 'h2', caption: { en: 'up to level 2', vi: 'xử tới mức 2' }, at: [368, 196], to: [368, 254] },
-    { nodeId: 'h3', caption: { en: 'up to level 3', vi: 'xử tới mức 3' }, at: [586, 128], to: [592, 186] },
-    { nodeId: 'h4', caption: { en: 'up to level 4', vi: 'xử tới mức 4' }, at: [690, 46], to: [800, 82] },
-    { nodeId: 'handler', method: 'setSuperior', caption: { en: 'each knows the next one up', vi: 'mỗi quan biết cấp trên' }, at: [470, 412], to: [472, 322] },
-    { nodeId: 'base', method: 'handle', caption: { en: 'passes it up by default', vi: 'mặc định chuyển lên trên' }, at: [724, 334], to: [716, 236] },
+  title: { en: 'Chain of Responsibility: a petition climbs a fictional court', vi: 'Chain of Responsibility: lá đơn đi lên một triều đình hư cấu' },
+  setting: 'dawn',
+  pins: [
+    { nodeId: 'client', methods: ['filePetition'], caption: { en: 'a villager files it', vi: 'người dân nộp đơn' }, at: [VILLAGER.x, 336], showName: false },
+    { nodeId: 'req', caption: { en: 'level + content', vi: 'mức độ + nội dung' }, at: [149, 226], showName: false },
+    { nodeId: 'handler', methods: ['setSuperior'], caption: { en: 'each knows the next one up', vi: 'mỗi quan biết cấp trên' }, at: [126, 44], showName: false },
+    { nodeId: 'base', methods: ['handle'], caption: { en: 'passes it up by default', vi: 'mặc định chuyển lên trên' }, at: [434, 44], showName: false },
+    { nodeId: 'h1', caption: { en: 'settles level 1', vi: 'xử đơn mức 1' }, at: [RANK.h1.x, RANK.h1.feet - 34], showName: false },
+    { nodeId: 'h2', caption: { en: 'up to level 2', vi: 'xử tới mức 2' }, at: [RANK.h2.x, RANK.h2.feet - 34], showName: false },
+    { nodeId: 'h3', caption: { en: 'up to level 3', vi: 'xử tới mức 3' }, at: [RANK.h3.x, RANK.h3.feet - 34], showName: false },
+    { nodeId: 'h4', caption: { en: 'up to level 4', vi: 'xử tới mức 4' }, at: [RANK.h4.x, RANK.h4.feet - 34], showName: false },
   ],
   calls: [
-    { nodeId: 'client', method: 'filePetition', d: 'M86,352 C106,346 118,350 128,358' },
-    { nodeId: 'base', method: 'handle', d: 'M206,352 C250,320 290,300 320,296', at: [262, 318] },
-    { nodeId: 'base', method: 'handle', d: 'M426,292 C470,264 510,246 540,236' },
-    { nodeId: 'base', method: 'handle', d: 'M652,226 C700,196 740,176 766,168' },
-    { nodeId: 'base', method: 'handle', d: 'M900,150 C918,138 930,128 942,116' },
+    { id: 'file', nodeId: 'client', method: 'filePetition', d: 'M12,232 C18,262 30,290 50,306' },
+    { id: 'chief', nodeId: 'h1', method: 'handle', d: 'M182,276 C206,272 230,278 250,290' },
+    { id: 'magistrate', nodeId: 'h2', method: 'handle', d: 'M306,282 C350,252 396,246 432,256' },
+    { id: 'prefect', nodeId: 'h3', method: 'handle', d: 'M486,256 C530,226 576,220 612,230' },
+    { id: 'emperor', nodeId: 'h4', method: 'handle', d: 'M666,230 C712,200 760,194 800,204' },
+    { id: 'unresolved', nodeId: 'base', method: 'handle', kind: 'return', d: 'M884,256 C934,300 930,414 780,420 L180,420 C140,420 118,408 110,390' },
   ],
+  steps: [
+    {
+      calls: ['file', 'chief'],
+      nodes: ['client', 'req', 'handler', 'h1'],
+      at: [226, 236],
+      caption: { en: 'filePetition() hands a level-1 field quarrel to the village chief’s handle(). He may settle it, so it goes no further.', vi: 'filePetition() trao vụ tranh chấp bờ ruộng mức 1 cho handle() của xã trưởng. Ông đủ quyền giải quyết, nên đơn dừng ở đó.' },
+    },
+    {
+      calls: ['chief', 'magistrate'],
+      nodes: ['req', 'h1', 'base', 'h2'],
+      at: [370, 214],
+      caption: { en: 'A stolen buffalo is level 2: the chief’s handle() falls back on BaseOfficial and passes it up. The magistrate settles it.', vi: 'Mất trộm trâu là mức 2: handle() của xã trưởng gọi lại BaseOfficial để chuyển đơn lên. Quan huyện xử vụ này.' },
+    },
+    {
+      calls: ['chief', 'magistrate', 'prefect'],
+      nodes: ['req', 'h1', 'h2', 'base', 'h3'],
+      at: [550, 188],
+      caption: { en: 'A dyke about to break is level 3. It passes the chief and the magistrate and stops at the prefect.', vi: 'Đê sắp vỡ là mức 3. Đơn đi qua xã trưởng và quan huyện rồi dừng ở tri phủ.' },
+    },
+    {
+      calls: ['chief', 'magistrate', 'prefect', 'emperor'],
+      nodes: ['req', 'h1', 'h2', 'h3', 'base', 'h4'],
+      at: [735, 162],
+      caption: { en: 'An invasion is level 4: every official below passes it up, and the Emperor decides.', vi: 'Giặc tràn qua biên giới là mức 4: mọi quan bên dưới đều chuyển lên, và Hoàng đế quyết định.' },
+    },
+    {
+      calls: ['chief', 'magistrate', 'prefect', 'emperor', 'unresolved'],
+      nodes: ['client', 'req', 'h1', 'h2', 'h3', 'h4', 'base'],
+      at: [520, 392],
+      caption: { en: 'Nobody may grant rain. Past the Emperor there is no superior, so handle() returns null and the villager gets nothing.', vi: 'Không ai có quyền làm mưa. Trên Hoàng đế không còn cấp nào, nên handle() trả về null và người dân ra về tay không.' },
+    },
+  ],
+  focus: [0, 40, 960, 400],
   untagged: [],
-  Art: function ChainArt({ lang, compact }: SceneArtProps) {
+  Art: function ChainArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        <Stars seed={3} count={18} maxY={80} />
-        <Sun x={150} y={150} r={30} />
-        <Cloud x={380} y={70} s={1} color="#fde68a" />
-        <Hills y={200} amp={50} color="#4b2e55" seed={7} />
-        {/* The hill the road climbs */}
-        <path d={band([[0, 420], [200, 380], [400, 320], [600, 252], [820, 180], [960, 150]], 440)} fill="#baa78c" />
-        <path d={band([[0, 440], [300, 430], [600, 400], [960, 360]], 440)} fill="#c9b89e" />
-        <Path points={[[20, 448], [150, 404], [360, 334], [590, 266], [830, 196], [950, 150]]} width={20} />
-        <Tree x={480} y={300} s={0.7} />
-        <Bamboo x={900} y={210} h={120} count={3} seed={4} />
+      <>
+        <Backdrop>
+          <Cloud x={720} y={150} s={0.8} />
+          <Hills y={250} amp={30} seed={7} step={160} />
+          <GroundBand />
+          {/* The stone stairs, one step per rank */}
+          <path
+            d={`M190,380 L190,${RANK.h1.feet} L370,${RANK.h1.feet} L370,${RANK.h2.feet} L550,${RANK.h2.feet} L550,${RANK.h3.feet} L730,${RANK.h3.feet} L730,${RANK.h4.feet} L960,${RANK.h4.feet} L960,380 Z`}
+            fill={TINT.ground}
+            stroke={TINT.groundEdge}
+            strokeWidth={3}
+            strokeLinejoin="round"
+          />
+          <Roof cx={880} y={RANK.h4.feet - 150} w={150} h={34} pale />
+          <Grass x0={10} x1={170} seed={3} count={5} />
+          {([
+            ['h1', 'village', 'xã'],
+            ['h2', 'district', 'huyện'],
+            ['h3', 'province', 'phủ'],
+            ['h4', 'court', 'triều đình'],
+          ] as const).map(([id, en, vi]) => (
+            <Caption key={id} x={RANK[id].x} y={RANK[id].feet + 21} fill={INK}>{tr(lang, en, vi)}</Caption>
+          ))}
+        </Backdrop>
 
-        {/* Village gate, district office, prefecture, citadel */}
-        <Gate cx={150} y={398} w={120} h={60} />
-        <Hall cx={368} y={322} w={110} h={42} roofH={34} doors={2} />
-        <Hall cx={592} y={256} w={124} h={46} roofH={38} />
-        <Hall cx={830} y={186} w={150} h={54} roofH={40} tiers={2} />
+        {/* The rail: the interface realized by the base class, which every official extends */}
+        <Part node="handler">
+          <Signboard x={IFACE_BOARD.x} w={IFACE_BOARD.w} tone="interface">
+            <Caption x={IFACE_BOARD.x + 14} y={53}>{tr(lang, 'Every rank', 'Mọi cấp quan')}</Caption>
+          </Signboard>
+          <path
+            d={`M${IFACE_BOARD.x + IFACE_BOARD.w / 2},39 L${BASE_BOARD.x - BASE_BOARD.w / 2 - 4},39 M${BASE_BOARD.x - BASE_BOARD.w / 2 - 12},31 L${BASE_BOARD.x - BASE_BOARD.w / 2 - 4},39 L${BASE_BOARD.x - BASE_BOARD.w / 2 - 12},47`}
+            fill="none"
+            stroke={TONES.interface}
+            strokeWidth={3}
+            strokeDasharray="8 6"
+            strokeLinecap="round"
+          />
+        </Part>
+        <Part node="base">
+          <Signboard x={BASE_BOARD.x} w={BASE_BOARD.w} tone="abstract" span={[RANK.h1.x, RANK.h4.x]} ticks={RANK_X}>
+            <Caption x={BASE_BOARD.x + 18} y={53}>{tr(lang, 'If not mine, send it up', 'Không xử thì trình lên')}</Caption>
+          </Signboard>
+        </Part>
 
-        {/* A signpost by the road */}
-        <line x1={472} y1={330} x2={472} y2={292} stroke={INK} strokeWidth={4} />
-        <path d="M452,296 L494,290 L500,298 L494,306 L452,310 Z" fill={C.paper} stroke={INK} strokeWidth={1.5} />
+        {/* The four officials, one per step */}
+        <Part node="h1">
+          <Person x={RANK.h1.x} y={RANK.h1.feet} s={1.15} robe={PIGMENT.amber} pants={PIGMENT.woodDark} hat="khanXep" pose="hold">
+            <line x1={-24} y1={-4} x2={-22} y2={-60} stroke={INK} strokeWidth={5} strokeLinecap="round" />
+            <line x1={-24} y1={-4} x2={-22} y2={-60} stroke={PIGMENT.wood} strokeWidth={2.6} strokeLinecap="round" />
+          </Person>
+        </Part>
+        <Part node="h2">
+          <Person x={RANK.h2.x} y={RANK.h2.feet} s={1.15} robe={PIGMENT.blue} pants={PIGMENT.blueDark} hat="official" pose="hold">
+            <rect x={-6} y={-70} width={12} height={22} rx={2} fill={PIGMENT.white} stroke={INK} strokeWidth={1.6} />
+          </Person>
+        </Part>
+        <Part node="h3">
+          <Person x={RANK.h3.x} y={RANK.h3.feet} s={1.15} robe={PIGMENT.green} pants={PIGMENT.greenDark} sash={PIGMENT.red} hat="official" pose="hold">
+            <rect x={-6} y={-70} width={12} height={22} rx={2} fill={PIGMENT.white} stroke={INK} strokeWidth={1.6} />
+          </Person>
+        </Part>
+        <Part node="h4">
+          {parasol(RANK.h4.x + 42, RANK.h4.feet - 156, RANK.h4.feet)}
+          <Person x={RANK.h4.x} y={RANK.h4.feet} s={1.2} robe={PIGMENT.yellow} pants={PIGMENT.redDark} sash={PIGMENT.red} hat="crown" pose="hold">
+            <rect x={-6} y={-70} width={12} height={22} rx={2} fill={PIGMENT.red} stroke={INK} strokeWidth={1.6} />
+          </Person>
+        </Part>
 
-        {/* One petition settled at the district office */}
-        <RolledScroll x={402} y={340} w={30} />
-        <path d="M440,334 l6,6 l12,-14" stroke={C.jade} strokeWidth={4} fill="none" strokeLinecap="round" />
-        <Caption x={432} y={362} size={10} fill={INK}>{lang === 'vi' ? 'xử lý tại đây' : 'settled here'}</Caption>
-
-        {/* One petition beyond every rank leaves the end of the chain */}
-        <RolledScroll x={910} y={98} w={26} />
-        <g stroke={C.lacquer} strokeWidth={3} strokeLinecap="round">
-          <line x1={940} y1={80} x2={952} y2={92} />
-          <line x1={952} y1={80} x2={940} y2={92} />
-        </g>
-        {!compact && <rect x={900} y={50} width={58} height={15} rx={2} fill={SCENE_COLORS.paperLight} stroke={C.lacquerDark} strokeWidth={0.8} />}
-        <Caption x={954} y={61} size={10} anchor="end" fill={C.lacquerDark}>{lang === 'vi' ? 'bị trả về' : 'unhandled'}</Caption>
-
-        {/* The villager and the petition */}
-        <Person x={66} y={432} s={1.05} robe="#6b4226" hat="nonLa" long={false} pose="reach" />
-        <RolledScroll x={226} y={392} w={30} />
-      </g>
+        {/* The villager at the foot of the stairs, holding up the petition */}
+        <Part node="client">
+          <Person x={VILLAGER.x} y={VILLAGER.feet} s={1.25} robe={PIGMENT.blue} pants={PIGMENT.woodDark} hat="nonLa" long={false} pose="reach" />
+        </Part>
+        <Part node="req">{petition(120, 212)}</Part>
+      </>
     )
   },
 }

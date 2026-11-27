@@ -51,8 +51,10 @@ export function Caption({ x, y, children, size = MIN_CAPTION_SIZE, fill = INK, a
 }
 
 /**
- * A board hanging on the rail for an interface or abstract class, with a dashed
- * bracket over exactly the objects that implement it (UML realization is dashed too).
+ * A board hanging on the rail for a type that other objects build on: an interface,
+ * an abstract class, or a concrete base class. A bracket runs over exactly the objects
+ * that implement or extend it. As in UML, the bracket is dashed for an interface
+ * (realization) and solid for a class (inheritance).
  * `x` is the board's centre; `span` the bracket's ends; `ticks` drop a line to each implementer.
  */
 export function Signboard({ x, w, y = 14, h = 50, tone, span, ticks = [], children }: {
@@ -60,12 +62,13 @@ export function Signboard({ x, w, y = 14, h = 50, tone, span, ticks = [], childr
   w: number
   y?: number
   h?: number
-  tone: 'interface' | 'abstract'
+  tone: 'interface' | 'abstract' | 'class'
   span?: readonly [number, number]
   ticks?: number[]
   children?: ReactNode
 }) {
   const color = TONES[tone]
+  const dash = tone === 'interface' ? '8 6' : undefined
   const left = x - w / 2
   const bottom = y + h
   const bracketY = RAIL.bottom
@@ -76,8 +79,8 @@ export function Signboard({ x, w, y = 14, h = 50, tone, span, ticks = [], childr
       ))}
       {span && (
         <g fill="none" stroke={color} strokeWidth={3} strokeLinecap="round">
-          <line x1={x} y1={bottom} x2={x} y2={bracketY} strokeDasharray="8 6" />
-          <line x1={span[0]} y1={bracketY} x2={span[1]} y2={bracketY} strokeDasharray="8 6" />
+          <line x1={x} y1={bottom} x2={x} y2={bracketY} strokeDasharray={dash} />
+          <line x1={span[0]} y1={bracketY} x2={span[1]} y2={bracketY} strokeDasharray={dash} />
           {(ticks.length ? ticks : [...span]).map(tx => (
             <path key={tx} d={`M${tx},${bracketY} L${tx},${bracketY + 14} M${tx - 6},${bracketY + 8} L${tx},${bracketY + 14} L${tx + 6},${bracketY + 8}`} />
           ))}

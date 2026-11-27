@@ -41,7 +41,7 @@ export default function Pins({ definition, nodes, highlight, step, onHover, onTo
             data-pin={letter}
             data-pin-node={pin.nodeId}
             data-lit={lit ? 'true' : undefined}
-            className={`pointer-events-auto absolute flex cursor-pointer items-center gap-1 transition-opacity duration-200 ease-out ${left ? 'flex-row-reverse' : ''} ${dimmed ? 'opacity-40' : ''}`}
+            className={`pointer-events-auto absolute flex cursor-pointer items-center gap-1 transition-opacity duration-200 ease-out ${left ? 'flex-row-reverse' : ''} ${dimmed ? 'opacity-70' : ''}`}
             style={{
               ...place(pin.at[0], pin.at[1]),
               transform: left ? 'translate(calc(-100% + var(--pin-half)), -50%)' : 'translate(calc(-1 * var(--pin-half)), -50%)',

@@ -4,17 +4,14 @@ import { useTranslation } from 'react-i18next'
 import CodeBlock from '../components/CodeBlock'
 import PatternCollection from '../components/PatternCollection'
 import PatternDiagram from '../components/PatternDiagram'
+import PatternProse from '../components/PatternProse'
 import { getPattern, patternsByCategory } from '../data'
 import SceneExplorer from '../scenes/explorer/SceneExplorer'
-import PatternScene from '../scenes/PatternScene'
-import SceneLegend from '../scenes/SceneLegend'
 import { sceneFor } from '../scenes/registry'
-import { isPlate } from '../scenes/types'
 import { patternFolio } from '../utils/presentation'
 import NotFound from './NotFound'
 
-const complexityLabel = ['', 'Simple', 'Medium', 'Complex']
-const complexityLabelVi = ['', 'Đơn giản', 'Trung bình', 'Phức tạp']
+const complexityKeys = ['', 'simple', 'medium', 'complex'] as const
 
 function ArticleSection({ id, number, title, children }: { id: string; number: string; title: string; children: ReactNode }) {
   return (
@@ -43,9 +40,7 @@ export default function PatternDetail() {
   const siblings = patternsByCategory[pattern.category]
     .filter(item => item.slug !== pattern.slug)
     .slice(0, 3)
-  const complexityText = lang === 'vi'
-    ? complexityLabelVi[pattern.complexity]
-    : complexityLabel[pattern.complexity]
+  const complexityText = t(`pattern.complexity_level.${complexityKeys[pattern.complexity]}`)
 
   const contents = [
     ['intent', t('pattern.intent')],
@@ -61,7 +56,7 @@ export default function PatternDetail() {
     <article>
       <header className="border-b border-line bg-surface">
         <div className="mx-auto max-w-[100rem] px-5 py-10 sm:px-8 lg:px-12 lg:py-16">
-          <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-muted">
+          <nav aria-label={t('nav.breadcrumb')} className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-ink-muted">
             <Link to="/" className="text-link">{t('nav.home')}</Link>
             <span aria-hidden="true">/</span>
             <Link to={`/category/${pattern.category}`} className="text-link">{t(`categories.${pattern.category}`)}</Link>
@@ -117,33 +112,24 @@ export default function PatternDetail() {
 
         <div className="min-w-0 space-y-12 lg:col-span-8 lg:row-start-1">
           <div aria-label={t('pattern.overview')} className="space-y-10">
-            <ArticleSection id="intent" number="01" title={t('pattern.intent')}>{pattern.intent[lang]}</ArticleSection>
-            <ArticleSection id="problem" number="02" title={t('pattern.problem')}>{pattern.problem[lang]}</ArticleSection>
-            <ArticleSection id="solution" number="03" title={t('pattern.solution')}>{pattern.solution[lang]}</ArticleSection>
-            <ArticleSection id="applicability" number="04" title={t('pattern.applicability')}>{pattern.applicability[lang]}</ArticleSection>
+            <ArticleSection id="intent" number="01" title={t('pattern.intent')}><PatternProse value={pattern.intent[lang]} /></ArticleSection>
+            <ArticleSection id="problem" number="02" title={t('pattern.problem')}><PatternProse value={pattern.problem[lang]} /></ArticleSection>
+            <ArticleSection id="solution" number="03" title={t('pattern.solution')}><PatternProse value={pattern.solution[lang]} /></ArticleSection>
+            <ArticleSection id="applicability" number="04" title={t('pattern.applicability')}><PatternProse value={pattern.applicability[lang]} /></ArticleSection>
           </div>
 
           <section id="example" className="scroll-mt-24 border-t border-line pt-7">
             <p className="eyebrow text-accent">05 / {t('pattern.example')}</p>
             <h2 className="section-title mt-3 text-ink">{pattern.vietnamese_example.title[lang]}</h2>
-            {scene && isPlate(scene) ? (
-              <SceneExplorer key={pattern.slug} definition={scene} diagram={pattern.diagram} lang={lang} />
-            ) : (
-              <>
-                <figure className="mt-6 w-full max-w-full overflow-hidden rounded-lg border border-line bg-scene-paper">
-                  <PatternScene pattern={pattern} lang={lang} variant="detail" />
-                </figure>
-                {scene && <SceneLegend definition={scene} diagram={pattern.diagram} lang={lang} />}
-              </>
-            )}
-            <p className="prose-copy mt-5 text-ink-muted">{pattern.vietnamese_example.description[lang]}</p>
+            {scene && <SceneExplorer key={pattern.slug} definition={scene} diagram={pattern.diagram} lang={lang} />}
+            <PatternProse className="prose-copy mt-5 text-ink-muted" value={pattern.vietnamese_example.description[lang]} />
           </section>
 
           <section id="structure" className="scroll-mt-24 border-t border-line pt-7">
             <p className="eyebrow text-accent">06</p>
             <h2 className="section-title mt-3 text-ink">{t('pattern.structure')}</h2>
             <div className="mt-6"><PatternDiagram key={pattern.slug} diagram={pattern.diagram} /></div>
-            <p className="prose-copy mt-4 text-sm text-ink-muted">{pattern.structure_notes[lang]}</p>
+            <PatternProse className="prose-copy mt-4 text-sm text-ink-muted" value={pattern.structure_notes[lang]} />
           </section>
 
           <section id="code" className="scroll-mt-24 border-t border-line pt-7">

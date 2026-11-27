@@ -1,119 +1,121 @@
-import { Person } from './kit/figures'
-import { Caption } from './kit/overlay'
-import { C, INK, W } from './kit/palette'
-import { Lantern, Table } from './kit/props'
-import type { SceneArtProps, LegacySceneDefinition } from './types'
+import { Person } from './print/figures'
+import { GroundBand, Grass } from './print/nature'
+import { INK, PAPER_LIGHT, PIGMENT, TINT } from './print/pigments'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { SceneArtProps, SceneDefinition } from './types'
 
-/** An áo dài on a dress form. `cx, top` is the shoulder line; `fabric` decides the look. */
-function aoDai(cx: number, top: number, color: string, modern: boolean, s = 1, brocade = false) {
-  const flap = modern ? 104 : 150
+const FEET = 378
+const X = { client: 60, trad: 262, modern: 432, silk: 690, brocade: 850 } as const
+
+/** A stack of three cloth bolts, `x` is the centre. */
+function bolts(x: number, body: string, edge: string, motif: 'sheen' | 'diamond') {
   return (
-    <g transform={`translate(${cx},${top}) scale(${s})`}>
-      <line x1={0} y1={150} x2={0} y2={190} stroke={INK} strokeWidth={4} />
-      <ellipse cx={0} cy={192} rx={22} ry={5} fill={C.woodDark} stroke={INK} strokeWidth={1.5} />
-      <ellipse cx={0} cy={-20} rx={9} ry={12} fill="#d6c3a5" stroke={INK} strokeWidth={1.5} />
-      <rect x={-14} y={40} width={28} height={110} fill="#f8fafc" stroke={INK} strokeWidth={1.5} />
-      <path
-        d={`M-17,0 Q0,-6 17,0 L${modern ? 20 : 26},${modern ? 30 : 60} L${modern ? 15 : 20},${modern ? 34 : 64} L13,30 L11,40 L12,${flap} L-12,${flap} L-11,40 L-13,30 L${modern ? -15 : -20},${modern ? 34 : 64} L${modern ? -20 : -26},${modern ? 30 : 60} Z`}
-        fill={color}
-        stroke={INK}
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <rect x={-5} y={-9} width={10} height={9} fill={color} stroke={INK} strokeWidth={1.4} />
-      <path d={`M0,0 Q8,10 12,24`} stroke={INK} strokeWidth={1} fill="none" />
-      {brocade && Array.from({ length: 12 }, (_, i) => (
-        <circle key={i} cx={-7 + (i % 3) * 7} cy={14 + Math.floor(i / 3) * 22} r={2.2} fill={C.gold} stroke={INK} strokeWidth={0.5} />
-      ))}
-      {!brocade && <path d={`M-8,8 Q-2,40 -6,${flap - 10}`} stroke="#fff" strokeOpacity={0.35} strokeWidth={3} fill="none" />}
+    <g stroke={INK} strokeWidth={3} strokeLinejoin="round">
+      {[0, 1, 2].map(row => {
+        const y = 290 + row * 30
+        const dx = row === 1 ? 8 : 0
+        return (
+          <g key={row}>
+            <rect x={x - 48 + dx} y={y} width={96} height={28} rx={14} fill={body} />
+            <ellipse cx={x - 34 + dx} cy={y + 14} rx={8} ry={12} fill={edge} />
+            {motif === 'sheen'
+              ? <path d={`M${x - 20 + dx},${y + 8} q14,-5 28,0 t28,0 M${x - 20 + dx},${y + 20} q14,-5 28,0 t28,0`} fill="none" stroke={PAPER_LIGHT} strokeWidth={1.8} />
+              : [0, 1, 2].map(i => <path key={i} d={`M${x - 12 + dx + i * 24},${y + 14} l8,-8 l8,8 l-8,8 Z`} fill={PIGMENT.yellow} strokeWidth={1.4} />)}
+          </g>
+        )
+      })}
     </g>
   )
 }
 
-/** A rolled bolt of cloth lying on a shelf. */
-function bolt(x: number, y: number, color: string, brocade: boolean) {
+/** A small arched footbridge over a stream: the link between the two rows. */
+function footbridge() {
   return (
-    <g key={`${x}-${y}`}>
-      <rect x={x} y={y} width={70} height={26} rx={4} fill={color} stroke={INK} strokeWidth={1.6} />
-      <ellipse cx={x + 70} cy={y + 13} rx={6} ry={13} fill={color} stroke={INK} strokeWidth={1.4} />
-      <ellipse cx={x + 70} cy={y + 13} rx={2} ry={5} fill={INK} opacity={0.5} />
-      {brocade
-        ? [10, 26, 42, 58].map(dx => <path key={dx} d={`M${x + dx},${y + 13} l4,-6 l4,6 l-4,6 Z`} fill={C.gold} stroke={INK} strokeWidth={0.6} />)
-        : <path d={`M${x + 6},${y + 7} H${x + 60}`} stroke="#fff" strokeOpacity={0.5} strokeWidth={3} strokeLinecap="round" />}
+    <g stroke={INK} strokeWidth={3} strokeLinejoin="round">
+      <path d="M490,386 Q560,396 640,386 L640,430 L490,430 Z" fill={TINT.blue} />
+      <path d="M500,380 Q565,300 630,380 L610,380 Q565,330 520,380 Z" fill={TINT.amber} />
+      <path d="M500,344 Q565,296 630,344" fill="none" strokeWidth={4} />
     </g>
   )
 }
 
-const bridge: LegacySceneDefinition = {
+const bridge: SceneDefinition = {
   slug: 'bridge',
-  title: { en: 'Bridge: áo dài styles and fabrics vary on their own', vi: 'Bridge: kiểu áo dài và loại vải thay đổi độc lập' },
-  sky: 'interior',
-  tags: [
-    { nodeId: 'abstraction', method: 'sew', caption: { en: 'the style: a cutting pattern', vi: 'kiểu may: bộ rập cắt' }, at: [350, 54], to: [350, 98] },
-    { nodeId: 'impl', caption: { en: 'any fabric', vi: 'loại vải bất kỳ' }, at: [770, 54], to: [770, 92] },
-    { nodeId: 'refA', caption: { en: 'long, high collar', vi: 'tà dài, cổ cao' }, at: [92, 112], to: [92, 160] },
-    { nodeId: 'refB', method: 'sew', caption: { en: 'shorter, modern cut', vi: 'tà ngắn, dáng hiện đại' }, at: [214, 410], to: [206, 352] },
-    { nodeId: 'ciA', caption: { en: 'smooth silk', vi: 'lụa trơn' }, at: [586, 214], to: [656, 140] },
-    { nodeId: 'ciB', caption: { en: 'woven brocade', vi: 'gấm dệt hoa' }, at: [586, 276], to: [656, 252] },
-    { nodeId: 'client', caption: { en: 'places an order', vi: 'khách đặt may' }, at: [334, 268], to: [334, 318] },
+  title: { en: 'Bridge: áo dài styles and fabrics', vi: 'Bridge: kiểu dáng và chất liệu áo dài' },
+  setting: 'dawn',
+  pins: [
+    { nodeId: 'client', caption: { en: 'the customer who orders a gown', vi: 'khách đặt may áo' }, at: [X.client, 322], showName: false },
+    { nodeId: 'abstraction', methods: ['sew'], caption: { en: 'the pattern board: how a gown is cut', vi: 'bảng mẫu: cách cắt một chiếc áo' }, at: [216, 44], side: 'left' },
+    { nodeId: 'refA', caption: { en: 'this variant: high collar, ankle-length flaps', vi: 'biến thể này: cổ cao, tà dài chấm gót' }, at: [X.trad, 326], showName: false },
+    { nodeId: 'refB', methods: ['sew'], caption: { en: 'this variant: boat neck, knee-length flaps, lotus embroidery', vi: 'biến thể này: cổ thuyền, tà ngắn qua gối, thêu sen' }, at: [X.modern, 326], showName: false },
+    { nodeId: 'impl', methods: ['cut', 'embroider'], caption: { en: 'the cloth any gown can be made from', vi: 'loại vải mà áo nào cũng dùng được' }, at: [646, 44], side: 'left' },
+    { nodeId: 'ciA', caption: { en: 'smooth silk thread', vi: 'chỉ tơ mềm mượt' }, at: [X.silk, 336], showName: false },
+    { nodeId: 'ciB', caption: { en: 'heavy brocade, gold thread', vi: 'gấm dày, chỉ kim tuyến' }, at: [X.brocade, 336], showName: false },
   ],
   calls: [
-    { nodeId: 'impl', method: 'cut', d: 'M404,118 C460,40 590,40 646,104', at: [524, 66] },
-    { nodeId: 'impl', method: 'embroider', d: 'M404,168 C470,112 580,112 646,176', at: [524, 128] },
+    { id: 'sew-t', nodeId: 'abstraction', method: 'sew', d: 'M118,298 L222,298' },
+    { id: 'cut-silk', nodeId: 'impl', method: 'cut', d: 'M294,262 C350,170 560,170 640,286' },
+    { id: 'cut-brocade', nodeId: 'impl', method: 'cut', d: 'M290,250 C380,80 780,100 812,278' },
+    { id: 'sew-m', nodeId: 'refB', method: 'sew', d: 'M112,262 C170,150 300,150 396,262' },
+    { id: 'embroider-m', nodeId: 'impl', method: 'embroider', d: 'M468,300 C560,240 700,230 806,296' },
   ],
+  steps: [
+    {
+      calls: ['sew-t', 'cut-silk'],
+      nodes: ['client', 'abstraction', 'refA', 'impl', 'ciA'],
+      at: [170, 360],
+      caption: { en: 'The traditional variant calls sew(), and its cut() crosses the link to the silk.', vi: 'Biến thể truyền thống gọi sew(), và lệnh cut() đi qua nhịp cầu sang lụa.' },
+    },
+    {
+      calls: ['cut-brocade'],
+      nodes: ['abstraction', 'refA', 'impl', 'ciB'],
+      at: [560, 120],
+      caption: { en: 'Swap silk for brocade: the same style calls cut() on the new fabric and needs no change.', vi: 'Đổi lụa sang gấm: cùng kiểu áo gọi cut() trên chất liệu mới mà không phải sửa.' },
+    },
+    {
+      calls: ['sew-m', 'embroider-m'],
+      nodes: ['client', 'abstraction', 'refB', 'impl', 'ciB'],
+      at: [560, 230],
+      caption: { en: 'The modern variant calls sew() the same way and adds embroider() across the link.', vi: 'Biến thể cách tân gọi sew() theo cùng cách và thêm embroider() qua nhịp cầu.' },
+    },
+  ],
+  focus: [0, 56, 960, 384],
   untagged: [],
   Art: function BridgeArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        <rect width={W} height={360} fill="#ded0ba" />
-        {Array.from({ length: 16 }, (_, i) => (
-          <line key={i} x1={i * 62 + 30} y1={0} x2={i * 62 + 30} y2={360} stroke="#8b755e" strokeWidth={1} opacity={0.28} />
-        ))}
-        <rect y={358} width={W} height={82} fill="#c6b090" />
-        {[374, 398, 424].map(y => <line key={y} x1={0} y1={y} x2={W} y2={y} stroke="#8b755e" strokeWidth={1} opacity={0.5} />)}
-        <Lantern x={480} y={210} r={11} cord={30} />
-
-        {/* Two styles on dress forms */}
-        {aoDai(92, 168, '#b91c1c', false, 0.95)}
-        {aoDai(206, 168, '#7c3aed', true, 0.95)}
-
-        {/* The pattern board: the style, independent of any fabric */}
-        <rect x={300} y={96} width={104} height={110} rx={4} fill={C.paper} stroke={INK} strokeWidth={2.5} />
-        <g fill="none" stroke="#7c2d12" strokeWidth={1.4} strokeDasharray="4 3">
-          <path d="M318,112 L340,108 L344,150 L330,196 L316,196 Z" />
-          <path d="M386,112 L364,108 L360,150 L374,196 L388,196 Z" />
-          <path d="M346,120 L358,120 L356,190 L348,190 Z" />
-        </g>
-        <circle cx={352} cy={104} r={3} fill="#c81e1e" />
-
-        {/* The fabric shelf */}
-        <rect x={640} y={88} width={268} height={252} fill={C.woodDark} stroke={INK} strokeWidth={2.5} />
-        <rect x={648} y={96} width={252} height={236} fill="#b99b78" />
-        <rect x={644} y={208} width={260} height={6} fill={C.wood} stroke={INK} strokeWidth={1} />
-        <rect x={644} y={330} width={260} height={6} fill={C.wood} stroke={INK} strokeWidth={1} />
-        {[['#f9a8d4', 656, 126], ['#93c5fd', 740, 126], ['#fde68a', 824, 126], ['#fbcfe8', 698, 178], ['#a7f3d0', 782, 178]].map(([c, x, y]) => bolt(x as number, y as number, c as string, false))}
-        {[['#7f1d1d', 656, 248], ['#1e3a8a', 740, 248], ['#14532d', 824, 248], ['#581c87', 698, 300], ['#7c2d12', 782, 300]].map(([c, x, y]) => bolt(x as number, y as number, c as string, true))}
-
-        {/* The tailor works at the cutting table */}
-        <Person x={500} y={394} s={1.06} robe="#334155" hat="topknot" pose="work">
-          <path d="M22,-52 l10,-10 M22,-52 l12,-4" stroke="#cbd5e1" strokeWidth={2} />
-        </Person>
-        <Table x={420} y={406} w={190} h={34} color={C.wood} />
-        <path d="M434,364 L520,360 L560,368 L470,372 Z" fill="#f9a8d4" stroke={INK} strokeWidth={1.4} />
-
-        {/* The customer */}
-        <Person x={334} y={426} s={1.04} robe="#0f766e" hat="nonLa" pose="point" flip />
-
-        {/* Four combinations from two styles and two fabrics */}
-        <line x1={650} y1={352} x2={930} y2={352} stroke={INK} strokeWidth={3} />
-        <line x1={650} y1={352} x2={650} y2={432} stroke={INK} strokeWidth={3} />
-        <line x1={930} y1={352} x2={930} y2={432} stroke={INK} strokeWidth={3} />
-        {aoDai(684, 368, '#f9a8d4', false, 0.36)}
-        {aoDai(752, 368, '#f9a8d4', true, 0.36)}
-        {aoDai(828, 368, '#7f1d1d', false, 0.36, true)}
-        {aoDai(896, 368, '#7f1d1d', true, 0.36, true)}
-        <Caption x={790} y={436} size={10} fill={C.gold}>{lang === 'vi' ? '4 kiểu áo, chỉ cần 2 + 2 lớp' : '4 dresses from 2 + 2 classes'}</Caption>
-      </g>
+      <>
+        <Backdrop>
+          <GroundBand />
+          <Grass x0={120} x1={220} seed={3} count={4} />
+          {footbridge()}
+        </Backdrop>
+        <Part node="abstraction">
+          <Signboard x={330} w={260} tone="class" span={[X.trad, X.modern]}>
+            <Caption x={345} y={53}>{lang === 'vi' ? 'Bảng mẫu áo' : 'Pattern board'}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="impl">
+          <Signboard x={770} w={280} tone="interface" span={[X.silk, X.brocade]}>
+            <Caption x={786} y={53}>{lang === 'vi' ? 'Các loại vải' : 'Bolts of cloth'}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="client">
+          <Person x={X.client} y={FEET} s={1.25} robe={PIGMENT.amber} pants={PIGMENT.woodDark} hat="khanXep" pose="point" />
+        </Part>
+        <Part node="refA">
+          <Person x={X.trad} y={FEET} s={1.25} robe={PIGMENT.blue} pants={PIGMENT.white} hat="bun" pose="stand">
+            <rect x={-6} y={-76} width={12} height={9} fill={PIGMENT.blueDark} stroke={INK} strokeWidth={1.6} />
+          </Person>
+        </Part>
+        <Part node="refB">
+          <Person x={X.modern} y={FEET} s={1.25} robe={PIGMENT.green} pants={PIGMENT.white} hat="bun" long={false} pose="stand">
+            <path d="M-12,-70 Q0,-62 12,-70" fill="none" stroke={INK} strokeWidth={1.8} />
+            <path d="M-8,-34 q4,-6 8,0 q4,-6 8,0" fill="none" stroke={PIGMENT.yellow} strokeWidth={2} />
+          </Person>
+        </Part>
+        <Part node="ciA">{bolts(X.silk, PIGMENT.pink, PIGMENT.red, 'sheen')}</Part>
+        <Part node="ciB">{bolts(X.brocade, PIGMENT.red, PIGMENT.redDark, 'diamond')}</Part>
+      </>
     )
   },
 }

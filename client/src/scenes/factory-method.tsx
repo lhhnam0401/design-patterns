@@ -1,88 +1,169 @@
-import { Hall } from './kit/architecture'
-import { Person } from './kit/figures'
-import { BlossomTree, Firework, Grass, Ground, Hills, Stars } from './kit/nature'
-import { Caption } from './kit/overlay'
-import { C, INK } from './kit/palette'
-import { LanternString, LogCake, Pot, SquareCake, Table } from './kit/props'
-import type { SceneArtProps, LegacySceneDefinition } from './types'
+import { Person } from './print/figures'
+import { Kitchen, LogCake, SquareCake } from './print/food'
+import { BlossomTree, Grass, GroundBand, Moon, Stars } from './print/nature'
+import { INK, PIGMENT, TINT } from './print/pigments'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { SceneArtProps, SceneDefinition } from './types'
 
-const factoryMethod: LegacySceneDefinition = {
+/** Two rows: the Northern household on a raised terrace, the Southern one on the ground. */
+const NORTH = 232
+const SOUTH = 380
+const KITCHEN_X = 165
+const COOK_X = 285
+const CAKE_X = 690
+
+const tr = (lang: SceneArtProps['lang'], en: string, vi: string) => (lang === 'vi' ? vi : en)
+
+/** A lacquered tray the finished cakes sit on. `y` is the floor. */
+function tray(x: number, y: number, w: number) {
+  return (
+    <g>
+      <rect x={x - w / 2} y={y - 8} width={w} height={8} rx={2} fill={PIGMENT.redDark} stroke={INK} strokeWidth={2.4} />
+      <line x1={x - w / 2 + 6} y1={y - 4} x2={x + w / 2 - 6} y2={y - 4} stroke={PIGMENT.yellow} strokeWidth={1.4} />
+    </g>
+  )
+}
+
+/** A leaf held in the cook's hand, in the figure's own coordinates. */
+function leaf(color: string) {
+  return (
+    <g>
+      <path d="M22,-50 Q30,-70 50,-66 Q44,-48 22,-50 Z" fill={color} stroke={INK} strokeWidth={1.8} strokeLinejoin="round" />
+      <path d="M24,-51 Q36,-60 47,-64" fill="none" stroke={PIGMENT.greenDark} strokeWidth={1.2} />
+    </g>
+  )
+}
+
+/** A pale Tết firework: rays and sparks in tints only. */
+function firework(x: number, y: number, r: number, color: string) {
+  return (
+    <g stroke={color} strokeWidth={2} strokeLinecap="round">
+      {Array.from({ length: 12 }, (_, i) => {
+        const a = (Math.PI * 2 * i) / 12
+        return <line key={i} x1={x + Math.cos(a) * r * 0.35} y1={y + Math.sin(a) * r * 0.35} x2={x + Math.cos(a) * r} y2={y + Math.sin(a) * r} />
+      })}
+      {Array.from({ length: 12 }, (_, i) => {
+        const a = (Math.PI * 2 * (i + 0.5)) / 12
+        return <circle key={`s${i}`} cx={x + Math.cos(a) * r * 0.8} cy={y + Math.sin(a) * r * 0.8} r={1.6} fill={color} stroke="none" />
+      })}
+    </g>
+  )
+}
+
+const factoryMethod: SceneDefinition = {
   slug: 'factory-method',
   title: { en: 'Factory Method: two households wrap their Tết cakes', vi: 'Factory Method: hai gia đình gói bánh Tết' },
-  sky: 'night',
-  tags: [
-    { nodeId: 'creator', method: 'prepareForNewYear', caption: { en: 'the shared Tết routine', vi: 'quy trình đón Tết chung' }, at: [480, 82], to: [480, 128] },
-    { nodeId: 'concA', method: 'makeRiceCake', caption: { en: 'a Northern family', vi: 'gia đình miền Bắc' }, at: [190, 124], to: [190, 182] },
-    { nodeId: 'concB', method: 'makeRiceCake', caption: { en: 'a Southern family', vi: 'gia đình miền Nam' }, at: [770, 124], to: [770, 182] },
-    { nodeId: 'prodA', caption: { en: 'square, in lá dong', vi: 'vuông, gói lá dong' }, at: [92, 262], to: [170, 300] },
-    { nodeId: 'prodB', caption: { en: 'round, in banana leaf', vi: 'tròn, gói lá chuối' }, at: [876, 262], to: [800, 318] },
-    { nodeId: 'product', caption: { en: 'all the routine knows', vi: 'thứ quy trình biết' }, at: [604, 296], to: [512, 356] },
+  setting: 'night',
+  pins: [
+    { nodeId: 'creator', methods: ['prepareForNewYear'], caption: { en: 'the shared Tết routine', vi: 'quy trình đón Tết chung' }, at: [119, 44], showName: false },
+    { nodeId: 'concA', methods: ['makeRiceCake'], caption: { en: 'a Northern household', vi: 'một nhà miền Bắc' }, at: [138, 208], showName: false },
+    { nodeId: 'concB', methods: ['makeRiceCake'], caption: { en: 'a Southern household', vi: 'một nhà miền Nam' }, at: [138, 352], showName: false },
+    { nodeId: 'product', caption: { en: 'all the routine knows about the cake', vi: 'tất cả những gì quy trình biết về chiếc bánh' }, at: [529, 44] },
+    { nodeId: 'prodA', caption: { en: 'square bánh chưng, in lá dong', vi: 'bánh chưng vuông, gói lá dong' }, at: [715, 199], showName: false },
+    { nodeId: 'prodB', caption: { en: 'cylindrical bánh tét, in banana leaf', vi: 'bánh tét hình trụ, gói lá chuối' }, at: [690, 349], showName: false },
   ],
   calls: [
-    { nodeId: 'concA', method: 'makeRiceCake', d: 'M196,306 Q204,326 214,338' },
-    { nodeId: 'concB', method: 'makeRiceCake', d: 'M764,306 Q756,326 748,340' },
-    { nodeId: 'product', method: 'wrap', d: 'M424,236 Q356,262 296,318', at: [362, 262] },
-    { nodeId: 'product', method: 'boil', d: 'M480,236 L480,300', at: [480, 266] },
+    { id: 'prepare-n', nodeId: 'creator', method: 'prepareForNewYear', d: 'M8,200 L98,200' },
+    { id: 'make-n', nodeId: 'concA', method: 'makeRiceCake', d: 'M342,150 L656,150' },
+    { id: 'wrap-n', nodeId: 'product', method: 'wrap', d: 'M342,182 L632,182' },
+    { id: 'boil-n', nodeId: 'product', method: 'boil', d: 'M342,214 L632,214' },
+    { id: 'prepare-s', nodeId: 'creator', method: 'prepareForNewYear', d: 'M8,344 L98,344' },
+    { id: 'make-s', nodeId: 'concB', method: 'makeRiceCake', d: 'M342,298 L630,298' },
+    { id: 'wrap-s', nodeId: 'product', method: 'wrap', d: 'M342,330 L614,330' },
+    { id: 'boil-s', nodeId: 'product', method: 'boil', d: 'M342,362 L610,362' },
   ],
+  steps: [
+    {
+      calls: ['prepare-n'],
+      nodes: ['creator', 'concA'],
+      at: [44, 166],
+      caption: { en: 'prepareForNewYear() runs the Tết routine shared by the TetHousehold subclasses, here in the Northern home.', vi: 'prepareForNewYear() chạy quy trình đón Tết dùng chung cho các lớp con của TetHousehold, ở đây là nhà miền Bắc.' },
+    },
+    {
+      calls: ['make-n'],
+      nodes: ['creator', 'concA', 'prodA'],
+      at: [490, 126],
+      caption: { en: 'The routine first calls makeRiceCake(). The Northern household overrides it to return a square bánh chưng.', vi: 'Quy trình gọi makeRiceCake() trước. Nhà miền Bắc ghi đè phương thức này để trả về bánh chưng vuông.' },
+    },
+    {
+      calls: ['wrap-n', 'boil-n'],
+      nodes: ['creator', 'concA', 'product', 'prodA'],
+      at: [490, 248],
+      caption: { en: 'Then it calls wrap() and boil(). It knows the cake only as a RiceCake, not which kind it got.', vi: 'Rồi quy trình gọi wrap() và boil(). Nó chỉ biết đó là một RiceCake, không biết là loại bánh nào.' },
+    },
+    {
+      calls: ['prepare-s', 'make-s', 'wrap-s', 'boil-s'],
+      nodes: ['creator', 'concB', 'product', 'prodB'],
+      at: [44, 310],
+      caption: { en: 'The Southern household overrides only makeRiceCake(), so the same routine now wraps and boils a cylindrical bánh tét.', vi: 'Nhà miền Nam chỉ ghi đè makeRiceCake(), nên cùng quy trình ấy giờ gói và luộc bánh tét hình trụ.' },
+    },
+  ],
+  focus: [80, 100, 700, 298],
   untagged: [],
   Art: function FactoryMethodArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        <Stars seed={5} count={60} maxY={170} />
-        <Firework x={320} y={70} r={30} color="#a95a51" />
-        <Firework x={660} y={56} r={36} color="#a87934" />
-        <Firework x={590} y={128} r={20} color="#5f806c" />
-        <LanternString x0={-10} x1={340} y={10} sag={18} count={4} />
-        <LanternString x0={620} x1={970} y={10} sag={18} count={4} colors={['#f2a03b', '#d62828']} />
-        <Hills y={300} amp={30} color="#141a3a" seed={2} />
+      <>
+        <Backdrop>
+          <Moon x={46} y={40} r={18} />
+          <Stars seed={5} count={10} x0={360} x1={500} y0={10} y1={88} />
+          {firework(432, 46, 30, TINT.red)}
+          {firework(918, 52, 24, TINT.yellow)}
+          <GroundBand />
+          {/* The Northern row stands on a raised terrace, the Southern row on the ground */}
+          <rect x={60} y={NORTH} width={860} height={14} fill={TINT.ground} />
+          <line x1={60} y1={NORTH + 1} x2={920} y2={NORTH + 1} stroke={TINT.groundEdge} strokeWidth={3} />
+          <BlossomTree x={858} y={NORTH} s={0.7} flower="dao" seed={4} pale />
+          <BlossomTree x={860} y={SOUTH} s={0.85} flower="mai" seed={7} flip pale />
+          <Grass x0={390} x1={560} y={SOUTH + 2} seed={3} count={6} />
+        </Backdrop>
 
-        <Hall cx={190} y={320} w={220} h={70} roofH={52} />
-        <Hall cx={770} y={320} w={220} h={70} roofH={52} wall="#6f3a1a" />
-        <BlossomTree x={36} y={330} s={1.05} color="#f9a8d4" seed={4} />
-        <BlossomTree x={926} y={330} s={1.05} color="#facc15" seed={7} flip />
-        <Ground y={318} color="#c3ae91" edge="#876f58" />
+        {/* The rail: the abstract household over both homes, the cake interface over both cakes */}
+        <Part node="creator">
+          <Signboard x={225} w={260} tone="abstract" span={[150, 300]} ticks={[225]}>
+            <Caption x={245} y={53}>{tr(lang, 'One Tết routine', 'Một nếp đón Tết')}</Caption>
+          </Signboard>
+        </Part>
+        <Part node="product">
+          <Signboard x={CAKE_X} w={370} tone="interface" span={[640, 740]} ticks={[CAKE_X]}>
+            <Caption x={798} y={53}>{tr(lang, 'Any Tết cake', 'Mọi loại bánh')}</Caption>
+          </Signboard>
+        </Part>
 
-        {/* The shared routine, painted on a board: wrap → boil → offer at the altar */}
-        <line x1={420} y1={232} x2={414} y2={330} stroke={INK} strokeWidth={5} />
-        <line x1={540} y1={232} x2={546} y2={330} stroke={INK} strokeWidth={5} />
-        <rect x={404} y={128} width={152} height={106} rx={6} fill={C.paper} stroke={INK} strokeWidth={2.5} />
-        <rect x={410} y={134} width={140} height={94} rx={4} fill="none" stroke="#b45309" strokeWidth={1.2} />
-        <Caption x={480} y={154} size={12} fill="#7c2d12">{lang === 'vi' ? 'Quy trình đón Tết' : 'Tết routine'}</Caption>
-        <g transform="translate(0,4)">
-          <rect x={420} y={176} width={24} height={24} rx={2} fill="#3d7a35" stroke={INK} strokeWidth={1.4} />
-          <line x1={432} y1={176} x2={432} y2={200} stroke="#e8d9a8" strokeWidth={1.4} />
-          <path d="M449,188 l10,0 m-4,-4 l4,4 l-4,4" stroke={INK} strokeWidth={1.6} fill="none" />
-          <path d="M466,178 L494,178 Q494,200 480,202 Q466,200 466,178 Z" fill="#2f2a28" stroke={INK} strokeWidth={1.4} />
-          <path d="M474,174 q-3,-6 0,-10 M486,174 q3,-6 0,-10" stroke="#9ca3af" strokeWidth={1.2} fill="none" />
-          <path d="M499,188 l10,0 m-4,-4 l4,4 l-4,4" stroke={INK} strokeWidth={1.6} fill="none" />
-          <rect x={514} y={190} width={30} height={10} fill={C.lacquer} stroke={INK} strokeWidth={1.4} />
-          {[522, 529, 536].map(x => <line key={x} x1={x} y1={190} x2={x} y2={174} stroke="#f59e0b" strokeWidth={1.4} />)}
-        </g>
-        <Caption x={480} y={222} size={10} fill="#7c2d12" weight={500}>{lang === 'vi' ? 'gói · luộc · dâng' : 'wrap · boil · offer'}</Caption>
+        {/* The Northern household: a kitchen and a cook wrapping in lá dong */}
+        <Part node="concA">
+          <Kitchen x={KITCHEN_X} y={NORTH} tile={PIGMENT.tile}>
+            <Caption x={KITCHEN_X - 16} y={NORTH - 110 + 51}>{tr(lang, 'North', 'Miền Bắc')}</Caption>
+          </Kitchen>
+          <Person x={COOK_X} y={NORTH} s={1.15} robe={PIGMENT.red} pants={PIGMENT.redDark} hat="bun" pose="work">
+            {leaf(PIGMENT.green)}
+          </Person>
+        </Part>
 
-        <Pot x={480} y={404} w={84} />
-        <SquareCake x={466} y={344} size={16} />
-        <LogCake x={496} y={344} w={30} h={12} />
+        {/* The Southern household: a kitchen and a cook wrapping in banana leaf */}
+        <Part node="concB">
+          <Kitchen x={KITCHEN_X} y={SOUTH} tile={PIGMENT.green}>
+            <Caption x={KITCHEN_X - 16} y={SOUTH - 110 + 51}>{tr(lang, 'South', 'Miền Nam')}</Caption>
+          </Kitchen>
+          <Person x={COOK_X} y={SOUTH} s={1.15} robe={PIGMENT.blue} pants={PIGMENT.blueDark} sash={PIGMENT.red} hat="nonLa" long={false} pose="work">
+            {leaf(PIGMENT.leaf)}
+          </Person>
+        </Part>
 
-        {/* North: square bánh chưng */}
-        <Table x={118} y={404} w={190} h={26} />
-        {[[160, 370], [190, 370], [220, 370], [250, 370], [175, 344], [205, 344], [235, 344], [190, 318], [220, 318]].map(([x, y], i) => (
-          <SquareCake key={i} x={x} y={y} />
-        ))}
-        <Person x={330} y={420} s={1.05} robe="#9f1d1d" pants="#2a1a12" hat="bun" pose="work" flip>
-          <path d="M18,-54 l14,-6 l4,12 l-14,6 Z" fill="#3d7a35" stroke={INK} strokeWidth={1} />
-        </Person>
+        {/* Square bánh chưng, stacked on a tray */}
+        <Part node="prodA">
+          {tray(CAKE_X, NORTH, 140)}
+          <SquareCake x={CAKE_X - 25} y={NORTH - 8} size={50} />
+          <SquareCake x={CAKE_X + 25} y={NORTH - 8} size={50} />
+          <SquareCake x={CAKE_X} y={NORTH - 58} size={50} />
+        </Part>
 
-        {/* South: round bánh tét */}
-        <Table x={652} y={404} w={190} h={26} />
-        {[[690, 370], [748, 370], [806, 370], [719, 350], [777, 350], [748, 330]].map(([x, y], i) => (
-          <LogCake key={i} x={x} y={y} />
-        ))}
-        <Person x={630} y={420} s={1.05} robe="#1f4e79" pants="#1a1a1a" sash="#dc2626" hat="nonLa" long={false} pose="work">
-          <path d="M18,-54 l16,-2 l0,10 l-16,2 Z" fill="#4f8a3a" stroke={INK} strokeWidth={1} />
-        </Person>
-        <Grass y={440} seed={3} count={36} />
-      </g>
+        {/* Cylindrical bánh tét, stacked on a tray */}
+        <Part node="prodB">
+          {tray(CAKE_X, SOUTH, 170)}
+          <LogCake x={CAKE_X} y={SOUTH - 8} w={150} h={46} />
+          <LogCake x={CAKE_X + 10} y={SOUTH - 54} w={124} h={42} />
+        </Part>
+      </>
     )
   },
 }

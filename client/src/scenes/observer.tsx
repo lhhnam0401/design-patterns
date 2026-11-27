@@ -15,10 +15,10 @@ const observer: SceneDefinition = {
   pins: [
     { nodeId: 'client', caption: { en: 'the elder signs people up and strikes the drum', vi: 'cụ trưởng làng ghi tên và đánh trống' }, at: [92, 360] },
     { nodeId: 'pub', methods: ['subscribe', 'unsubscribe', 'strike'], caption: { en: 'keeps the list, beats once for everyone on it', vi: 'giữ danh sách, đánh một hồi cho mọi người trong đó' }, at: [330, 330] },
-    { nodeId: 'obs', methods: ['react'], caption: { en: 'anyone who hears the drum', vi: 'bất kỳ ai nghe tiếng trống' }, at: [586, 44], side: 'left' },
+    { nodeId: 'obs', methods: ['react'], caption: { en: 'everyone on the list is told', vi: 'ai có tên trong danh sách đều được báo' }, at: [586, 44], side: 'left' },
     { nodeId: 'o1', caption: { en: 'runs back to the village', vi: 'chạy về làng' }, at: [LISTENERS.o1, 362], showName: false },
     { nodeId: 'o2', caption: { en: 'takes up arms', vi: 'cầm vũ khí' }, at: [LISTENERS.o2, 362], showName: false },
-    { nodeId: 'o3', caption: { en: 'leaves to trade far away', vi: 'đi buôn xa, hủy đăng ký' }, at: [LISTENERS.o3, 362], showName: false },
+    { nodeId: 'o3', caption: { en: 'unsubscribes before a long trip', vi: 'đi buôn xa, hủy đăng ký' }, at: [LISTENERS.o3, 362], showName: false },
   ],
   calls: [
     { id: 'subscribe', nodeId: 'pub', method: 'subscribe', d: 'M118,244 C150,196 230,186 290,194' },
@@ -39,7 +39,7 @@ const observer: SceneDefinition = {
       calls: ['strike', 'react-o1', 'react-o2', 'react-o3'],
       nodes: ['client', 'pub', 'obs', 'o1', 'o2', 'o3'],
       at: [482, 232],
-      caption: { en: 'Enemies are coming: one strike, and each listener reacts in its own way.', vi: 'Giặc đến: chỉ một hồi trống, mỗi người nghe phản ứng theo cách riêng.' },
+      caption: { en: 'Enemies are coming: one strike, and the drum calls react() on each listener, who responds in their own way.', vi: 'Giặc đến: chỉ một hồi trống, trống gọi react() của từng người có tên, mỗi người phản ứng theo cách riêng.' },
     },
     {
       calls: ['unsubscribe'],
@@ -51,7 +51,7 @@ const observer: SceneDefinition = {
       calls: ['strike', 'react-o1', 'react-o2'],
       nodes: ['client', 'pub', 'obs', 'o1', 'o2'],
       at: [212, 296],
-      caption: { en: 'The festival strike now reaches only the farmer and the soldier.', vi: 'Hồi trống lễ hội giờ chỉ đến tai người nông dân và người lính.' },
+      caption: { en: 'The festival strike now notifies only the farmer and the soldier, the two still on the list.', vi: 'Hồi trống lễ hội giờ chỉ báo cho người nông dân và người lính, hai người còn trong danh sách.' },
     },
   ],
   focus: [210, 70, 720, 312],
@@ -67,10 +67,10 @@ const observer: SceneDefinition = {
           <Grass x0={10} x1={60} seed={6} count={3} />
         </Backdrop>
 
-        {/* The listener interface hangs over exactly the three listeners */}
+        {/* The subscriber interface hangs over exactly the three subscribers */}
         <Part node="obs">
           <Signboard x={730} w={320} tone="interface" span={[LISTENERS.o1, LISTENERS.o3]} ticks={Object.values(LISTENERS)}>
-            <Caption x={730} y={53}>{lang === 'vi' ? 'Ai nghe trống đều phản ứng' : 'Everyone who hears the drum'}</Caption>
+            <Caption x={730} y={53}>{lang === 'vi' ? 'Ai có tên đều được báo' : 'Everyone on the list'}</Caption>
           </Signboard>
         </Part>
 

@@ -1,5 +1,8 @@
 import type { Diagram, DiagramEdge, DiagramNode } from '../../types/pattern'
-import { monoWidth, sansWidth } from '../../scenes/kit/metrics'
+
+/** Rough text widths; SVG has no layout engine, so boxes are sized from character counts. */
+const monoWidth = (text: string, size: number) => text.length * size * 0.61
+const sansWidth = (text: string, size: number) => text.length * size * 0.56
 
 // ── Typography (shared with DiagramCanvas so measuring matches drawing) ──
 export const FONT = {

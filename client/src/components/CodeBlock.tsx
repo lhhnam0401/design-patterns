@@ -86,6 +86,10 @@ export default function CodeBlock({ examples }: Props) {
           }}
           showLineNumbers
           wrapLines
+          // The code scrolls in both directions, so keyboard users need to be able to focus it.
+          tabIndex={0}
+          role="region"
+          aria-label={`${t('pattern.code_example')}: ${example.label ?? example.language}`}
         >
           {example.code}
         </SyntaxHighlighter>

@@ -7,8 +7,7 @@ import NotFound from './NotFound'
 
 export default function CategoryPage() {
   const { category } = useParams<{ category: string }>()
-  const { t, i18n } = useTranslation()
-  const lang = i18n.language === 'vi' ? 'vi' : 'en'
+  const { t } = useTranslation()
 
   if (!isCategory(category)) return <NotFound />
 
@@ -30,13 +29,12 @@ export default function CategoryPage() {
               <h1 className="page-title mt-4 text-ink">{t(`categories.${category}`)}</h1>
               <p className="prose-copy mt-5 text-ink-muted">{t(`categories.${category}_desc`)}</p>
               <p className="mt-5 text-sm font-semibold tabular-nums text-support">
-                {patterns.length} {lang === 'vi' ? 'mẫu thiết kế' : patterns.length === 1 ? 'pattern' : 'patterns'}
+                {t('categories.pattern_count', { count: patterns.length })}
               </p>
             </div>
           </div>
         </div>
       </header>
-
       <section className="mx-auto max-w-[100rem] px-5 py-12 sm:px-8 lg:px-12 lg:py-16" aria-label={t(`categories.${category}`)}>
         <PatternCollection ariaLabel={t(`categories.${category}`)} patterns={patterns} />
       </section>

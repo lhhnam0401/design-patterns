@@ -10,13 +10,12 @@ export default function Navbar() {
   const [menuPath, setMenuPath] = useState<string | null>(null)
   const menuOpen = menuPath === location.pathname
   const menuButtonRef = useRef<HTMLButtonElement>(null)
-
-  const languageTarget = i18n.language === 'en' ? 'VI' : 'EN'
+  const languageTarget = i18n.language === 'en' ? 'vi' : 'en'
+  const languageCode = t(`language.code_${languageTarget}`)
 
   const toggleLang = () => {
-    const next = i18n.language === 'en' ? 'vi' : 'en'
-    void i18n.changeLanguage(next)
-    localStorage.setItem('lang', next)
+    void i18n.changeLanguage(languageTarget)
+    localStorage.setItem('lang', languageTarget)
   }
 
   useEffect(() => {
@@ -47,7 +46,7 @@ export default function Navbar() {
         <Link to="/" aria-current={location.pathname === '/' ? 'page' : undefined} className="flex min-h-11 items-center gap-3 text-ink">
           <span className="font-display text-xl font-semibold leading-none tracking-[-0.03em] sm:text-2xl">{t('site.title')}</span>
           <span className="hidden border-l border-line pl-3 text-[0.65rem] font-semibold uppercase leading-tight tracking-[0.12em] text-ink-muted sm:block">
-            GoF<br />Archive
+            {t('site.brand_top')}<br />{t('site.brand_bottom')}
           </span>
         </Link>
 
@@ -74,11 +73,11 @@ export default function Navbar() {
           <button
             type="button"
             onClick={toggleLang}
-            aria-label={`${t('nav.switch_language')} — ${languageTarget}`}
+            aria-label={t('nav.switch_to', { language: t(`language.${languageTarget}`), code: languageCode })}
             className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 text-sm font-semibold text-ink transition-colors duration-200 ease-out hover:bg-surface hover:text-accent"
           >
             <Globe className="h-4 w-4" aria-hidden="true" />
-            <span>{languageTarget}</span>
+            <span>{languageCode}</span>
           </button>
           <button
             ref={menuButtonRef}

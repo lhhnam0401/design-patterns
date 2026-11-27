@@ -1,133 +1,206 @@
-import { Hall, Roof } from './kit/architecture'
-import { Person } from './kit/figures'
-import { Bamboo, Cloud, Grass, Ground, Hills, Sun } from './kit/nature'
-import { C, INK } from './kit/palette'
-import { Scroll, Table } from './kit/props'
-import type { LegacySceneDefinition } from './types'
+import { Roof } from './print/architecture'
+import { Person } from './print/figures'
+import { Bamboo, GroundBand, Hills, Sun } from './print/nature'
+import { INK, PAPER_LIGHT, PIGMENT, TINT } from './print/pigments'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { SceneArtProps, SceneDefinition } from './types'
 
-const BASE = 300
-const STAGES = [262, 382, 502, 622, 800]
-const mid = (i: number) => (STAGES[i] + STAGES[i + 1]) / 2 - (i === 3 ? 10 : 0)
+const TERRACE = 250
+const FEET = 372
+const X = { client: 58, director: 184, crew: 360, frame: 470, hall: 782, scribe: 430, easel: 726 } as const
 
-function base(cx: number, w = 96) {
+const tr = (lang: SceneArtProps['lang'], en: string, vi: string) => (lang === 'vi' ? vi : en)
+
+/** A stone plinth for a building. `y` is the floor line, `w` the width. */
+function stoneBase(cx: number, y: number, w = 128) {
   return (
     <g>
-      <rect x={cx - w / 2} y={BASE - 12} width={w} height={12} fill={C.stone} stroke={INK} strokeWidth={2} />
-      <rect x={cx - w / 2 - 8} y={BASE - 3} width={w + 16} height={5} fill={C.stoneDark} stroke={INK} strokeWidth={1.4} />
+      <rect x={cx - w / 2} y={y - 14} width={w} height={14} fill={PIGMENT.stone} stroke={INK} strokeWidth={2.6} />
+      <rect x={cx - w / 2 - 8} y={y - 4} width={w + 16} height={6} fill={PIGMENT.stoneDark} stroke={INK} strokeWidth={2} />
     </g>
   )
 }
 
-function columns(cx: number, h = 46) {
+/** Four lacquer columns on the plinth with a cross-beam. */
+function columns(cx: number, y: number, h = 72) {
   return (
     <g>
-      {[-36, -12, 12, 36].map(dx => (
-        <rect key={dx} x={cx + dx - 4} y={BASE - 12 - h} width={8} height={h} fill={C.lacquer} stroke={INK} strokeWidth={1.8} />
+      {[-44, -16, 16, 44].map(dx => (
+        <rect key={dx} x={cx + dx - 4} y={y - 14 - h} width={8} height={h} fill={PIGMENT.red} stroke={INK} strokeWidth={2.2} />
       ))}
-      <rect x={cx - 46} y={BASE - 18 - h} width={92} height={7} fill={C.woodDark} stroke={INK} strokeWidth={1.8} />
+      <rect x={cx - 52} y={y - 20 - h} width={104} height={8} fill={PIGMENT.woodDark} stroke={INK} strokeWidth={2.4} />
     </g>
   )
 }
 
-function scaffold(cx: number, top: number) {
+/** Bamboo scaffolding lashed around the rising frame. */
+function scaffold(cx: number, y: number, top: number) {
   return (
-    <g stroke="#a3823f" strokeWidth={2.4} strokeLinecap="round">
-      <line x1={cx - 56} y1={BASE} x2={cx - 54} y2={top} />
-      <line x1={cx + 56} y1={BASE} x2={cx + 54} y2={top} />
-      <line x1={cx - 58} y1={BASE - 30} x2={cx + 58} y2={BASE - 30} />
-      <line x1={cx - 56} y1={top + 14} x2={cx + 56} y2={top + 14} />
-      <line x1={cx - 56} y1={BASE - 30} x2={cx - 20} y2={top + 14} strokeOpacity={0.7} />
+    <g stroke={PIGMENT.strawDark} strokeWidth={3} strokeLinecap="round" fill="none">
+      <line x1={cx - 62} y1={y} x2={cx - 60} y2={top} />
+      <line x1={cx + 62} y1={y} x2={cx + 60} y2={top} />
+      <line x1={cx - 64} y1={y - 44} x2={cx + 64} y2={y - 44} />
+      <line x1={cx - 62} y1={top + 16} x2={cx + 62} y2={top + 16} />
+      <line x1={cx - 62} y1={y - 44} x2={cx - 24} y2={top + 16} strokeOpacity={0.7} />
+      <line x1={cx + 62} y1={y - 44} x2={cx + 24} y2={top + 16} strokeOpacity={0.7} />
     </g>
   )
 }
 
-const builder: LegacySceneDefinition = {
+/** A finished communal house (đình) with a tiled, double-eaved roof and an altar inside. */
+function finishedHall(cx: number, y: number) {
+  return (
+    <g>
+      {stoneBase(cx, y, 168)}
+      <rect x={cx - 74} y={y - 14 - 78} width={148} height={78} fill={PIGMENT.redDark} stroke={INK} strokeWidth={3} />
+      {[-58, -30, 30, 58].map(dx => (
+        <rect key={dx} x={cx + dx - 5} y={y - 14 - 78} width={10} height={78} fill={PIGMENT.red} stroke={INK} strokeWidth={2} />
+      ))}
+      <rect x={cx - 20} y={y - 62} width={40} height={48} fill={PAPER_LIGHT} stroke={INK} strokeWidth={2.4} />
+      <rect x={cx - 13} y={y - 54} width={26} height={30} fill={PIGMENT.red} stroke={INK} strokeWidth={1.8} />
+      {[-11, 0, 11].map(dx => <line key={dx} x1={cx + dx} y1={y - 54} x2={cx + dx} y2={y - 66} stroke={PIGMENT.yellow} strokeWidth={1.6} />)}
+      <rect x={cx - 80} y={y - 14 - 86} width={160} height={10} fill={PIGMENT.woodDark} stroke={INK} strokeWidth={2.4} />
+      <Roof cx={cx} y={y - 14 - 94} w={190} h={54} />
+      <Roof cx={cx} y={y - 14 - 150} w={132} h={44} />
+    </g>
+  )
+}
+
+/** A tripod easel holding a blueprint: a blue sheet with the house drawn in white lines. */
+function easel(x: number, y: number) {
+  return (
+    <g>
+      <g stroke={PIGMENT.woodDark} strokeWidth={4} strokeLinecap="round" fill="none">
+        <line x1={x - 28} y1={y} x2={x - 8} y2={y - 64} />
+        <line x1={x + 28} y1={y} x2={x + 8} y2={y - 64} />
+        <line x1={x} y1={y - 20} x2={x} y2={y} />
+      </g>
+      <rect x={x - 48} y={y - 118} width={96} height={66} fill={PIGMENT.blue} stroke={INK} strokeWidth={2.8} />
+      <g stroke={PAPER_LIGHT} strokeWidth={2} fill="none" strokeLinecap="round">
+        <path d={`M${x - 30},${y - 60} L${x - 30},${y - 90} L${x},${y - 106} L${x + 30},${y - 90} L${x + 30},${y - 60}`} />
+        <line x1={x - 20} y1={y - 60} x2={x - 20} y2={y - 85} />
+        <line x1={x + 20} y1={y - 60} x2={x + 20} y2={y - 85} />
+        <line x1={x - 36} y1={y - 90} x2={x + 36} y2={y - 90} strokeDasharray="4 3" />
+      </g>
+    </g>
+  )
+}
+
+const builder: SceneDefinition = {
   slug: 'builder',
   title: { en: 'Builder: raising a communal house step by step', vi: 'Builder: dựng đình làng từng bước' },
-  sky: 'dawn',
-  tags: [
-    { nodeId: 'director', method: 'buildGrandHouse', caption: { en: 'master carpenter knows the order', vi: 'thợ cả nắm thứ tự các bước' }, at: [150, 92], to: [126, 262] },
-    { nodeId: 'client', caption: { en: 'the village elder', vi: 'cụ trưởng làng' }, at: [64, 178], to: [50, 302] },
-    { nodeId: 'builder', caption: { en: 'steps every builder has', vi: 'các bước builder nào cũng có' }, at: [540, 52], to: [540, 210] },
-    { nodeId: 'p1', method: 'describe', caption: { en: 'the finished đình', vi: 'ngôi đình hoàn chỉnh' }, at: [812, 92], to: [800, 172] },
-    { nodeId: 'cb1', method: 'getProduct', caption: { en: 'the building crew', vi: 'đội thợ dựng đình' }, at: [372, 404], to: [500, 352] },
-    { nodeId: 'cb2', method: 'getProduct', caption: { en: 'the scribe draws it', vi: 'thầy đồ vẽ lại' }, at: [672, 404], to: [790, 352] },
-    { nodeId: 'p2', method: 'show', caption: { en: 'paper drawing', vi: 'bản vẽ trên giấy' }, at: [896, 334], to: [868, 384] },
+  setting: 'dawn',
+  pins: [
+    { nodeId: 'client', caption: { en: 'a village elder orders the đình', vi: 'cụ bô lão đặt dựng đình' }, at: [X.client, 322], showName: false },
+    { nodeId: 'director', methods: ['buildSimpleHouse', 'buildGrandHouse'], caption: { en: 'the master carpenter knows the step order', vi: 'thợ cả nắm thứ tự các bước' }, at: [X.director, 320], showName: false },
+    { nodeId: 'builder', methods: ['buildFoundation', 'buildColumns', 'buildRoof', 'addCarving', 'setupAltar'], caption: { en: 'the steps every builder has', vi: 'các bước mọi builder đều có' }, at: [378, 44], showName: false },
+    { nodeId: 'cb1', methods: ['getProduct'], caption: { en: 'the crew raising a real đình', vi: 'đội thợ dựng ngôi đình thật' }, at: [X.frame, 196], showName: false },
+    { nodeId: 'p1', methods: ['describe'], caption: { en: 'the finished đình', vi: 'ngôi đình hoàn chỉnh' }, at: [X.hall, 196], showName: false },
+    { nodeId: 'cb2', methods: ['getProduct'], caption: { en: 'the draftsman records the same steps', vi: 'người vẽ ghi lại cùng các bước' }, at: [X.scribe, 326], showName: false },
+    { nodeId: 'p2', methods: ['show'], caption: { en: 'a paper drawing', vi: 'bản vẽ trên giấy' }, at: [X.easel, 292], showName: false },
   ],
   calls: [
-    { nodeId: 'builder', method: 'buildFoundation', d: 'M168,300 C190,318 200,318 210,308', at: [192, 340] },
-    { nodeId: 'builder', method: 'buildColumns', d: `M${STAGES[0] + 50},316 L${STAGES[1] - 50},316`, at: [mid(0), 326] },
-    { nodeId: 'builder', method: 'buildRoof', d: `M${STAGES[1] + 50},316 L${STAGES[2] - 50},316`, at: [mid(1), 326] },
-    { nodeId: 'builder', method: 'addCarving', d: `M${STAGES[2] + 50},316 L${STAGES[3] - 50},316`, at: [mid(2), 326] },
-    { nodeId: 'builder', method: 'setupAltar', d: `M${STAGES[3] + 50},316 L${STAGES[4] - 66},316`, at: [mid(3), 326] },
+    { id: 'order', nodeId: 'director', method: 'buildGrandHouse', d: 'M92,306 L150,306' },
+    { id: 'found', nodeId: 'builder', method: 'buildFoundation', d: 'M214,300 C286,282 360,262 424,250' },
+    { id: 'cols', nodeId: 'builder', method: 'buildColumns', d: 'M214,290 C296,250 372,214 432,198' },
+    { id: 'roof', nodeId: 'builder', method: 'buildRoof', d: 'M214,282 C300,220 384,172 448,158' },
+    { id: 'carve', nodeId: 'builder', method: 'addCarving', d: 'M220,298 C330,250 412,206 468,186' },
+    { id: 'altar', nodeId: 'builder', method: 'setupAltar', d: 'M218,306 C332,280 414,252 460,232' },
+    { id: 'get-house', nodeId: 'cb1', method: 'getProduct', d: 'M536,208 L724,206' },
+    { id: 'found2', nodeId: 'builder', method: 'buildFoundation', d: 'M214,330 C282,344 332,352 380,356' },
+    { id: 'cols2', nodeId: 'builder', method: 'buildColumns', d: 'M214,338 C282,352 332,360 380,363' },
+    { id: 'altar2', nodeId: 'builder', method: 'setupAltar', d: 'M214,346 C282,360 332,368 380,370' },
+    { id: 'get-draw', nodeId: 'cb2', method: 'getProduct', d: 'M478,352 C566,330 632,312 700,302' },
   ],
+  steps: [
+    {
+      calls: ['order', 'found', 'cols', 'roof'],
+      nodes: ['client', 'director', 'builder', 'cb1'],
+      at: [262, 152],
+      caption: { en: 'The elder asks for a grand đình. The director runs buildFoundation(), buildColumns() and buildRoof() in order.', vi: 'Cụ bô lão xin dựng một ngôi đình bề thế. Thợ cả gọi buildFoundation(), buildColumns() rồi buildRoof() theo thứ tự.' },
+    },
+    {
+      calls: ['carve', 'altar'],
+      nodes: ['director', 'builder', 'cb1'],
+      at: [352, 128],
+      caption: { en: 'Then addCarving() adds the dragons and phoenixes, and setupAltar() sets up the altar to the guardian spirit.', vi: 'Rồi addCarving() chạm rồng phượng và setupAltar() lập bàn thờ thành hoàng để hoàn thiện khung đình.' },
+    },
+    {
+      calls: ['get-house'],
+      nodes: ['cb1', 'p1'],
+      at: [620, 200],
+      caption: { en: 'getProduct() hands back the finished đình. The method belongs to the crew, not the director.', vi: 'getProduct() trả về ngôi đình hoàn chỉnh. Phương thức này thuộc về đội thợ, không phải thợ cả.' },
+    },
+    {
+      calls: ['found2', 'cols2', 'altar2', 'get-draw'],
+      nodes: ['director', 'builder', 'cb2', 'p2'],
+      at: [300, 372],
+      caption: { en: 'Sent to the draftsman, the same steps build nothing solid: getProduct() now returns a paper drawing.', vi: 'Giao cho người vẽ, cùng các bước ấy không dựng gì bằng gỗ đá: getProduct() giờ trả về một bản vẽ trên giấy.' },
+    },
+  ],
+  focus: [180, 110, 700, 294],
   untagged: [],
-  Art: function BuilderArt() {
+  Art: function BuilderArt({ lang }: SceneArtProps) {
+    const frameTop = TERRACE - 14 - 72 - 20
     return (
-      <g>
-        <Sun x={720} y={250} r={40} />
-        <Cloud x={300} y={80} s={1.1} color="#fde68a" />
-        <Cloud x={690} y={130} s={0.9} color="#fde68a" />
-        <Hills y={250} amp={40} color="#b8ad9d" seed={12} />
-        <Hills y={282} amp={22} color="#a89b89" seed={15} step={90} />
-        <Ground y={296} color="#c5b08d" edge="#8d765a" />
-        <Bamboo x={905} y={300} h={190} seed={6} count={4} />
+      <>
+        <Backdrop>
+          <Sun x={820} y={120} r={30} />
+          <Hills y={260} amp={30} seed={12} step={150} color={TINT.amber} />
+          <GroundBand />
+          {/* The raised terrace the real house is built on */}
+          <rect x={312} y={TERRACE} width={600} height={14} fill={TINT.ground} />
+          <line x1={312} y1={TERRACE + 1} x2={912} y2={TERRACE + 1} stroke={TINT.groundEdge} strokeWidth={3} />
+          <Bamboo x={906} y={TERRACE} h={150} seed={6} count={3} pale />
+        </Backdrop>
 
-        {/* ① foundation */}
-        {base(STAGES[0])}
-        {[[-30, 0], [-16, 0], [-23, -8]].map(([dx, dy], i) => (
-          <rect key={i} x={STAGES[0] + dx} y={BASE - 24 + dy} width={14} height={10} fill={C.stone} stroke={INK} strokeWidth={1.2} />
-        ))}
-        {/* ② columns */}
-        {base(STAGES[1])}
-        {columns(STAGES[1])}
-        {scaffold(STAGES[1], BASE - 90)}
-        {/* ③ roof */}
-        {base(STAGES[2])}
-        {columns(STAGES[2])}
-        <Roof cx={STAGES[2]} y={BASE - 66} w={128} h={42} ornaments={false} />
-        {scaffold(STAGES[2], BASE - 110)}
-        {/* ④ carvings */}
-        {base(STAGES[3])}
-        {columns(STAGES[3])}
-        <rect x={STAGES[3] - 40} y={BASE - 58} width={80} height={46} fill="#7a2f1c" stroke={INK} strokeWidth={2} />
-        <Roof cx={STAGES[3]} y={BASE - 66} w={128} h={42} />
-        <path d={`M${STAGES[3] - 54},${BASE - 112} q12,-14 26,-4 q10,8 22,-2`} stroke={C.gold} strokeWidth={3} fill="none" strokeLinecap="round" />
-        <path d={`M${STAGES[3] + 54},${BASE - 112} q-12,-14 -26,-4 q-10,8 -22,-2`} stroke={C.gold} strokeWidth={3} fill="none" strokeLinecap="round" />
-        {/* ⑤ altar: the finished communal house */}
-        <Hall cx={STAGES[4]} y={BASE} w={124} h={56} roofH={44} doors={3} />
-        <rect x={STAGES[4] - 12} y={BASE - 36} width={24} height={14} fill={C.lacquer} stroke={INK} strokeWidth={1.4} />
-        {[-6, 0, 6].map(dx => <line key={dx} x1={STAGES[4] + dx} y1={BASE - 36} x2={STAGES[4] + dx} y2={BASE - 48} stroke="#fde68a" strokeWidth={1.4} />)}
+        {/* The rail: the builder interface over the two builders */}
+        <Part node="builder">
+          <Signboard x={470} w={260} tone="interface" span={[X.frame - 70, X.scribe + 60]} ticks={[X.frame, X.scribe]}>
+            <Caption x={500} y={53}>{tr(lang, 'Each step in order', 'Các bước theo thứ tự')}</Caption>
+          </Signboard>
+        </Part>
 
         {/* The elder (client) hands the job to the master carpenter (director) */}
-        <Person x={50} y={398} s={0.98} robe="#4b5563" pants="#1f2937" hat="khanXep" pose="stand">
-          <line x1={-17} y1={-40} x2={-20} y2={0} stroke={C.wood} strokeWidth={3} />
-        </Person>
-        <Person x={126} y={392} s={1.12} robe="#7a3b1e" hat="khanXep" hatColor="#7c2d12" pose="point">
-          <Scroll x={-26} y={-58} w={16} h={22} lines={2} seal={false} />
-        </Person>
+        <Part node="client">
+          <Person x={X.client} y={FEET} s={1.2} robe={PIGMENT.stone} pants={PIGMENT.stoneDark} hat="khanXep" pose="stand">
+            <line x1={-20} y1={-44} x2={-22} y2={-2} stroke={PIGMENT.wood} strokeWidth={3} strokeLinecap="round" />
+          </Person>
+        </Part>
+        <Part node="director">
+          <Person x={X.director} y={FEET} s={1.28} robe={PIGMENT.amber} pants={PIGMENT.woodDark} hat="khanXep" hatColor={PIGMENT.woodDark} pose="point" />
+        </Part>
 
-        {/* The crew carries an ironwood beam */}
-        <Person x={500} y={428} s={1.02} robe="#57534e" pants="#292524" hat="nonLa" long={false} pose="hold" />
-        <Person x={580} y={428} s={1.02} robe="#6b4226" pants="#292524" hat="nonLa" long={false} pose="hold" />
-        <rect x={462} y={364} width={160} height={11} rx={5} fill="#8a5a2b" stroke={INK} strokeWidth={1.8} />
-        <ellipse cx={622} cy={369.5} rx={4} ry={5.5} fill="#c08a4a" stroke={INK} strokeWidth={1} />
+        {/* The crew raising the real đình (ConcreteBuilder 1) */}
+        <Part node="cb1">
+          {scaffold(X.frame, TERRACE, frameTop)}
+          {stoneBase(X.frame, TERRACE)}
+          {columns(X.frame, TERRACE)}
+          <Roof cx={X.frame} y={frameTop + 2} w={132} h={40} ornaments={false} />
+          <Person x={X.crew} y={TERRACE} s={1.0} robe={PIGMENT.wood} pants={PIGMENT.woodDark} hat="nonLa" long={false} pose="work" />
+        </Part>
 
-        {/* The scribe draws a blueprint from the same steps */}
-        <Person x={790} y={428} s={1.02} robe="#1e3a8a" hat="topknot" pose="reach">
-          <line x1={30} y1={-58} x2={40} y2={-50} stroke={INK} strokeWidth={2} />
-        </Person>
-        <Table x={828} y={430} w={92} h={34} color={C.wood} />
-        <rect x={834} y={376} width={78} height={18} fill="#1e3a8a" stroke={INK} strokeWidth={1.5} transform="skewX(-12) translate(80,0)" />
-        <g stroke="#dbeafe" strokeWidth={1} fill="none" transform="skewX(-12) translate(80,0)">
-          <path d="M846,390 L846,383 L858,378 L870,378 L882,383 L882,390" />
-          <line x1={852} y1={390} x2={852} y2={384} />
-          <line x1={876} y1={390} x2={876} y2={384} />
-          <line x1={892} y1={381} x2={904} y2={381} />
-          <line x1={892} y1={386} x2={904} y2={386} />
-        </g>
-        <Grass y={440} seed={4} count={34} />
-      </g>
+        {/* The finished communal house (Product 1) */}
+        <Part node="p1">{finishedHall(X.hall, TERRACE)}</Part>
+
+        {/* The draftsman recording the same steps (ConcreteBuilder 2) */}
+        <Part node="cb2">
+          <Person x={X.scribe} y={FEET} s={1.2} robe={PIGMENT.blueDark} pants={PIGMENT.woodDark} hat="topknot" pose="reach">
+            <g transform="rotate(-8 -44 -58)">
+              <rect x={-60} y={-78} width={34} height={44} fill={PIGMENT.blue} stroke={INK} strokeWidth={2.4} />
+              <g stroke={PAPER_LIGHT} strokeWidth={1.4} fill="none">
+                <path d="M-54,-44 L-54,-62 L-43,-70 L-32,-62 L-32,-44" />
+                <line x1={-48} y1={-44} x2={-48} y2={-58} />
+              </g>
+            </g>
+            <line x1={30} y1={-58} x2={44} y2={-50} stroke={INK} strokeWidth={4} strokeLinecap="round" />
+            <circle cx={46} cy={-49} r={4.5} fill={PIGMENT.redDark} stroke={INK} strokeWidth={1.4} />
+          </Person>
+        </Part>
+
+        {/* The paper drawing (Product 2) */}
+        <Part node="p2">{easel(X.easel, FEET)}</Part>
+      </>
     )
   },
 }

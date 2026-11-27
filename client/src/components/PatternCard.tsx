@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { Pattern } from '../types/pattern'
 import PatternScene from '../scenes/PatternScene'
 import { patternFolio } from '../utils/presentation'
+import { summarizeProse } from '../utils/prose'
 
 interface Props {
   pattern: Pattern
@@ -32,7 +33,7 @@ export default function PatternCard({ pattern, compact = false }: Props) {
           </h3>
           {lang === 'vi' && <p className="mt-1 text-sm text-ink-muted">{pattern.name.en}</p>}
 
-          <p className="mt-4 flex-1 text-sm leading-[1.65] text-ink-muted">{pattern.intent[lang]}</p>
+          <p className="mt-4 flex-1 text-sm leading-[1.65] text-ink-muted">{summarizeProse(pattern.intent[lang])}</p>
 
           <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-4 text-xs">
             <div>

@@ -1,51 +1,61 @@
 {
   "site": {
-    "title": "Mẫu Thiết Kế",
-    "subtitle": "Học các mẫu thiết kế Gang of Four qua ví dụ văn hóa truyền thống Việt Nam",
-    "description": "Các mẫu thiết kế kinh điển được giải thích bằng đoạn mã và minh họa qua nền văn hóa truyền thống phong phú của Việt Nam"
+    "title": "Mẫu thiết kế",
+    "subtitle": "Các mẫu thiết kế Gang of Four qua những ví dụ gần gũi với Việt Nam",
+    "description": "Khám phá 23 mẫu thiết kế Gang of Four qua mã nguồn có chú giải, sơ đồ UML và các ví dụ về nghề thủ công, ẩm thực, âm nhạc, lịch sử và đời sống Việt Nam.",
+    "brand_top": "GoF",
+    "brand_bottom": "Kho mẫu"
   },
   "nav": {
     "home": "Trang chủ",
+    "breadcrumb": "Đường dẫn điều hướng",
     "creational": "Khởi tạo",
     "structural": "Cấu trúc",
     "behavioral": "Hành vi",
     "all_patterns": "Tất cả mẫu",
     "primary": "Điều hướng chính",
-    "mobile": "Danh mục trên di động",
+    "mobile": "Menu bộ sưu tập trên di động",
     "open": "Mở điều hướng",
     "close": "Đóng điều hướng",
-    "switch_language": "Chuyển ngôn ngữ"
+    "switch_to": "{{code}} — Chuyển ngôn ngữ sang {{language}}"
   },
   "categories": {
-    "creational": "Mẫu Khởi Tạo",
-    "creational_desc": "Cơ chế tạo đối tượng giúp tăng tính linh hoạt và tái sử dụng",
-    "structural": "Mẫu Cấu Trúc",
-    "structural_desc": "Giải thích cách lắp ráp các đối tượng và lớp thành cấu trúc lớn hơn",
-    "behavioral": "Mẫu Hành Vi",
-    "behavioral_desc": "Phụ trách giao tiếp hiệu quả và phân công trách nhiệm giữa các đối tượng"
+    "creational": "Mẫu khởi tạo",
+    "creational_desc": "Các mẫu giúp tạo đối tượng mà không phụ thuộc vào lớp cụ thể.",
+    "structural": "Mẫu cấu trúc",
+    "structural_desc": "Các mẫu giúp ghép lớp và đối tượng thành cấu trúc lớn hơn.",
+    "behavioral": "Mẫu hành vi",
+    "behavioral_desc": "Các mẫu giúp phân chia trách nhiệm và điều phối giao tiếp giữa các đối tượng.",
+    "pattern_count_one": "{{count}} mẫu thiết kế",
+    "pattern_count_other": "{{count}} mẫu thiết kế"
   },
   "pattern": {
-    "example": "Ví Dụ Việt Nam",
+    "example": "Ví dụ từ Việt Nam",
     "intent": "Mục đích",
     "problem": "Vấn đề",
     "solution": "Giải pháp",
     "structure": "Cấu trúc",
     "code_example": "Ví dụ mã nguồn",
     "view_code": "Xem mã",
-    "back": "Quay lại danh sách",
+    "back": "Quay lại danh sách mẫu",
     "complexity": "Độ phức tạp",
+    "complexity_level": {
+      "simple": "Đơn giản",
+      "medium": "Trung bình",
+      "complex": "Phức tạp"
+    },
     "popularity": "Mức độ phổ biến",
     "also_known_as": "Còn gọi là",
-    "applicability": "Khi nào sử dụng",
+    "applicability": "Khi nào nên dùng",
     "contents": "Trong trang này",
-    "related": "Tiếp tục khám phá",
-    "overview": "Tổng quan mẫu",
+    "related": "Các mẫu liên quan",
+    "overview": "Tổng quan về mẫu",
     "copy": "Sao chép mã",
     "copied": "Đã sao chép mã",
     "copy_error": "Không thể sao chép mã",
     "diagram": {
       "label": "Sơ đồ lớp UML",
-      "instructions": "Kéo nền để di chuyển sơ đồ, kéo một hộp để dời nó. Phím: + và - để phóng to, thu nhỏ; 0 để vừa khung nhìn; phím mũi tên để di chuyển.",
+      "instructions": "Kéo nền để di chuyển sơ đồ, hoặc kéo một hộp để dời hộp đó. Nhấn + hoặc - để phóng to, thu nhỏ; nhấn 0 để vừa khung nhìn; dùng phím mũi tên để di chuyển.",
       "zoom_in": "Phóng to",
       "zoom_out": "Thu nhỏ",
       "zoom_level": "Mức thu phóng",
@@ -72,16 +82,18 @@
       "next": "Tiếp",
       "overview": "Tổng quan",
       "step_of": "Bước {{n}}/{{total}}",
-      "overview_hint": "Chỉ vào một chữ cái hoặc một dòng bên dưới để làm nổi bật đối tượng đó và các lời gọi của nó, hoặc bắt đầu xem {{total}} bước."
+      "overview_hint": "Chỉ vào một chữ cái hoặc một dòng bên dưới để làm nổi bật đối tượng đó cùng các lời gọi của nó, hoặc bắt đầu xem {{total}} bước."
     }
   },
   "language": {
     "en": "English",
-    "vi": "Tiếng Việt"
+    "vi": "Tiếng Việt",
+    "code_en": "EN",
+    "code_vi": "VI"
   },
   "home": {
     "archive": "Kho tư liệu minh họa về thiết kế phần mềm",
-    "intro": "Tìm hiểu {{count}} mẫu trong kho tư liệu qua mã nguồn, sơ đồ cấu trúc và những câu chuyện từ văn hóa Việt Nam.",
+    "intro": "Tìm hiểu {{count}} mẫu trong kho tư liệu qua mã nguồn, sơ đồ cấu trúc và các ví dụ về nghề thủ công, ẩm thực, âm nhạc và đời sống Việt Nam.",
     "catalogue_note": "Tài liệu song ngữ dành cho sinh viên và lập trình viên.",
     "collections": "Khám phá các bộ sưu tập",
     "selected": "Mẫu tiêu biểu",
@@ -94,16 +106,18 @@
     "skip": "Chuyển đến nội dung",
     "loading": "Đang tải kho tư liệu",
     "empty_title": "Chưa có mẫu thiết kế",
-    "empty_body": "Bộ sưu tập này đang chờ mẫu thiết kế đầu tiên."
+    "empty_body": "Bộ sưu tập này chưa có mẫu thiết kế nào."
   },
   "not_found": {
-    "title": "Trang này nằm ngoài kho tư liệu",
-    "body": "Bộ sưu tập hoặc mẫu thiết kế có thể đã chuyển, hoặc địa chỉ chưa đầy đủ.",
-    "back": "Trở về kho tư liệu"
+    "title": "Trang này không có trong kho tư liệu",
+    "body": "Bộ sưu tập hoặc mẫu thiết kế có thể đã được chuyển đi, hoặc địa chỉ chưa đầy đủ.",
+    "back": "Quay về kho tư liệu"
   },
   "footer": {
     "label": "Thông tin trang web",
     "collections": "Bộ sưu tập",
-    "note": "Tài liệu học tập song ngữ kết nối kiến trúc phần mềm với các ví dụ văn hóa Việt Nam."
+    "note": "Tài liệu song ngữ kết nối các mẫu thiết kế phần mềm với những ví dụ Việt Nam được trình bày trong phạm vi rõ ràng.",
+    "tagline": "Ví dụ về nghề thủ công, ẩm thực, âm nhạc và đời sống Việt Nam",
+    "credit": "Các mẫu thiết kế của Gang of Four"
   }
 }

@@ -5,6 +5,14 @@ export interface LocalizedText {
   vi: string
 }
 
+export type ProseBlock =
+  | { type: 'paragraph'; text: string }
+  | { type: 'list'; items: string[] }
+export type Prose = string | ProseBlock[]
+export interface LocalizedProse {
+  en: Prose
+  vi: Prose
+}
 export interface CodeExample {
   language: string
   code: string
@@ -52,15 +60,15 @@ export interface Pattern {
   complexity: 1 | 2 | 3
   popularity: 1 | 2 | 3
   also_known_as?: LocalizedText[]
-  intent: LocalizedText
-  problem: LocalizedText
-  solution: LocalizedText
-  applicability: LocalizedText
+  intent: LocalizedProse
+  problem: LocalizedProse
+  solution: LocalizedProse
+  applicability: LocalizedProse
   vietnamese_example: {
     title: LocalizedText
-    description: LocalizedText
+    description: LocalizedProse
   }
   diagram: Diagram
   code_examples: CodeExample[]
-  structure_notes: LocalizedText
+  structure_notes: LocalizedProse
 }

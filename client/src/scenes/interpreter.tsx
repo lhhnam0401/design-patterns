@@ -1,143 +1,243 @@
-import { Person } from './kit/figures'
-import { Caption } from './kit/overlay'
-import { C, INK, SCENE_COLORS, W } from './kit/palette'
-import { Jar, Shelf } from './kit/props'
-import type { Point, LegacySceneDefinition } from './types'
+import { Person } from './print/figures'
+import { GroundBand, Grass } from './print/nature'
+import { INK, PAPER_LIGHT, PIGMENT, TINT } from './print/pigments'
+import { Jar, Lantern, Shelf, Table } from './print/props'
+import { Backdrop, Caption, Part, Signboard } from './print/structure'
+import type { Point, SceneArtProps, SceneDefinition } from './types'
 
-const COUNTER = 372
+const FEET = 378
 
-/** The words of the receipt line, laid out as tiles: [word, left edge, width]. */
-const TILES: [string, number, number][] = [['bảy', 430, 70], ['mươi', 520, 80], ['lăm', 620, 70], ['nghìn', 710, 90]]
-const TILE_TOP = 120
-const TILE_BOTTOM = 152
-const centre = (i: number) => TILES[i][1] + TILES[i][2] / 2
+/**
+ * The tree parse() builds for "bảy mươi lăm nghìn": Multiply(Add(Multiply(bảy, mươi), lăm), nghìn).
+ * The root hangs at the top; the words stand in reading order along the floor.
+ */
+const WORDS = ['bảy', 'mươi', 'lăm', 'nghìn'] as const
+const LEAF_X = [280, 440, 570, 710] as const
+const LEAF_TOP = 314
+const LEAF_W = 92
+const MUL1: Point = [360, 256]
+const ADD: Point = [465, 204]
+const ROOT: Point = [588, 142]
+const R = 26
+const R_ROOT = 30
+const leafTop = (i: number): Point => [LEAF_X[i], LEAF_TOP]
 
-/** One bracket of the tree: joins two points from above into a node with an operator. */
-function bracket(left: Point, right: Point, y: number, symbol: string) {
-  const mid = (left[0] + right[0]) / 2
+/** The abacus that shows the result, right of the tree. */
+const ABACUS = { x: 780, top: 212 } as const
+
+const f = (n: number) => Math.round(n * 10) / 10
+
+/** A straight arrow from `a` to `b`, trimmed at both ends and shifted sideways by `off`. */
+function link(a: Point, b: Point, trimA: number, trimB: number, off: number): string {
+  const dx = b[0] - a[0]
+  const dy = b[1] - a[1]
+  const len = Math.hypot(dx, dy) || 1
+  const ux = dx / len
+  const uy = dy / len
+  const nx = -uy * off
+  const ny = ux * off
+  return `M${f(a[0] + ux * trimA + nx)},${f(a[1] + uy * trimA + ny)} L${f(b[0] - ux * trimB + nx)},${f(b[1] - uy * trimB + ny)}`
+}
+
+/** A wooden rod joining an expression to one of its parts. */
+function rod(a: Point, b: Point) {
+  const d = `M${a[0]},${a[1]} L${b[0]},${b[1]}`
   return (
-    <g>
-      <path d={`M${left[0]},${left[1]} L${left[0]},${y} L${right[0]},${y} L${right[0]},${right[1]}`} stroke={INK} strokeWidth={1.4} fill="none" />
-      <circle cx={mid} cy={y + 10} r={10} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={1.4} />
-      <Caption x={mid} y={y + 15} size={14} weight={700}>{symbol}</Caption>
+    <g key={d}>
+      <path d={d} stroke={INK} strokeWidth={8} strokeLinecap="round" />
+      <path d={d} stroke={PIGMENT.wood} strokeWidth={4} strokeLinecap="round" />
     </g>
   )
 }
 
-/** A bàn tính with two beads above the beam and five below on each rod, set to `digits`. */
-function abacus(x: number, y: number, digits: number[]) {
-  const width = digits.length * 24 + 16
-  const beam = y + 22
-  const bottom = y + 70
+/** A round lacquer seal with the operator drawn as a shape: × for Multiply, + for Add. */
+function seal([cx, cy]: Point, r: number, color: string, op: 'times' | 'plus') {
+  const arm = r * 0.52
+  const bar = (rot: number) => (
+    <rect
+      key={rot}
+      x={cx - arm}
+      y={cy - 4.5}
+      width={arm * 2}
+      height={9}
+      rx={2}
+      fill={PAPER_LIGHT}
+      stroke={INK}
+      strokeWidth={2}
+      transform={`rotate(${rot} ${cx} ${cy})`}
+    />
+  )
   return (
     <g>
-      <rect x={x} y={y} width={width} height={bottom - y} fill={SCENE_COLORS.paperShade} />
+      <circle cx={cx} cy={cy} r={r} fill={color} stroke={INK} strokeWidth={3} />
+      <circle cx={cx} cy={cy} r={r - 6} fill="none" stroke={PIGMENT.yellow} strokeWidth={2} />
+      {op === 'times' ? [bar(45), bar(-45)] : [bar(0), bar(90)]}
+    </g>
+  )
+}
+
+/** One carved word block. The word itself is story text; the block shape carries it on small plates. */
+function block(i: number) {
+  const x = LEAF_X[i] - LEAF_W / 2
+  return (
+    <g key={i}>
+      <rect x={x} y={LEAF_TOP} width={LEAF_W} height={FEET - LEAF_TOP} rx={4} fill={PIGMENT.wood} stroke={INK} strokeWidth={3} />
+      <rect x={x + 8} y={LEAF_TOP + 6} width={LEAF_W - 16} height={36} rx={2} fill={PAPER_LIGHT} stroke={INK} strokeWidth={2} />
+      <rect x={x + 6} y={FEET - 12} width={LEAF_W - 12} height={6} rx={2} fill={PIGMENT.woodDark} />
+      <Caption x={LEAF_X[i]} y={LEAF_TOP + 32} size={22} weight={700}>{WORDS[i]}</Caption>
+    </g>
+  )
+}
+
+/** A bàn tính: two beads above the beam and five below on each rod, set to `digits`. */
+function abacus(digits: number[]) {
+  const { x, top } = ABACUS
+  const pitch = 20
+  const w = digits.length * pitch + 20
+  const inner = top + 8
+  const beamTop = inner + 30
+  const beamBottom = beamTop + 6
+  const bottom = beamBottom + 59
+  const bead = 9
+  return (
+    <g>
+      <rect x={x} y={top} width={w} height={bottom + 8 - top} rx={4} fill={PIGMENT.wood} stroke={INK} strokeWidth={3} />
+      <rect x={x + 8} y={inner} width={w - 16} height={bottom - inner} fill={PAPER_LIGHT} stroke={INK} strokeWidth={2} />
       {digits.map((digit, i) => {
-        const cx = x + 20 + i * 24
+        const cx = x + 20 + i * pitch
         const fives = Math.floor(digit / 5)
         const ones = digit % 5
-        // Beads are counted by pushing them against the beam
-        const upper = [0, 1].map(k => (k < fives ? beam - 3.5 - k * 6 : y + 11 - k * 6))
-        const lower = [0, 1, 2, 3, 4].map(k => (k < ones ? beam + 3.5 + k * 6 : bottom - 28 + k * 6))
+        // Counted beads are pushed against the beam and printed red
+        const upper = [0, 1].map(j => (j >= 2 - fives ? { y: beamTop - bead / 2 - (1 - j) * bead, on: true } : { y: inner + bead / 2 + j * bead, on: false }))
+        const lower = [0, 1, 2, 3, 4].map(j => (j < ones ? { y: beamBottom + bead / 2 + j * bead, on: true } : { y: bottom - bead / 2 - (4 - j) * bead, on: false }))
         return (
           <g key={i}>
-            <line x1={cx} y1={y + 2} x2={cx} y2={bottom - 2} stroke={INK} strokeWidth={1} />
-            {[...upper, ...lower].map((by, k) => (
-              <ellipse key={k} cx={cx} cy={by} rx={9} ry={2.8} fill={k < 2 ? C.tile : C.wood} stroke={INK} strokeWidth={0.9} />
+            <line x1={cx} y1={inner} x2={cx} y2={bottom} stroke={INK} strokeWidth={1.6} />
+            {[...upper, ...lower].map((b, k) => (
+              <ellipse key={k} cx={cx} cy={b.y} rx={8.5} ry={4.3} fill={b.on ? PIGMENT.red : PIGMENT.woodDark} stroke={INK} strokeWidth={1.4} />
             ))}
           </g>
         )
       })}
-      <rect x={x} y={beam - 1.5} width={width} height={3} fill={C.woodDark} />
-      <rect x={x} y={y} width={width} height={bottom - y} fill="none" stroke={C.woodDark} strokeWidth={5} />
-      <rect x={x - 2.5} y={y - 2.5} width={width + 5} height={bottom - y + 5} fill="none" stroke={INK} strokeWidth={1.2} />
+      <rect x={x + 8} y={beamTop} width={w - 16} height={beamBottom - beamTop} fill={PIGMENT.woodDark} stroke={INK} strokeWidth={1.6} />
+      {/* A dot on the beam marks the thousands */}
+      <circle cx={x + 20 + 3 * pitch + pitch / 2} cy={(beamTop + beamBottom) / 2} r={2.4} fill={PIGMENT.yellow} />
     </g>
   )
 }
 
-const interpreter: LegacySceneDefinition = {
+const interpreter: SceneDefinition = {
   slug: 'interpreter',
   title: { en: 'Interpreter: reading an amount written in words', vi: 'Interpreter: đọc số tiền viết bằng chữ' },
-  sky: 'interior',
-  tags: [
-    { nodeId: 'client', method: 'read', caption: { en: 'reads the words back', vi: 'đọc lại phần bằng chữ' }, at: [110, 210], to: [160, 270] },
-    { nodeId: 'term', caption: { en: 'one word, one value', vi: 'một chữ, một giá trị' }, at: [880, 136], to: [806, 136] },
-    { nodeId: 'mul', caption: { en: 'bảy × mươi = 70', vi: 'bảy × mươi = 70' }, at: [380, 188], to: [495, 188] },
-    { nodeId: 'add', caption: { en: '70 + lăm = 75', vi: '70 + lăm = 75' }, at: [430, 246], to: [566, 228] },
-    { nodeId: 'expr', method: 'interpret', caption: { en: 'each bracket works out its value', vi: 'mỗi ngoặc tự tính ra giá trị' }, at: [470, 318], to: [652, 268] },
+  setting: 'interior',
+  pins: [
+    { nodeId: 'client', methods: ['read', 'parse'], caption: { en: 'reads the words back and builds the tree', vi: 'đọc lại phần bằng chữ và dựng cây' }, at: [100, 345], showName: false },
+    { nodeId: 'expr', methods: ['interpret'], caption: { en: 'every node works out its own value', vi: 'mỗi nút tự tính ra giá trị của mình' }, at: [356, 44], side: 'left' },
+    { nodeId: 'term', caption: { en: 'one word, one value', vi: 'một chữ, một giá trị' }, at: [LEAF_X[0], 372], showName: false },
+    { nodeId: 'mul', caption: { en: 'bảy × mươi = 70, then 75 × nghìn', vi: 'bảy × mươi = 70, rồi 75 × nghìn' }, at: [ROOT[0], 198], showName: false },
+    { nodeId: 'add', caption: { en: '70 + lăm = 75', vi: '70 + lăm = 75' }, at: [ADD[0], 266], showName: false },
   ],
   calls: [
-    { nodeId: 'client', method: 'read', d: 'M220,316 C238,230 280,104 336,60', at: [264, 172] },
-    { nodeId: 'client', method: 'parse', d: 'M468,84 C468,96 466,104 465,116', at: [520, 100] },
-    { nodeId: 'expr', method: 'interpret', d: 'M721,294 C740,294 752,304 762,316', at: [758, 270] },
+    { id: 'read', nodeId: 'client', method: 'read', d: 'M18,140 C40,172 56,206 70,236' },
+    { id: 'parse', nodeId: 'client', method: 'parse', d: 'M212,240 C236,252 248,276 250,302' },
+    { id: 'interpret', nodeId: 'expr', method: 'interpret', d: 'M176,214 C214,146 430,108 556,120' },
+    { id: 'ret-bay', nodeId: 'term', method: 'interpret', kind: 'return', d: link(leafTop(0), MUL1, 4, R + 6, -13) },
+    { id: 'ret-muoi', nodeId: 'term', method: 'interpret', kind: 'return', d: link(leafTop(1), MUL1, 4, R + 6, 13) },
+    { id: 'ret-lam', nodeId: 'term', method: 'interpret', kind: 'return', d: link(leafTop(2), ADD, 4, R + 6, 13) },
+    { id: 'ret-nghin', nodeId: 'term', method: 'interpret', kind: 'return', d: link(leafTop(3), ROOT, 4, R_ROOT + 6, 13) },
+    { id: 'ret-mul', nodeId: 'mul', method: 'interpret', kind: 'return', d: link(MUL1, ADD, R + 4, R + 6, -13) },
+    { id: 'ret-add', nodeId: 'add', method: 'interpret', kind: 'return', d: link(ADD, ROOT, R + 4, R_ROOT + 6, -13) },
+    { id: 'ret-root', nodeId: 'mul', method: 'interpret', kind: 'return', d: 'M622,150 C682,152 730,196 770,236' },
   ],
+  steps: [
+    {
+      calls: ['read'],
+      nodes: ['client'],
+      at: [30, 232],
+      caption: { en: 'The reader gets the line “Bằng chữ: Bảy mươi lăm nghìn đồng”, and read() splits it into four words.', vi: 'Người đọc nhận dòng “Bằng chữ: Bảy mươi lăm nghìn đồng”, và read() tách nó thành bốn chữ.' },
+    },
+    {
+      calls: ['parse'],
+      nodes: ['client', 'term', 'mul', 'add'],
+      at: [250, 206],
+      caption: { en: 'parse() builds the tree (bảy × mươi + lăm) × nghìn: each word becomes a NumberWord leaf.', vi: 'parse() dựng cây (bảy × mươi + lăm) × nghìn: mỗi chữ thành một lá NumberWord.' },
+    },
+    {
+      calls: ['interpret', 'ret-bay', 'ret-muoi', 'ret-lam', 'ret-nghin'],
+      nodes: ['client', 'expr', 'term', 'mul', 'add'],
+      at: [318, 186],
+      caption: { en: 'The reader calls interpret() on the root. The call runs down to the words, and each returns its value: 7, 10, 5, 1000.', vi: 'Người đọc gọi interpret() trên gốc. Lời gọi chạy xuống các chữ, mỗi chữ trả về giá trị: 7, 10, 5, 1000.' },
+    },
+    {
+      calls: ['ret-mul', 'ret-add'],
+      nodes: ['mul', 'add'],
+      at: [384, 168],
+      caption: { en: 'Multiply gives 7 × 10 = 70, and Add gives 70 + 5 = 75.', vi: 'Multiply cho 7 × 10 = 70, rồi Add cho 70 + 5 = 75.' },
+    },
+    {
+      calls: ['ret-root'],
+      nodes: ['mul', 'client'],
+      at: [704, 136],
+      caption: { en: 'The top Multiply gives 75 × 1000: interpret() returns 75.000, and the abacus shows it.', vi: 'Multiply ở gốc cho 75 × 1000: interpret() trả về 75.000, và bàn tính hiện đúng số ấy.' },
+    },
+  ],
+  focus: [220, 100, 720, 300],
   untagged: [],
-  Art: function InterpreterArt() {
-    const b1: Point = [(centre(0) + centre(1)) / 2, 198]
-    const b2: Point = [(b1[0] + centre(2)) / 2, 238]
-    const b3: Point = [(b2[0] + centre(3)) / 2, 278]
+  Art: function InterpreterArt({ lang }: SceneArtProps) {
     return (
-      <g>
-        {/* A grocery shelf behind the cashier */}
-        <Shelf x={24} y={COUNTER} w={250} h={260} rows={3} />
-        {[60, 98].map(x => <Jar key={x} x={x} y={177} s={0.55} />)}
-        {/* Bottles of nước mắm and a stack of instant-noodle packets */}
-        {[138, 156].map(x => (
-          <g key={x}>
-            <rect x={x - 5} y={145} width={10} height={32} rx={2} fill={C.goldDark} stroke={INK} strokeWidth={1} />
-            <rect x={x - 2.5} y={137} width={5} height={9} fill={C.goldDark} stroke={INK} strokeWidth={0.8} />
-            <rect x={x - 3} y={133} width={6} height={4} fill={C.lacquer} stroke={INK} strokeWidth={0.8} />
-            <rect x={x - 5} y={155} width={10} height={9} fill={C.paper} stroke={INK} strokeWidth={0.6} />
+      <>
+        <Backdrop>
+          {/* A grocery shelf behind the cashier, and the counter's table under the abacus */}
+          <Shelf x={8} y={FEET} w={200} h={236} rows={3} pale />
+          {[40, 78, 170].map(x => <Jar key={x} x={x} y={FEET - 236 + 59} s={0.6} pale />)}
+          <Lantern x={900} y={54} r={13} cord={30} pale />
+          <Lantern x={850} y={42} r={10} cord={20} pale />
+          <GroundBand />
+          <Table x={770} y={FEET} w={182} h={44} pale />
+          <Grass x0={220} x1={240} seed={3} count={2} color={TINT.amber} />
+        </Backdrop>
+
+        {/* The rail: every node of the tree can work out its own value */}
+        <Part node="expr">
+          <Signboard x={500} w={320} tone="interface" span={[LEAF_X[0], LEAF_X[3]]} ticks={[LEAF_X[0], ROOT[0], LEAF_X[3]]}>
+            <Caption x={515} y={53}>{lang === 'vi' ? 'Mỗi phần tự tính giá trị' : 'Each part knows its value'}</Caption>
+          </Signboard>
+        </Part>
+
+        {/* The words of the line, in reading order */}
+        <Part node="term">{[0, 1, 2, 3].map(block)}</Part>
+
+        {/* The two products: bảy × mươi, and the whole group × nghìn */}
+        <Part node="mul">
+          {rod(MUL1, leafTop(0))}
+          {rod(MUL1, leafTop(1))}
+          {rod(ROOT, ADD)}
+          {rod(ROOT, leafTop(3))}
+          {seal(MUL1, R, PIGMENT.red, 'times')}
+          {seal(ROOT, R_ROOT, PIGMENT.red, 'times')}
+        </Part>
+
+        {/* The sum: 70 + lăm */}
+        <Part node="add">
+          {rod(ADD, MUL1)}
+          {rod(ADD, leafTop(2))}
+          {seal(ADD, R, PIGMENT.blue, 'plus')}
+        </Part>
+
+        {/* The cashier with the receipt, and her abacus showing the result */}
+        <Part node="client">
+          <g transform="rotate(-4 170 257)">
+            <rect x={134} y={214} width={72} height={86} fill={PAPER_LIGHT} stroke={INK} strokeWidth={2.6} />
+            <rect x={136} y={216} width={68} height={8} fill={PIGMENT.red} />
+            <Caption x={170} y={248} size={18} weight={700}>75.000</Caption>
+            {[260, 270].map(y => <line key={y} x1={142} y1={y} x2={198} y2={y} stroke={INK} strokeWidth={2} strokeLinecap="round" />)}
+            <line x1={142} y1={282} x2={186} y2={282} stroke={PIGMENT.red} strokeWidth={3} strokeLinecap="round" />
+            <circle cx={192} cy={288} r={7} fill="none" stroke={PIGMENT.red} strokeWidth={2.4} />
           </g>
-        ))}
-        {[0, 1, 2, 3].map(i => (
-          <rect key={i} x={178 + (i % 2) * 3} y={169 - i * 8} width={46} height={8} rx={1.5} fill={i % 2 ? C.gold : C.tile} stroke={INK} strokeWidth={0.9} />
-        ))}
-        {/* Tins of biscuits, a sack of rice and a basket of eggs */}
-        {[[48, 24], [76, 18]].map(([x, h]) => (
-          <g key={x}>
-            <rect x={x} y={242 - h} width={22} height={h} fill={C.bronze} stroke={INK} strokeWidth={1} />
-            <ellipse cx={x + 11} cy={242 - h} rx={11} ry={3} fill={C.gold} stroke={INK} strokeWidth={1} />
-          </g>
-        ))}
-        <path d="M112,242 L110,214 Q122,206 134,214 L136,242 Z" fill={SCENE_COLORS.paperShade} stroke={INK} strokeWidth={1} />
-        <path d="M190,242 L194,228 L238,228 L242,242 Z" fill={C.wood} stroke={INK} strokeWidth={1} />
-        {[200, 210, 220, 230].map(x => <ellipse key={x} cx={x} cy={226} rx={5} ry={4} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={0.8} />)}
-
-        {/* The cashier holds the receipt; the line in words is drawn large beside her */}
-        <rect x={198} y={318} width={20} height={28} fill={C.paper} stroke={INK} strokeWidth={1.2} />
-        {[0, 1, 2, 3].map(i => <line key={i} x1={201} y1={325 + i * 5} x2={215} y2={325 + i * 5} stroke={INK} strokeWidth={0.6} opacity={0.6} />)}
-        <Person x={160} y={420} s={1.5} robe="#5f7f86" hat="bun" pose="reach" long={false} />
-
-        <path d="M340,24 L920,24 L920,80 L908,74 L896,80 L884,74 L872,80 L860,74 L848,80 L836,74 L824,80 L812,74 L800,80 L788,74 L776,80 L764,74 L752,80 L740,74 L728,80 L716,74 L704,80 L692,74 L680,80 L668,74 L656,80 L644,74 L632,80 L620,74 L608,80 L596,74 L584,80 L572,74 L560,80 L548,74 L536,80 L524,74 L512,80 L500,74 L488,80 L476,74 L464,80 L452,74 L440,80 L428,74 L416,80 L404,74 L392,80 L380,74 L368,80 L356,74 L340,80 Z" fill={C.paper} stroke={INK} strokeWidth={1.4} />
-        <line x1={356} y1={50} x2={904} y2={50} stroke={INK} strokeWidth={0.6} strokeDasharray="2 3" opacity={0.5} />
-        {/* The receipt itself stays in Vietnamese in both languages */}
-        <Caption x={356} y={44} size={11} anchor="start" fill={SCENE_COLORS.inkMuted}>Cộng: 75.000 đ</Caption>
-        <Caption x={630} y={68} size={16}>Bằng chữ: Bảy mươi lăm nghìn đồng</Caption>
-
-        {/* The same words as tiles, grouped by brackets into a tree */}
-        {TILES.map(([word, x, w]) => (
-          <g key={word}>
-            <rect x={x} y={TILE_TOP} width={w} height={TILE_BOTTOM - TILE_TOP} rx={3} fill="#efe2c6" stroke={INK} strokeWidth={1.3} />
-            <rect x={x + 1} y={TILE_BOTTOM - 5} width={w - 2} height={4} fill={C.wood} opacity={0.7} />
-            <Caption x={x + w / 2} y={142} size={15}>{word}</Caption>
-          </g>
-        ))}
-        {bracket([centre(0), TILE_BOTTOM], [centre(1), TILE_BOTTOM], 178, '×')}
-        {bracket(b1, [centre(2), TILE_BOTTOM], 218, '+')}
-        {bracket(b2, [centre(3), TILE_BOTTOM], 258, '×')}
-        <line x1={b3[0]} y1={b3[1]} x2={b3[0]} y2={282} stroke={INK} strokeWidth={1.4} />
-        <rect x={b3[0] - 50} y={282} width={100} height={24} rx={2} fill={SCENE_COLORS.paperLight} stroke={INK} strokeWidth={1.4} />
-        <Caption x={b3[0]} y={299} size={15} weight={700}>75.000</Caption>
-
-        {/* The counter, with the bàn tính showing the same amount */}
-        <rect x={0} y={COUNTER} width={W} height={440 - COUNTER} fill={C.wood} />
-        <rect x={0} y={COUNTER - 6} width={W} height={9} fill={C.woodDark} stroke={INK} strokeWidth={1.4} />
-        {Array.from({ length: 8 }, (_, i) => (
-          <line key={i} x1={60 + i * 120} y1={COUNTER + 3} x2={60 + i * 120} y2={440} stroke={INK} strokeWidth={1} opacity={0.45} />
-        ))}
-        {abacus(760, 296, [0, 0, 7, 5, 0, 0, 0])}
-      </g>
+          <Person x={100} y={FEET} s={1.3} robe={PIGMENT.green} pants={PIGMENT.woodDark} hat="bun" pose="reach" long={false} />
+          {abacus([0, 0, 7, 5, 0, 0, 0])}
+        </Part>
+      </>
     )
   },
 }

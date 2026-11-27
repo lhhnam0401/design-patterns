@@ -28,6 +28,9 @@ export function smooth(points: readonly Point[]): string {
   return d
 }
 
+/** Rough width of `text` in the plate's sans caption font, for sizing a background behind a Caption. */
+export const sansWidth = (text: string, size: number) => text.length * size * 0.56
+
 /** A filled band: a smooth top edge through the points, closed down to `bottom`. */
 export function band(points: readonly Point[], bottom: number): string {
   const first = points[0]
